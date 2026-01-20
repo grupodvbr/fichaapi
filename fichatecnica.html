@@ -10,12 +10,11 @@
 
 <style>
 :root{
-  --bg:#f3f4f6;
-  --card:#ffffff;
   --primary:#2563eb;
   --warn:#fef3c7;
+  --bg:#eef2ff;
+  --card:#fff;
   --text:#0f172a;
-  --muted:#64748b;
 }
 *{box-sizing:border-box}
 body{
@@ -23,17 +22,19 @@ body{
   padding:18px;
   background:linear-gradient(180deg,#eef2ff,#f8fafc);
   font-family:Inter,Arial,sans-serif;
+  color:var(--text);
 }
 .container{
   max-width:1000px;
   margin:auto;
-  background:#fff;
+  background:var(--card);
   border-radius:30px;
   padding:30px;
   box-shadow:0 35px 80px rgba(0,0,0,.12);
 }
-h1{margin:0 0 24px;font-weight:800}
-h3{margin:26px 0 12px;font-weight:800}
+h1,h3{margin:0;font-weight:800}
+h1{margin-bottom:24px}
+h3{margin:26px 0 12px}
 label{font-size:13px;font-weight:800;margin-top:16px;display:block}
 input,button{
   width:100%;
@@ -41,6 +42,7 @@ input,button{
   border-radius:18px;
   border:1px solid #cbd5e1;
   margin-top:6px;
+  font-size:14px;
 }
 button{
   background:linear-gradient(180deg,#2563eb,#1e40af);
@@ -100,6 +102,7 @@ button{
 
 <h1>📋 Ficha Técnica</h1>
 
+<!-- PRODUTO -->
 <label>Produto (prato)</label>
 <input id="buscaProduto" placeholder="Digite o nome do produto">
 <div id="listaProduto" class="lista"></div>
@@ -124,10 +127,10 @@ button{
 <input id="rendimentoFinal" type="number" value="1" oninput="render()">
 
 <div class="kpis">
-  <div class="kpi">CMV Total<span id="cmvTotal">R$ 0,00</span></div>
-  <div class="kpi">CMV Unit<span id="cmvUnit">R$ 0,00</span></div>
-  <div class="kpi">Preço Venda<span id="precoVenda">R$ 0,00</span></div>
-  <div class="kpi">Margem<span id="margem">0%</span></div>
+  <div class="kpi">CMV Total<br><span id="cmvTotal">R$ 0,00</span></div>
+  <div class="kpi">CMV Unit<br><span id="cmvUnit">R$ 0,00</span></div>
+  <div class="kpi">Preço Venda<br><span id="precoVenda">R$ 0,00</span></div>
+  <div class="kpi">Margem<br><span id="margem">0%</span></div>
 </div>
 
 <button onclick="salvar()" style="margin-top:28px">Salvar Ficha Técnica</button>
@@ -141,10 +144,9 @@ const sb = supabase.createClient(
 );
 
 let produto=null, ingrediente=null, ingredientes=[], cmv=0;
-
 const moeda=v=>"R$ "+Number(v||0).toFixed(2);
 
-/* ===== BUSCA PRODUTO ===== */
+/* ===== PRODUTO ===== */
 buscaProduto.onkeyup=async()=>{
   if(buscaProduto.value.length<2)return listaProduto.innerHTML="";
   const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(buscaProduto.value)}`);
@@ -164,10 +166,10 @@ async function selectProduto(id,nome,un){
   const p=j[0]||{};
   produto={
     id,nome,unidade:un,
-    preco:Number(p.precoVenda1)||0
+    preco:Number(p.precoVenda1)||Number(p.precoOferta1)||0
   };
   precoVenda.innerText=moeda(produto.preco);
-  infoProduto.innerText=`Unidade: ${un} ${produto.preco===0?'• Sem preço':''}`;
+  infoProduto.textContent=`Unidade: ${un} ${produto.preco===0?'• Sem preço':''}`;
   infoProduto.className=`badge ${produto.preco===0?'warn':''}`;
   listaProduto.innerHTML="";
   render();
@@ -202,9 +204,9 @@ async function selectIng(id,nome,un){
 
 function addIngrediente(){
   if(!ingrediente||!qtd.value)return;
-  const t=qtd.value*ingrediente.custo;
-  ingredientes.push({...ingrediente,qtd:qtd.value,total:t});
-  cmv+=t;
+  const total=qtd.value*ingrediente.custo;
+  ingredientes.push({...ingrediente,qtd:qtd.value,total});
+  cmv+=total;
   qtd.value="";
   render();
 }
@@ -219,6 +221,7 @@ function render(){
 }
 
 async function salvar(){
+  if(!produto)return alert("Selecione um produto");
   await sb.from("ficha_tecnica").insert({
     produto_id:produto.id,
     produto_nome:produto.nome,
@@ -230,7 +233,7 @@ async function salvar(){
     custo_unitario:cmv/(rendimentoFinal.value||1),
     margem_percentual:margem.innerText
   });
-  alert("Ficha técnica salva!");
+  alert("Ficha técnica salva com sucesso!");
 }
 </script>
 </body>
