@@ -2,96 +2,24 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Ficha Técnica • CMV Profissional</title>
+<title>Ficha Técnica • CMV</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
-body{
-  margin:0;
-  padding:24px;
-  background:#f1f5f9;
-  font-family:Inter,Arial,sans-serif;
-}
-.container{
-  max-width:1100px;
-  margin:auto;
-  background:#fff;
-  border-radius:28px;
-  padding:36px;
-  box-shadow:0 30px 70px rgba(0,0,0,.12);
-}
-h1{font-size:30px;margin-bottom:26px}
-h3{margin:28px 0 12px}
-label{font-size:13px;font-weight:800;margin-top:16px;display:block}
-input,select,button{
-  width:100%;
-  padding:14px 16px;
-  border-radius:16px;
-  border:1px solid #cbd5e1;
-  margin-top:6px;
-  font-size:14px;
-}
-button{
-  background:#2563eb;
-  color:#fff;
-  font-weight:800;
-  border:none;
-  cursor:pointer;
-}
-.lista .item{
-  padding:14px;
-  background:#f8fafc;
-  border-radius:14px;
-  margin-top:6px;
-  cursor:pointer;
-}
+body{margin:0;padding:24px;background:#f1f5f9;font-family:Inter}
+.container{max-width:1100px;margin:auto;background:#fff;border-radius:28px;padding:36px;box-shadow:0 30px 70px rgba(0,0,0,.12)}
+label{font-weight:800;font-size:13px;margin-top:18px;display:block}
+input,select,button{width:100%;padding:14px;border-radius:16px;border:1px solid #cbd5e1;margin-top:6px}
+.lista .item{padding:14px;background:#f8fafc;border-radius:14px;margin-top:6px;cursor:pointer}
 .lista .item:hover{background:#e2e8f0}
-.badge{
-  display:inline-block;
-  margin-top:10px;
-  padding:10px 18px;
-  border-radius:999px;
-  font-weight:800;
-  background:#e0f2fe;
-}
+.badge{margin-top:10px;padding:10px 18px;border-radius:999px;font-weight:800;background:#e0f2fe;display:inline-block}
 .badge.warn{background:#fde68a}
-.grid{
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr 1fr auto;
-  gap:8px;
-}
-.ing{
-  background:#f8fafc;
-  border-radius:14px;
-  padding:12px 16px;
-  margin-top:6px;
-  display:flex;
-  justify-content:space-between;
-  font-size:13px;
-}
-.kpis{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:14px;
-  margin-top:30px;
-}
-.kpi{
-  background:#f8fafc;
-  border-radius:20px;
-  padding:18px;
-  text-align:center;
-  font-weight:800;
-}
+.grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px}
+.ing{background:#f8fafc;border-radius:14px;padding:12px 16px;margin-top:6px;display:flex;justify-content:space-between}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:30px}
+.kpi{background:#f8fafc;border-radius:20px;padding:18px;text-align:center;font-weight:800}
 .kpi span{display:block;margin-top:6px;font-size:18px}
-.preview{
-  width:100%;
-  max-height:220px;
-  object-fit:cover;
-  border-radius:20px;
-  margin-top:12px;
-}
 </style>
 </head>
 
@@ -100,31 +28,20 @@ button{
 
 <h1>📋 Ficha Técnica</h1>
 
+<!-- PRODUTO -->
 <label>Produto (prato)</label>
 <input id="buscaProduto" placeholder="Digite o nome do prato">
 <div id="listaProduto" class="lista"></div>
 <div id="produtoBadge" class="badge" style="display:none"></div>
 
-<label>Foto do prato</label>
-<input type="file" id="fotoProduto" accept="image/*">
-<img id="previewFoto" class="preview" style="display:none">
-
-<h3>🍳 Ingredientes</h3>
-
-<label>Buscar ingrediente</label>
+<!-- INGREDIENTES -->
+<label>Ingrediente</label>
 <input id="buscaIngrediente" placeholder="Digite o nome do ingrediente">
 <div id="listaIngrediente" class="lista"></div>
 <div id="ingredienteBadge" class="badge" style="display:none"></div>
 
 <div class="grid">
   <input id="qtd" type="number" placeholder="Qtd usada">
-  <select id="unUso">
-    <option>UN</option>
-    <option>KG</option>
-    <option>G</option>
-    <option>L</option>
-    <option>ML</option>
-  </select>
   <input id="custo" readonly placeholder="Custo unitário">
   <input id="rend" type="number" placeholder="Rend %">
   <button onclick="addIngrediente()">+</button>
@@ -152,25 +69,14 @@ let ingredientes=[];
 let cmv=0;
 
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-function getPrecoVenda(p){
-  if(!p) return null;
 
-  // REGRA OFICIAL
-  if (Number(p.precoOferta1) > 0) return Number(p.precoOferta1);
-  if (Number(p.precoVenda1) > 0) return Number(p.precoVenda1);
-
-  // se não tem preço, NÃO inventa
-  return null;
+async function getToken(){
+  const r=await fetch("/api/auth");
+  const j=await r.json();
+  return j.accessToken;
 }
 
-
-fotoProduto.onchange=()=>{
-  if(!fotoProduto.files[0])return;
-  previewFoto.src=URL.createObjectURL(fotoProduto.files[0]);
-  previewFoto.style.display="block";
-};
-
-/* PRODUTO */
+/* ===== PRODUTO ===== */
 buscaProduto.onkeyup=async()=>{
   if(buscaProduto.value.length<2)return;
   const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(buscaProduto.value)}`);
@@ -185,23 +91,30 @@ buscaProduto.onkeyup=async()=>{
 };
 
 async function selectProduto(id,nome){
-  const r=await fetch(`/api/produto-preco/${id}`);
+  const token=await getToken();
+
+  const r=await fetch(`/api/produto-preco/${id}`,{
+    headers:{Authorization:token}
+  });
   const j=await r.json();
   const p=j[0];
-  const preco=getPrecoVenda(p);
+
+  const preco = p && Number(p.precoVenda1) > 0 ? Number(p.precoVenda1) : null;
 
   produto={id,nome,preco};
 
   produtoBadge.style.display="inline-block";
-  produtoBadge.textContent=preco?`${nome} • ${moeda(preco)}`:`${nome} • SEM PREÇO NO VAREJO`;
-  produtoBadge.className=`badge ${!preco?'warn':''}`;
+  produtoBadge.textContent = preco
+    ? `${nome} • ${moeda(preco)}`
+    : `${nome} • SEM PREÇO NO VAREJO`;
+  produtoBadge.className = `badge ${!preco?'warn':''}`;
 
-  precoVenda.textContent=preco?moeda(preco):"SEM PREÇO";
+  precoVenda.textContent = preco ? moeda(preco) : "SEM PREÇO";
   listaProduto.innerHTML="";
   render();
 }
 
-/* INGREDIENTE */
+/* ===== INGREDIENTE ===== */
 buscaIngrediente.onkeyup=async()=>{
   if(buscaIngrediente.value.length<2)return;
   const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(buscaIngrediente.value)}`);
@@ -216,18 +129,27 @@ buscaIngrediente.onkeyup=async()=>{
 };
 
 async function selectIng(id,nome){
-  const r=await fetch(`/api/produto-preco/${id}`);
+  const token=await getToken();
+  const r=await fetch(`/api/produto-preco/${id}`,{
+    headers:{Authorization:token}
+  });
   const j=await r.json();
   const p=j[0];
-  const custo=p.precoMedioDeReposicao||p.precoFiscalDeReposicao||p.custoProduto||0;
+
+  const custo =
+    Number(p.precoMedioDeReposicao) > 0 ? Number(p.precoMedioDeReposicao) :
+    Number(p.precoFiscalDeReposicao) > 0 ? Number(p.precoFiscalDeReposicao) :
+    Number(p.custoProduto) > 0 ? Number(p.custoProduto) : 0;
+
   ingrediente={nome,custo};
+
   ingredienteBadge.style.display="inline-block";
   ingredienteBadge.textContent=nome;
   custo.value=moeda(custo);
   listaIngrediente.innerHTML="";
 }
 
-/* ADD */
+/* ===== ADD ===== */
 function addIngrediente(){
   if(!ingrediente||!qtd.value)return;
   const fator=(rend.value||100)/100;
@@ -261,6 +183,5 @@ function render(){
   }
 }
 </script>
-
 </body>
 </html>
