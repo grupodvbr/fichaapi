@@ -152,14 +152,17 @@ let ingredientes=[];
 let cmv=0;
 
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-
 function getPrecoVenda(p){
   if(!p) return null;
-  if(p.precoVenda1>0) return Number(p.precoVenda1);
-  if(p.precoVenda2>0) return Number(p.precoVenda2);
-  if(p.precoVenda3>0) return Number(p.precoVenda3);
+
+  // REGRA OFICIAL
+  if (Number(p.precoOferta1) > 0) return Number(p.precoOferta1);
+  if (Number(p.precoVenda1) > 0) return Number(p.precoVenda1);
+
+  // se não tem preço, NÃO inventa
   return null;
 }
+
 
 fotoProduto.onchange=()=>{
   if(!fotoProduto.files[0])return;
