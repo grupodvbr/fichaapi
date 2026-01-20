@@ -22,12 +22,11 @@ body{
   padding:18px;
   background:linear-gradient(180deg,#eef2ff,#f8fafc);
   font-family:Inter,Arial,sans-serif;
-  color:var(--text);
 }
 .container{
   max-width:1100px;
   margin:auto;
-  background:var(--card);
+  background:#fff;
   border-radius:30px;
   padding:30px;
   box-shadow:0 35px 80px rgba(0,0,0,.12);
@@ -43,7 +42,6 @@ input,select,button{
   border-radius:18px;
   border:1px solid #cbd5e1;
   margin-top:6px;
-  font-size:14px;
 }
 button{
   background:linear-gradient(180deg,#2563eb,#1e40af);
@@ -81,7 +79,6 @@ button{
   margin-top:6px;
   display:flex;
   justify-content:space-between;
-  font-size:13px;
 }
 .kpis{
   display:grid;
@@ -97,7 +94,7 @@ button{
   font-weight:800;
 }
 .kpi span{display:block;margin-top:6px;font-size:18px}
-img.preview{
+.preview{
   width:100%;
   max-height:220px;
   object-fit:cover;
@@ -114,13 +111,13 @@ img.preview{
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:10;
+  z-index:20;
   border-radius:30px;
 }
 .overlay span{
+  font-size:18px;
   font-weight:800;
   color:#2563eb;
-  font-size:18px;
 }
 </style>
 </head>
@@ -128,16 +125,14 @@ img.preview{
 <body>
 <div class="container">
 
-<div id="overlay" class="overlay">
-  <span>Carregando...</span>
-</div>
+<div id="overlay" class="overlay"><span>Carregando…</span></div>
 
 <h1>📋 Ficha Técnica</h1>
 
 <label>Produto (prato)</label>
-<input id="buscaProduto" placeholder="Digite o nome do produto" autocomplete="off">
+<input id="buscaProduto" placeholder="Digite o nome do produto">
 <div id="listaProduto" class="lista"></div>
-<div id="produtoSelecionadoBadge" class="badge" style="display:none"></div>
+<div id="produtoBadge" class="badge" style="display:none"></div>
 
 <label>Foto do prato</label>
 <input type="file" id="fotoProduto" accept="image/*">
@@ -146,19 +141,13 @@ img.preview{
 <h3>🍳 Ingredientes</h3>
 
 <label>Buscar ingrediente</label>
-<input id="buscaIngrediente" placeholder="Digite o nome do ingrediente" autocomplete="off">
+<input id="buscaIngrediente" placeholder="Digite o nome do ingrediente">
 <div id="listaIngrediente" class="lista"></div>
-<div id="ingredienteSelecionadoBadge" class="badge" style="display:none"></div>
+<div id="ingredienteBadge" class="badge" style="display:none"></div>
 
 <div class="grid">
   <input id="qtd" type="number" placeholder="Qtd usada">
-  <select id="unUso">
-    <option value="UN">UN</option>
-    <option value="KG">KG</option>
-    <option value="G">G</option>
-    <option value="L">L</option>
-    <option value="ML">ML</option>
-  </select>
+  <select id="unUso"><option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option></select>
   <input id="custo" readonly placeholder="Custo unit">
   <input id="rend" type="number" placeholder="Rend %">
   <button onclick="addIngrediente()">+</button>
@@ -172,12 +161,11 @@ img.preview{
 <div class="kpis">
   <div class="kpi">CMV Total<span id="cmvTotal">R$ 0,00</span></div>
   <div class="kpi">CMV Unit<span id="cmvUnit">R$ 0,00</span></div>
-  <div class="kpi">Preço Venda<span id="precoVenda">R$ 0,00</span></div>
-  <div class="kpi">Margem<span id="margem">0%</span></div>
+  <div class="kpi">Preço Venda<span id="precoVenda">—</span></div>
+  <div class="kpi">Margem<span id="margem">—</span></div>
 </div>
 
 <button onclick="salvar()" style="margin-top:28px">Salvar Ficha Técnica</button>
-
 </div>
 
 <script>
@@ -186,213 +174,140 @@ const sb = supabase.createClient(
   "sb_publishable_rN6fZXNxnjgwnbXTPXEP5A_7n5Ty9Cp"
 );
 
-let produto=null;
-let ingrediente=null;
-let ingredientes=[];
-let cmv=0;
+let produto=null, ingrediente=null, ingredientes=[], cmv=0;
+let debounceTimer=null;
 
-let bloqueiaBuscaProduto=false;
-let bloqueiaBuscaIngrediente=false;
-
-const overlay=document.getElementById("overlay");
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-
-const showOverlay=()=>overlay.style.display="flex";
-const hideOverlay=()=>overlay.style.display="none";
+const overlay=document.getElementById("overlay");
+const show=()=>overlay.style.display="flex";
+const hide=()=>overlay.style.display="none";
 
 /* FOTO */
 fotoProduto.onchange=()=>{
-  if(!fotoProduto.files[0]) return;
-  previewFoto.src=URL.createObjectURL(fotoProduto.files[0]);
+  const f=fotoProduto.files[0];
+  if(!f)return;
+  previewFoto.src=URL.createObjectURL(f);
   previewFoto.style.display="block";
 };
 
-/* PRODUTO */
-buscaProduto.addEventListener("input", async ()=>{
-  if(bloqueiaBuscaProduto) return;
+/* BUSCA PRODUTO */
+buscaProduto.oninput=()=>{
+  clearTimeout(debounceTimer);
+  const termo=buscaProduto.value.trim();
 
-  const termo = buscaProduto.value.trim();
-
-  if(termo.length < 3){
+  if(!termo){
     listaProduto.innerHTML="";
+    produto=null;
+    produtoBadge.style.display="none";
+    precoVenda.textContent="—";
+    render();
     return;
   }
 
-  const r = await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
-  const j = await r.json();
+  if(termo.length<3){ listaProduto.innerHTML=""; return; }
 
-  listaProduto.innerHTML="";
-  j.items.forEach(p=>{
-    listaProduto.innerHTML+=`
+  debounceTimer=setTimeout(async()=>{
+    const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
+    const j=await r.json();
+    listaProduto.innerHTML=j.items.map(p=>`
       <div class="item" onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
         ${p.descricao}
-      </div>`;
-  });
-});
+      </div>`).join("");
+  },300);
+};
 
 async function selectProduto(id,nome){
-  bloqueiaBuscaProduto=true;
-  showOverlay();
+  show();
   listaProduto.innerHTML="";
-
-  const r = await fetch(`/api/produto-preco/${id}`);
-  const j = await r.json();
-  const p = j[0]||{};
-
-  produto={
-    id,
-    nome,
-    preco:Number(p.precoVenda1)||Number(p.precoVenda2)||0
-  };
-
-  produtoSelecionadoBadge.style.display="inline-block";
-  produtoSelecionadoBadge.textContent=nome;
+  const r=await fetch(`/api/produto-preco/${id}`);
+  const j=await r.json();
+  const p=j[0]||{};
+  produto={id,nome,preco:Number(p.precoVenda1)||0};
+  produtoBadge.style.display="inline-block";
+  produtoBadge.textContent=`${nome} • ${moeda(produto.preco)}`;
   precoVenda.textContent=moeda(produto.preco);
-
-  hideOverlay();
+  hide();
   render();
 }
 
 /* INGREDIENTE */
-buscaIngrediente.addEventListener("input", async ()=>{
-  if(bloqueiaBuscaIngrediente) return;
+buscaIngrediente.oninput=()=>{
+  clearTimeout(debounceTimer);
+  const termo=buscaIngrediente.value.trim();
+  if(termo.length<3){ listaIngrediente.innerHTML=""; return; }
 
-  const termo = buscaIngrediente.value.trim();
-
-  if(termo.length < 3){
-    listaIngrediente.innerHTML="";
-    return;
-  }
-
-  const r = await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
-  const j = await r.json();
-
-  listaIngrediente.innerHTML="";
-  j.items.forEach(p=>{
-    listaIngrediente.innerHTML+=`
+  debounceTimer=setTimeout(async()=>{
+    const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
+    const j=await r.json();
+    listaIngrediente.innerHTML=j.items.map(p=>`
       <div class="item" onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
         ${p.descricao}
-      </div>`;
-  });
-});
+      </div>`).join("");
+  },300);
+};
 
 async function selectIng(id,nome){
-  bloqueiaBuscaIngrediente=true;
-  showOverlay();
+  show();
   listaIngrediente.innerHTML="";
-
-  const r = await fetch(`/api/produto-preco/${id}`);
-  const j = await r.json();
-  const p = j[0]||{};
-
-  ingrediente={
-    nome,
-    custo:Number(p.precoMedioDeReposicao)||Number(p.custoProduto)||0
-  };
-
-  ingredienteSelecionadoBadge.style.display="inline-block";
-  ingredienteSelecionadoBadge.textContent=nome;
+  const r=await fetch(`/api/produto-preco/${id}`);
+  const j=await r.json();
+  const p=j[0]||{};
+  ingrediente={nome,custo:p.precoMedioDeReposicao||p.custoProduto||0};
+  ingredienteBadge.style.display="inline-block";
+  ingredienteBadge.textContent=nome;
   custo.value=ingrediente.custo.toFixed(2);
-
-  hideOverlay();
+  hide();
 }
 
-/* ADD INGREDIENTE */
+/* ADD */
 function addIngrediente(){
-  if(!ingrediente||!qtd.value) return;
-
-  const rendimento=(rend.value||100)/100;
-  const total=qtd.value*ingrediente.custo*rendimento;
-
-  ingredientes.push({
-    nome:ingrediente.nome,
-    quantidade:qtd.value,
-    unidade_uso:unUso.value,
-    custo_calculado:total
-  });
-
+  if(!ingrediente||!qtd.value)return;
+  const total=qtd.value*ingrediente.custo*((rend.value||100)/100);
+  ingredientes.push({nome:ingrediente.nome,quantidade:qtd.value,un:unUso.value,total});
   cmv+=total;
-  qtd.value="";
-  rend.value="";
-  ingrediente=null;
-  ingredienteSelecionadoBadge.style.display="none";
-  bloqueiaBuscaIngrediente=false;
-  buscaIngrediente.value="";
+  qtd.value=""; rend.value=""; ingrediente=null;
+  ingredienteBadge.style.display="none";
   render();
 }
 
 function render(){
   listaIng.innerHTML=ingredientes.map(i=>`
-    <div class="ing">
-      <span>${i.nome} (${i.quantidade} ${i.unidade_uso})</span>
-      <strong>${moeda(i.custo_calculado)}</strong>
-    </div>`).join("");
-
+    <div class="ing"><span>${i.nome} (${i.quantidade} ${i.un})</span><strong>${moeda(i.total)}</strong></div>
+  `).join("");
   cmvTotal.textContent=moeda(cmv);
   cmvUnit.textContent=moeda(cmv/(rendimentoFinal.value||1));
-
-  margem.textContent=produto?.preco
-    ?(((produto.preco-(cmv/(rendimentoFinal.value||1)))/produto.preco)*100).toFixed(1)+"%"
-    :"0%";
+  margem.textContent=produto?.preco?(((produto.preco-(cmv/(rendimentoFinal.value||1)))/produto.preco)*100).toFixed(1)+"%":"—";
 }
 
-
+/* SALVAR */
 async function salvar(){
   if(!produto) return alert("Selecione um produto");
 
-  let fotoUrl = null;
-
+  let fotoUrl=null;
   if(fotoProduto.files[0]){
-    const path = `${Date.now()}-${fotoProduto.files[0].name}`;
-    const upload = await sb.storage.from("buffet").upload(path, fotoProduto.files[0]);
-
-    if(upload.error){
-      alert("Erro ao subir imagem");
-      return;
-    }
-
-    fotoUrl = sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
-  }
-
-  const { data, error } = await sb
-    .from("buffet")
-    .insert({
-      produto_id: produto.id,
-      nome: produto.nome,
-      preco_venda: produto.preco,
-      custo_total: cmv,
-      custo_unitario: cmv / (rendimentoFinal.value || 1),
-      margem_percentual: produto.preco
-        ? ((produto.preco - (cmv / (rendimentoFinal.value || 1))) / produto.preco) * 100
-        : null,
-      rendimento: rendimentoFinal.value,
-      foto_url: fotoUrl
-    })
-    .select()
-    .single();
-
-  if(error || !data){
-    console.error("ERRO BUFFET:", error);
-    alert("Erro ao salvar ficha técnica");
-    return;
-  }
-
-  for(const i of ingredientes){
-    await sb.from("buffet_itens").insert({
-      buffet_id: data.id,
-      nome: i.nome,
-      unidade_origem: i.unidade_origem,
-      unidade_uso: i.unidade_uso,
-      quantidade: i.quantidade,
-      custo_origem: i.custo_origem,
-      custo_calculado: i.custo_calculado,
-      rendimento_percentual: i.rendimento_percentual
+    const file=fotoProduto.files[0];
+    const path=`${Date.now()}-${file.name}`;
+    const up=await sb.storage.from("buffet").upload(path,file,{
+      upsert:false,
+      contentType:file.type
     });
+    if(up.error) return alert("Erro ao subir imagem");
+    fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
   }
+
+  await sb.from("buffet").insert({
+    produto_id:produto.id,
+    nome:produto.nome,
+    preco_venda:produto.preco,
+    custo_total:cmv,
+    custo_unitario:cmv/(rendimentoFinal.value||1),
+    margem_percentual:produto.preco?((produto.preco-(cmv/(rendimentoFinal.value||1)))/produto.preco)*100:null,
+    rendimento:rendimentoFinal.value,
+    foto_url:fotoUrl
+  });
 
   alert("Ficha técnica salva com sucesso!");
 }
-
 </script>
 </body>
 </html>
