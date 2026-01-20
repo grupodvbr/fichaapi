@@ -69,7 +69,6 @@ button{
   font-weight:800;
   font-size:12px;
 }
-.badge.warn{background:var(--warn)}
 .grid{
   display:grid;
   grid-template-columns:2fr 1fr 1fr 1fr auto;
@@ -110,7 +109,7 @@ img.preview{
 .overlay{
   position:absolute;
   inset:0;
-  background:rgba(255,255,255,.7);
+  background:rgba(255,255,255,.75);
   backdrop-filter:blur(2px);
   display:none;
   align-items:center;
@@ -136,7 +135,7 @@ img.preview{
 <h1>📋 Ficha Técnica</h1>
 
 <label>Produto (prato)</label>
-<input id="buscaProduto" placeholder="Digite o nome do produto">
+<input id="buscaProduto" placeholder="Digite o nome do produto" autocomplete="off">
 <div id="listaProduto" class="lista"></div>
 <div id="produtoSelecionadoBadge" class="badge" style="display:none"></div>
 
@@ -147,7 +146,7 @@ img.preview{
 <h3>🍳 Ingredientes</h3>
 
 <label>Buscar ingrediente</label>
-<input id="buscaIngrediente" placeholder="Digite o nome do ingrediente">
+<input id="buscaIngrediente" placeholder="Digite o nome do ingrediente" autocomplete="off">
 <div id="listaIngrediente" class="lista"></div>
 <div id="ingredienteSelecionadoBadge" class="badge" style="display:none"></div>
 
@@ -192,61 +191,58 @@ let ingrediente=null;
 let ingredientes=[];
 let cmv=0;
 
-let produtoSelecionadoAtivo=false;
-let ingredienteSelecionadoAtivo=false;
+let bloqueiaBuscaProduto=false;
+let bloqueiaBuscaIngrediente=false;
 
 const overlay=document.getElementById("overlay");
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
-function showOverlay(){ overlay.style.display="flex"; }
-function hideOverlay(){ overlay.style.display="none"; }
+const showOverlay=()=>overlay.style.display="flex";
+const hideOverlay=()=>overlay.style.display="none";
 
-/* ================= FOTO ================= */
+/* FOTO */
 fotoProduto.onchange=()=>{
-  const f=fotoProduto.files[0];
-  if(!f)return;
-  previewFoto.src=URL.createObjectURL(f);
+  if(!fotoProduto.files[0]) return;
+  previewFoto.src=URL.createObjectURL(fotoProduto.files[0]);
   previewFoto.style.display="block";
 };
 
-/* ================= PRODUTO ================= */
+/* PRODUTO */
 buscaProduto.addEventListener("input", async ()=>{
-  const termo = buscaProduto.value.trim();
+  if(bloqueiaBuscaProduto) return;
 
-  if(produtoSelecionadoAtivo){
-    produtoSelecionadoAtivo=false;
-    produtoSelecionadoBadge.style.display="none";
-  }
+  const termo = buscaProduto.value.trim();
 
   if(termo.length < 3){
     listaProduto.innerHTML="";
     return;
   }
 
-  const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
-  const j=await r.json();
+  const r = await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
+  const j = await r.json();
 
   listaProduto.innerHTML="";
   j.items.forEach(p=>{
     listaProduto.innerHTML+=`
-      <div class="item" onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}','${p.unidadeDeVenda||''}')">
+      <div class="item" onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
         ${p.descricao}
       </div>`;
   });
 });
 
-async function selectProduto(id,nome,un){
+async function selectProduto(id,nome){
+  bloqueiaBuscaProduto=true;
   showOverlay();
   listaProduto.innerHTML="";
-  produtoSelecionadoAtivo=true;
 
-  const r=await fetch(`/api/produto-preco/${id}`);
-  const j=await r.json();
-  const p=j[0]||{};
+  const r = await fetch(`/api/produto-preco/${id}`);
+  const j = await r.json();
+  const p = j[0]||{};
 
   produto={
-    id,nome,unidade:un,
-    preco:Number(p.precoVenda1)||0
+    id,
+    nome,
+    preco:Number(p.precoVenda1)||Number(p.precoVenda2)||0
   };
 
   produtoSelecionadoBadge.style.display="inline-block";
@@ -257,44 +253,40 @@ async function selectProduto(id,nome,un){
   render();
 }
 
-/* ================= INGREDIENTE ================= */
+/* INGREDIENTE */
 buscaIngrediente.addEventListener("input", async ()=>{
-  const termo = buscaIngrediente.value.trim();
+  if(bloqueiaBuscaIngrediente) return;
 
-  if(ingredienteSelecionadoAtivo){
-    ingredienteSelecionadoAtivo=false;
-    ingredienteSelecionadoBadge.style.display="none";
-  }
+  const termo = buscaIngrediente.value.trim();
 
   if(termo.length < 3){
     listaIngrediente.innerHTML="";
     return;
   }
 
-  const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
-  const j=await r.json();
+  const r = await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
+  const j = await r.json();
 
   listaIngrediente.innerHTML="";
   j.items.forEach(p=>{
     listaIngrediente.innerHTML+=`
-      <div class="item" onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}','${p.unidadeDeVenda||''}')">
+      <div class="item" onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
         ${p.descricao}
       </div>`;
   });
 });
 
-async function selectIng(id,nome,un){
+async function selectIng(id,nome){
+  bloqueiaBuscaIngrediente=true;
   showOverlay();
   listaIngrediente.innerHTML="";
-  ingredienteSelecionadoAtivo=true;
 
-  const r=await fetch(`/api/produto-preco/${id}`);
-  const j=await r.json();
-  const p=j[0]||{};
+  const r = await fetch(`/api/produto-preco/${id}`);
+  const j = await r.json();
+  const p = j[0]||{};
 
   ingrediente={
     nome,
-    unidadeOrigem:un,
     custo:Number(p.precoMedioDeReposicao)||Number(p.custoProduto)||0
   };
 
@@ -305,18 +297,17 @@ async function selectIng(id,nome,un){
   hideOverlay();
 }
 
-/* ================= ADD ================= */
+/* ADD INGREDIENTE */
 function addIngrediente(){
-  if(!ingrediente||!qtd.value)return;
+  if(!ingrediente||!qtd.value) return;
 
   const rendimento=(rend.value||100)/100;
-  const total=(qtd.value*ingrediente.custo)*rendimento;
+  const total=qtd.value*ingrediente.custo*rendimento;
 
   ingredientes.push({
     nome:ingrediente.nome,
-    unidade_origem:ingrediente.unidadeOrigem,
-    unidade_uso:unUso.value,
     quantidade:qtd.value,
+    unidade_uso:unUso.value,
     custo_calculado:total
   });
 
@@ -325,8 +316,8 @@ function addIngrediente(){
   rend.value="";
   ingrediente=null;
   ingredienteSelecionadoBadge.style.display="none";
-  ingredienteSelecionadoAtivo=false;
-
+  bloqueiaBuscaIngrediente=false;
+  buscaIngrediente.value="";
   render();
 }
 
@@ -344,6 +335,7 @@ function render(){
     ?(((produto.preco-(cmv/(rendimentoFinal.value||1)))/produto.preco)*100).toFixed(1)+"%"
     :"0%";
 }
+
 
 async function salvar(){
   if(!produto) return alert("Selecione um produto");
