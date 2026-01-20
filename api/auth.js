@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 </Usuario>`;
 
     const response = await fetch(
-      "https://villachopp.varejofacil.com/api/auth",
+      "https://mercatto.varejofacil.com/api/auth",
       {
         method: "POST",
         headers: {
