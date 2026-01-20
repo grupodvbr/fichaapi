@@ -346,8 +346,61 @@ function render(){
 }
 
 async function salvar(){
-  alert("Salvar permanece igual ao seu código original");
+  if(!produto) return alert("Selecione um produto");
+
+  let fotoUrl = null;
+
+  if(fotoProduto.files[0]){
+    const path = `${Date.now()}-${fotoProduto.files[0].name}`;
+    const upload = await sb.storage.from("buffet").upload(path, fotoProduto.files[0]);
+
+    if(upload.error){
+      alert("Erro ao subir imagem");
+      return;
+    }
+
+    fotoUrl = sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
+  }
+
+  const { data, error } = await sb
+    .from("buffet")
+    .insert({
+      produto_id: produto.id,
+      nome: produto.nome,
+      preco_venda: produto.preco,
+      custo_total: cmv,
+      custo_unitario: cmv / (rendimentoFinal.value || 1),
+      margem_percentual: produto.preco
+        ? ((produto.preco - (cmv / (rendimentoFinal.value || 1))) / produto.preco) * 100
+        : null,
+      rendimento: rendimentoFinal.value,
+      foto_url: fotoUrl
+    })
+    .select()
+    .single();
+
+  if(error || !data){
+    console.error("ERRO BUFFET:", error);
+    alert("Erro ao salvar ficha técnica");
+    return;
+  }
+
+  for(const i of ingredientes){
+    await sb.from("buffet_itens").insert({
+      buffet_id: data.id,
+      nome: i.nome,
+      unidade_origem: i.unidade_origem,
+      unidade_uso: i.unidade_uso,
+      quantidade: i.quantidade,
+      custo_origem: i.custo_origem,
+      custo_calculado: i.custo_calculado,
+      rendimento_percentual: i.rendimento_percentual
+    });
+  }
+
+  alert("Ficha técnica salva com sucesso!");
 }
+
 </script>
 </body>
 </html>
