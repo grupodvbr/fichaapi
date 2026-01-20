@@ -31,6 +31,7 @@ body{
   border-radius:30px;
   padding:30px;
   box-shadow:0 35px 80px rgba(0,0,0,.12);
+  position:relative;
 }
 h1,h3{margin:0;font-weight:800}
 h1{margin-bottom:24px}
@@ -104,15 +105,36 @@ img.preview{
   border-radius:20px;
   margin-top:12px;
 }
+
+/* OVERLAY */
+.overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,.7);
+  backdrop-filter:blur(2px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:10;
+  border-radius:30px;
+}
+.overlay span{
+  font-weight:800;
+  color:#2563eb;
+  font-size:18px;
+}
 </style>
 </head>
 
 <body>
 <div class="container">
 
+<div id="overlay" class="overlay">
+  <span>Carregando...</span>
+</div>
+
 <h1>📋 Ficha Técnica</h1>
 
-<!-- PRODUTO -->
 <label>Produto (prato)</label>
 <input id="buscaProduto" placeholder="Digite o nome do produto">
 <div id="listaProduto" class="lista"></div>
@@ -122,7 +144,6 @@ img.preview{
 <input type="file" id="fotoProduto" accept="image/*">
 <img id="previewFoto" class="preview" style="display:none">
 
-<!-- INGREDIENTES -->
 <h3>🍳 Ingredientes</h3>
 
 <label>Buscar ingrediente</label>
@@ -171,7 +192,14 @@ let ingrediente=null;
 let ingredientes=[];
 let cmv=0;
 
+let produtoSelecionadoAtivo=false;
+let ingredienteSelecionadoAtivo=false;
+
+const overlay=document.getElementById("overlay");
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+
+function showOverlay(){ overlay.style.display="flex"; }
+function hideOverlay(){ overlay.style.display="none"; }
 
 /* ================= FOTO ================= */
 fotoProduto.onchange=()=>{
@@ -185,24 +213,15 @@ fotoProduto.onchange=()=>{
 buscaProduto.addEventListener("input", async ()=>{
   const termo = buscaProduto.value.trim();
 
-  // limpou o campo
-  if(termo.length === 0){
-    listaProduto.innerHTML="";
-    produto = null;
+  if(produtoSelecionadoAtivo){
+    produtoSelecionadoAtivo=false;
     produtoSelecionadoBadge.style.display="none";
-    precoVenda.textContent="R$ 0,00";
-    render();
-    return;
   }
 
-  // só busca com 3 letras
   if(termo.length < 3){
     listaProduto.innerHTML="";
     return;
   }
-
-  produto = null;
-  produtoSelecionadoBadge.style.display="none";
 
   const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
   const j=await r.json();
@@ -217,14 +236,16 @@ buscaProduto.addEventListener("input", async ()=>{
 });
 
 async function selectProduto(id,nome,un){
+  showOverlay();
+  listaProduto.innerHTML="";
+  produtoSelecionadoAtivo=true;
+
   const r=await fetch(`/api/produto-preco/${id}`);
   const j=await r.json();
   const p=j[0]||{};
 
   produto={
-    id,
-    nome,
-    unidade:un,
+    id,nome,unidade:un,
     preco:Number(p.precoVenda1)||0
   };
 
@@ -232,7 +253,7 @@ async function selectProduto(id,nome,un){
   produtoSelecionadoBadge.textContent=nome;
   precoVenda.textContent=moeda(produto.preco);
 
-  listaProduto.innerHTML="";
+  hideOverlay();
   render();
 }
 
@@ -240,21 +261,15 @@ async function selectProduto(id,nome,un){
 buscaIngrediente.addEventListener("input", async ()=>{
   const termo = buscaIngrediente.value.trim();
 
-  if(termo.length === 0){
-    listaIngrediente.innerHTML="";
-    ingrediente=null;
+  if(ingredienteSelecionadoAtivo){
+    ingredienteSelecionadoAtivo=false;
     ingredienteSelecionadoBadge.style.display="none";
-    custo.value="";
-    return;
   }
 
   if(termo.length < 3){
     listaIngrediente.innerHTML="";
     return;
   }
-
-  ingrediente=null;
-  ingredienteSelecionadoBadge.style.display="none";
 
   const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
   const j=await r.json();
@@ -269,6 +284,10 @@ buscaIngrediente.addEventListener("input", async ()=>{
 });
 
 async function selectIng(id,nome,un){
+  showOverlay();
+  listaIngrediente.innerHTML="";
+  ingredienteSelecionadoAtivo=true;
+
   const r=await fetch(`/api/produto-preco/${id}`);
   const j=await r.json();
   const p=j[0]||{};
@@ -283,7 +302,7 @@ async function selectIng(id,nome,un){
   ingredienteSelecionadoBadge.textContent=nome;
   custo.value=ingrediente.custo.toFixed(2);
 
-  listaIngrediente.innerHTML="";
+  hideOverlay();
 }
 
 /* ================= ADD ================= */
@@ -302,11 +321,11 @@ function addIngrediente(){
   });
 
   cmv+=total;
-
   qtd.value="";
   rend.value="";
   ingrediente=null;
   ingredienteSelecionadoBadge.style.display="none";
+  ingredienteSelecionadoAtivo=false;
 
   render();
 }
