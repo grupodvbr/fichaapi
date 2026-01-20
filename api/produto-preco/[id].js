@@ -1,22 +1,31 @@
 export default async function handler(req, res) {
   try {
     const { id } = req.query;
-
-    /* ================= VALIDAÇÕES ================= */
     if (!id) {
       return res.status(400).json({ error: "ID do produto não informado" });
     }
 
-    // token vem cru (sem Bearer)
-    const token = req.headers.authorization || req.cookies?.token;
+    /* ================== 1️⃣ AUTH ================== */
+    const authResp = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth`);
+    const authText = await authResp.text();
 
-    if (!token) {
-      return res.status(401).json({ error: "Token não encontrado" });
+    if (!authResp.ok) {
+      return res.status(500).json({
+        error: "Falha ao autenticar no Varejo Fácil",
+        raw: authText
+      });
     }
 
-    /* ================= REQUEST VAREJO FÁCIL ================= */
-    const response = await fetch(
-      `https://mercatto.varejofacil.com/api/v1/produto/produtos/${id}/precos`,
+    const auth = JSON.parse(authText);
+    const token = auth.accessToken;
+
+    if (!token) {
+      return res.status(401).json({ error: "Token não retornado pelo auth" });
+    }
+
+    /* ================== 2️⃣ BUSCA PREÇO ================== */
+    const precoResp = await fetch(
+      `https://villachopp.varejofacil.com/api/v1/produto/produtos/${id}/precos`,
       {
         method: "GET",
         headers: {
@@ -26,35 +35,26 @@ export default async function handler(req, res) {
       }
     );
 
-    /* ================= TRATAMENTO DE ERROS ================= */
-    if (response.status === 401) {
-      return res.status(401).json({ error: "Token inválido no Varejo Fácil" });
-    }
+    const precoText = await precoResp.text();
 
-    if (response.status === 404) {
-      return res.status(404).json({ error: "Preço não encontrado no Varejo Fácil" });
-    }
-
-    if (!response.ok) {
-      const text = await response.text();
-      return res.status(500).json({
-        error: "Erro ao consultar preços no Varejo Fácil",
-        detalhe: text
+    if (!precoResp.ok) {
+      return res.status(precoResp.status).json({
+        error: "Erro ao buscar preço do produto",
+        raw: precoText
       });
     }
 
-    /* ================= RESPOSTA FINAL ================= */
-    const data = await response.json();
+    /* ================== 3️⃣ RESPOSTA ================== */
+    const precoJson = JSON.parse(precoText);
 
     // ⚠️ SEM fallback
-    // ⚠️ SEM valor padrão
-    // ⚠️ SEM inventar preço
-    return res.status(200).json(data);
+    // ⚠️ SEM inventar valor
+    return res.status(200).json(precoJson);
 
   } catch (err) {
-    console.error("ERRO API PRODUTO PREÇO:", err);
+    console.error("ERRO PRODUTO PREÇO:", err);
     return res.status(500).json({
-      error: "Erro inesperado na API de preço",
+      error: "Erro interno na API de preço",
       message: err.message
     });
   }
