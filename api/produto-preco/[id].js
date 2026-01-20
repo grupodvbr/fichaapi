@@ -5,56 +5,73 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "ID do produto não informado" });
     }
 
-    /* ================== 1️⃣ AUTH ================== */
-    const authResp = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth`);
-    const authText = await authResp.text();
+    /* ================== AUTH (IGUAL AO POSTMAN) ================== */
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Usuario>
+  <username>NALBERT SOUZA</username>
+  <password>99861</password>
+</Usuario>`;
 
-    if (!authResp.ok) {
-      return res.status(500).json({
-        error: "Falha ao autenticar no Varejo Fácil",
-        raw: authText
+    const authResponse = await fetch(
+      "https://villachopp.varejofacil.com/api/auth",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/xml",
+          "Accept": "application/json"
+        },
+        body: xml
+      }
+    );
+
+    const authRaw = await authResponse.text();
+
+    if (!authResponse.ok) {
+      return res.status(authResponse.status).json({
+        error: "Erro ao autenticar no Varejo Fácil",
+        raw: authRaw
       });
     }
 
-    const auth = JSON.parse(authText);
-    const token = auth.accessToken;
+    const authJson = JSON.parse(authRaw);
+    const accessToken = authJson.accessToken;
 
-    if (!token) {
-      return res.status(401).json({ error: "Token não retornado pelo auth" });
+    if (!accessToken) {
+      return res.status(401).json({ error: "accessToken não retornado" });
     }
 
-    /* ================== 2️⃣ BUSCA PREÇO ================== */
-    const precoResp = await fetch(
+    /* ================== PREÇO DO PRODUTO ================== */
+    const precoResponse = await fetch(
       `https://villachopp.varejofacil.com/api/v1/produto/produtos/${id}/precos`,
       {
         method: "GET",
         headers: {
-          Authorization: token, // 🔥 SEM Bearer
+          Authorization: accessToken, // ⚠️ SEM Bearer
           Accept: "application/json"
         }
       }
     );
 
-    const precoText = await precoResp.text();
+    const precoRaw = await precoResponse.text();
 
-    if (!precoResp.ok) {
-      return res.status(precoResp.status).json({
+    if (!precoResponse.ok) {
+      return res.status(precoResponse.status).json({
         error: "Erro ao buscar preço do produto",
-        raw: precoText
+        raw: precoRaw
       });
     }
 
-    /* ================== 3️⃣ RESPOSTA ================== */
-    const precoJson = JSON.parse(precoText);
+    const precoJson = JSON.parse(precoRaw);
 
-    // ⚠️ SEM fallback
-    // ⚠️ SEM inventar valor
+    /* ================== RESPOSTA FINAL ================== */
+    // 🔥 SEM fallback
+    // 🔥 SEM valor inventado
     return res.status(200).json(precoJson);
 
   } catch (err) {
-    console.error("ERRO PRODUTO PREÇO:", err);
+    console.error("ERRO API PRODUTO PREÇO:", err);
     return res.status(500).json({
-      error: "Erro interno na API de preço",
+      error: "Erro interno na API de produto-preco",
       message: err.message
     });
   }
