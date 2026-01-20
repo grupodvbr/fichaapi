@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 </Usuario>`;
 
     const authResponse = await fetch(
-      "https://villachopp.varejofacil.com/api/auth",
+      "https://mercatto.varejofacil.com/api/auth",
       {
         method: "POST",
         headers: {
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
 
     /* ================== PREÇO DO PRODUTO ================== */
     const precoResponse = await fetch(
-      `https://villachopp.varejofacil.com/api/v1/produto/produtos/${id}/precos`,
+      `https://mercatto.varejofacil.com/api/v1/produto/produtos/${id}/precos`,
       {
         method: "GET",
         headers: {
