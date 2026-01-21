@@ -173,7 +173,13 @@ const sb = supabase.createClient(
   "https://dsngsuetvucxeztbgbtb.supabase.co",
   "sb_publishable_rN6fZXNxnjgwnbXTPXEP5A_7n5Ty9Cp"
 );
-
+// 🔑 AUTH ANÔNIMO (ESSENCIAL)
+(async () => {
+  const { data, error } = await sb.auth.signInAnonymously();
+  if (error) {
+    console.error("Erro auth anon:", error);
+  }
+})();
 let produto=null;
 let ingrediente=null;
 let ingredientes=[];
@@ -303,8 +309,17 @@ async function salvar(){
   let fotoUrl=null;
   if(fotoProduto.files[0]){
     const file=fotoProduto.files[0];
-    const path=`fichas/${Date.now()}-${file.name}`;
-    const up=await sb.storage.from("buffet").upload(path,file);
+const safeName = file.name
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-zA-Z0-9._-]/g, "_");
+
+const path = `fichas/${Date.now()}-${safeName}`;
+    const up=await sb.storage.from("buffet").upload(path, file, {
+  contentType: file.type,
+  upsert: false
+});
+
     if(up.error){ hide(); alert("Erro imagem"); return; }
     fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
   }
