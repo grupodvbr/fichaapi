@@ -11,7 +11,7 @@
 <style>
 body{
   margin:0;
-  padding:20px;
+  padding:18px;
   background:#eef2ff;
   font-family:Inter,Arial,sans-serif;
 }
@@ -19,11 +19,17 @@ body{
   max-width:1100px;
   margin:auto;
   background:#fff;
-  border-radius:24px;
+  border-radius:28px;
   padding:30px;
-  box-shadow:0 30px 60px rgba(0,0,0,.12);
+  box-shadow:0 30px 70px rgba(0,0,0,.12);
 }
-label{font-weight:700;font-size:13px;margin-top:16px;display:block}
+h1{margin-bottom:24px}
+label{
+  display:block;
+  margin-top:16px;
+  font-weight:800;
+  font-size:13px;
+}
 input,select,button{
   width:100%;
   padding:14px;
@@ -34,8 +40,8 @@ input,select,button{
 button{
   background:#2563eb;
   color:#fff;
-  border:none;
   font-weight:800;
+  border:none;
   cursor:pointer;
 }
 .lista .item{
@@ -46,67 +52,80 @@ button{
   cursor:pointer;
 }
 .ing{
-  display:flex;
-  justify-content:space-between;
   background:#f8fafc;
-  padding:10px 14px;
+  padding:12px 16px;
   border-radius:12px;
   margin-top:6px;
+  display:flex;
+  justify-content:space-between;
 }
-.preview{
-  width:100%;
-  max-height:220px;
-  object-fit:cover;
-  border-radius:18px;
-  margin-top:10px;
+.grid{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr auto;
+  gap:8px;
 }
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(255,255,255,.7);
-  display:none;
-  align-items:center;
-  justify-content:center;
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-top:24px;
+}
+.kpi{
+  background:#f8fafc;
+  padding:16px;
+  border-radius:16px;
+  text-align:center;
   font-weight:800;
+}
+.kpi span{
+  display:block;
+  margin-top:6px;
   font-size:18px;
-  z-index:999;
 }
 </style>
 </head>
 
 <body>
-
-<div class="overlay" id="overlay">Salvando…</div>
-
 <div class="container">
+
 <h1>📋 Ficha Técnica</h1>
 
-<label>Produto</label>
-<input id="buscaProduto">
+<label>Produto (prato)</label>
+<input id="buscaProduto" placeholder="Digite o nome do produto">
 <div id="listaProduto" class="lista"></div>
 
-<label>Foto</label>
-<input type="file" id="fotoProduto" accept="image/*">
-<img id="previewFoto" class="preview" style="display:none">
-
 <label>Ingrediente</label>
-<input id="buscaIngrediente">
+<input id="buscaIngrediente" placeholder="Digite o nome do ingrediente">
 <div id="listaIngrediente" class="lista"></div>
 
-<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:6px">
-  <input id="qtd" type="number" step="0.001" placeholder="Qtd">
-  <select id="unUso"><option>UN</option><option>KG</option><option>G</option></select>
-  <input id="custo" readonly placeholder="Custo">
-  <input id="rend" placeholder="Rend %">
+<div class="grid">
+  <input id="qtd" type="number" step="0.001" placeholder="Qtd usada">
+  <select id="unUso">
+    <option>UN</option>
+    <option>KG</option>
+    <option>G</option>
+    <option>L</option>
+    <option>ML</option>
+  </select>
+  <input id="custo" readonly placeholder="Custo unit">
+  <input id="rend" type="number" placeholder="Rend %">
   <button onclick="addIngrediente()">+</button>
 </div>
 
 <div id="listaIng"></div>
 
-<label>Porções</label>
-<input id="rendimentoFinal" value="1" type="number" oninput="render()">
+<label>Rendimento final (porções)</label>
+<input id="rendimentoFinal" type="number" value="1" min="1" oninput="render()">
 
-<button onclick="salvar()" style="margin-top:20px">SALVAR</button>
+<div class="kpis">
+  <div class="kpi">CMV Total<span id="cmvTotal">R$ 0,00</span></div>
+  <div class="kpi">CMV Unit<span id="cmvUnit">R$ 0,00</span></div>
+  <div class="kpi">Preço Venda<span id="precoVenda">—</span></div>
+  <div class="kpi">Margem<span id="margem">—</span></div>
+</div>
+
+<button onclick="salvar()" style="margin-top:26px">Salvar Ficha Técnica</button>
+
 </div>
 
 <script>
@@ -115,124 +134,147 @@ const sb = supabase.createClient(
   "sb_publishable_rN6fZXNxnjgwnbXTPXEP5A_7n5Ty9Cp"
 );
 
-// AUTH ANÔNIMO
-sb.auth.signInAnonymously();
+let produto = null;
+let ingrediente = null;
+let ingredientes = [];
+let debounce = null;
 
-const overlay = document.getElementById("overlay");
-const show = ()=>overlay.style.display="flex";
-const hide = ()=>overlay.style.display="none";
+const moeda = v =>
+  "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
-let produto=null, ingrediente=null, ingredientes=[];
-
-// FOTO
-fotoProduto.onchange=()=>{
-  const f=fotoProduto.files[0];
-  if(!f)return;
-  previewFoto.src=URL.createObjectURL(f);
-  previewFoto.style.display="block";
-};
-
-// BUSCA PRODUTO
-buscaProduto.oninput=async()=>{
-  if(buscaProduto.value.length<3)return;
-  const r=await fetch(`/api/produtos-busca?q=${buscaProduto.value}`);
-  const j=await r.json();
-  listaProduto.innerHTML=j.items.map(p=>`
-    <div class="item" onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
-      ${p.descricao}
-    </div>`).join("");
+/* PRODUTO */
+buscaProduto.oninput = () => {
+  clearTimeout(debounce);
+  if (buscaProduto.value.length < 3) {
+    listaProduto.innerHTML = "";
+    return;
+  }
+  debounce = setTimeout(async () => {
+    const r = await fetch(`/api/produtos-busca?q=${buscaProduto.value}`);
+    const j = await r.json();
+    listaProduto.innerHTML = j.items.map(p => `
+      <div class="item" onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
+        ${p.descricao}
+      </div>
+    `).join("");
+  }, 300);
 };
 
 async function selectProduto(id,nome){
-  const r=await fetch(`/api/produto-preco/${id}`);
-  const j=await r.json();
-  const p=j.items?.[0]||j[0]||{};
-  produto={id,nome,preco:Number(p.precoVenda1||0)};
-  listaProduto.innerHTML=`<b>${nome}</b>`;
-}
-
-// BUSCA INGREDIENTE
-buscaIngrediente.oninput=async()=>{
-  if(buscaIngrediente.value.length<3)return;
-  const r=await fetch(`/api/produtos-busca?q=${buscaIngrediente.value}`);
-  const j=await r.json();
-  listaIngrediente.innerHTML=j.items.map(p=>`
-    <div class="item" onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
-      ${p.descricao}
-    </div>`).join("");
-};
-
-async function selectIng(id,nome){
-  const r=await fetch(`/api/produto-preco/${id}`);
-  const j=await r.json();
-  const p=j.items?.[0]||j[0]||{};
-  ingrediente={nome,custo:Number(p.precoMedioDeReposicao||p.custoProduto||0)};
-  custo.value=ingrediente.custo.toFixed(4);
-}
-
-// ADD
-function addIngrediente(){
-  if(!ingrediente||!qtd.value)return;
-  const total=qtd.value*ingrediente.custo*((rend.value||100)/100);
-  ingredientes.push({nome:ingrediente.nome,quantidade:qtd.value,un:unUso.value,total});
-  ingrediente=null;
-  qtd.value="";rend.value="";
+  const r = await fetch(`/api/produto-preco/${id}`);
+  const j = await r.json();
+  const p = j.items?.[0] || j[0] || {};
+  produto = { id, nome, preco: Number(p.precoVenda1 || 0) };
+  precoVenda.textContent = moeda(produto.preco);
+  listaProduto.innerHTML = `<b>${nome}</b>`;
   render();
 }
 
-function render(){
-  listaIng.innerHTML=ingredientes.map(i=>`
-    <div class="ing"><span>${i.nome}</span><b>R$ ${i.total.toFixed(2)}</b></div>
-  `).join("");
+/* INGREDIENTE */
+buscaIngrediente.oninput = () => {
+  clearTimeout(debounce);
+  if (buscaIngrediente.value.length < 3) {
+    listaIngrediente.innerHTML = "";
+    return;
+  }
+  debounce = setTimeout(async () => {
+    const r = await fetch(`/api/produtos-busca?q=${buscaIngrediente.value}`);
+    const j = await r.json();
+    listaIngrediente.innerHTML = j.items.map(p => `
+      <div class="item" onclick="selectIngrediente(${p.id},'${p.descricao.replace(/'/g,"")}')">
+        ${p.descricao}
+      </div>
+    `).join("");
+  }, 300);
+};
+
+async function selectIngrediente(id,nome){
+  const r = await fetch(`/api/produto-preco/${id}`);
+  const j = await r.json();
+  const p = j.items?.[0] || j[0] || {};
+  ingrediente = { nome, custo: Number(p.precoMedioDeReposicao || p.custoProduto || 0) };
+  custo.value = ingrediente.custo.toFixed(4);
+  listaIngrediente.innerHTML = `<b>${nome}</b>`;
 }
 
-// SALVAR
+/* ADD */
+function addIngrediente(){
+  if(!ingrediente || !qtd.value) return;
+  const rendimento = (rend.value || 100) / 100;
+  const total = qtd.value * ingrediente.custo * rendimento;
+  ingredientes.push({
+    nome: ingrediente.nome,
+    quantidade: qtd.value,
+    unidade: unUso.value,
+    custo_unitario: ingrediente.custo,
+    custo_total: total
+  });
+  qtd.value=""; rend.value="";
+  ingrediente=null;
+  render();
+}
+
+/* RENDER */
+function render(){
+  const cmv = ingredientes.reduce((s,i)=>s+i.custo_total,0);
+  listaIng.innerHTML = ingredientes.map(i=>`
+    <div class="ing">
+      <span>${i.nome} (${i.quantidade} ${i.unidade})</span>
+      <strong>${moeda(i.custo_total)}</strong>
+    </div>
+  `).join("");
+  const porcoes = rendimentoFinal.value || 1;
+  cmvTotal.textContent = moeda(cmv);
+  cmvUnit.textContent = moeda(cmv/porcoes);
+  margem.textContent = produto?.preco
+    ? (((produto.preco-(cmv/porcoes))/produto.preco)*100).toFixed(1)+"%"
+    : "—";
+}
+
+/* SALVAR */
 async function salvar(){
-  if(!produto||!ingredientes.length)return alert("Dados incompletos");
-  show();
-
-  let fotoUrl=null;
-  if(fotoProduto.files[0]){
-    const file=fotoProduto.files[0];
-    const safe=file.name.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9._-]/g,"_");
-    const path=`fichas/${Date.now()}-${safe}`;
-
-    const {error}=await sb.storage.from("buffet").upload(path,file,{
-      contentType:file.type,
-      upsert:false
-    });
-    if(error){hide();alert(error.message);return;}
-    fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
+  if(!produto || !ingredientes.length){
+    alert("Produto e ingredientes obrigatórios");
+    return;
   }
 
-  const cmv=ingredientes.reduce((s,i)=>s+i.total,0);
-  const por=rendimentoFinal.value||1;
+  const cmv = ingredientes.reduce((s,i)=>s+i.custo_total,0);
+  const porcoes = rendimentoFinal.value || 1;
 
-  const {data,error}=await sb.from("buffet").insert({
-    produto_id:produto.id,
-    nome:produto.nome,
-    preco_venda:produto.preco,
-    custo_total:cmv,
-    custo_unitario:cmv/por,
-    rendimento:por,
-    foto_url:fotoUrl
-  }).select().single();
+  const { data, error } = await sb
+    .from("buffet")
+    .insert({
+      produto_id: produto.id,
+      nome: produto.nome,
+      preco_venda: produto.preco,
+      custo_total: cmv,
+      custo_unitario: cmv/porcoes,
+      margem_percentual: produto.preco
+        ? ((produto.preco-(cmv/porcoes))/produto.preco)*100
+        : null,
+      rendimento: porcoes
+    })
+    .select()
+    .single();
 
-  if(error){hide();alert(error.message);return;}
+  if(error){
+    alert("Erro ao salvar ficha");
+    console.error(error);
+    return;
+  }
 
   for(const i of ingredientes){
     await sb.from("buffet_itens").insert({
-      buffet_id:data.id,
-      nome:i.nome,
-      unidade_uso:i.un,
-      quantidade:i.quantidade,
-      custo_unitario:0,
-      custo_calculado:i.total
+      buffet_id: data.id,
+      nome: i.nome,
+      unidade_uso: i.unidade,
+      quantidade: i.quantidade,
+      custo_unitario: i.custo_unitario,
+      custo_calculado: i.custo_total
     });
   }
 
-  hide();
-  alert("SALVO");
+  alert("Ficha técnica salva com sucesso");
   location.reload();
 }
 </script>
