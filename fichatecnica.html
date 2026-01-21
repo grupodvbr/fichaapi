@@ -295,19 +295,29 @@ async function salvar(){
     fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
   }
 
-  await sb.from("buffet").insert({
-    produto_id:produto.id,
-    nome:produto.nome,
-    preco_venda:produto.preco,
-    custo_total:cmv,
-    custo_unitario:cmv/(rendimentoFinal.value||1),
-    margem_percentual:produto.preco?((produto.preco-(cmv/(rendimentoFinal.value||1)))/produto.preco)*100:null,
-    rendimento:rendimentoFinal.value,
-    foto_url:fotoUrl
-  });
+const { data, error } = await sb
+  .from("buffet")
+  .insert({
+    produto_id: produto.id,
+    nome: produto.nome,
+    preco_venda: produto.preco,
+    custo_total: cmv,
+    custo_unitario: cmv/(rendimentoFinal.value||1),
+    margem_percentual: produto.preco
+      ? ((produto.preco-(cmv/(rendimentoFinal.value||1)))/produto.preco)*100
+      : null,
+    rendimento: rendimentoFinal.value,
+    foto_url: fotoUrl
+  })
+  .select()
+  .single();
 
-  alert("Ficha técnica salva com sucesso!");
+if (error) {
+  console.error(error);
+  alert("Erro ao salvar ficha técnica");
+  return;
 }
+
 </script>
 </body>
 </html>
