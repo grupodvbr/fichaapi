@@ -1,45 +1,50 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Ficha Técnica • CMV Profissional</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+:root{
+  --primary:#2563eb;
+  --warn:#fef3c7;
+  --bg:#eef2ff;
+  --card:#fff;
+  --text:#0f172a;
+}
+*{box-sizing:border-box}
 body{
   margin:0;
   padding:18px;
-  background:#eef2ff;
+  background:linear-gradient(180deg,#eef2ff,#f8fafc);
   font-family:Inter,Arial,sans-serif;
 }
 .container{
   max-width:1100px;
   margin:auto;
   background:#fff;
-  border-radius:28px;
+  border-radius:30px;
   padding:30px;
-  box-shadow:0 30px 70px rgba(0,0,0,.12);
+  box-shadow:0 35px 80px rgba(0,0,0,.12);
 }
+h1,h3{margin:0;font-weight:800}
 h1{margin-bottom:24px}
-label{
-  display:block;
-  margin-top:16px;
-  font-weight:800;
-  font-size:13px;
-}
+h3{margin:26px 0 12px}
+label{font-size:13px;font-weight:800;margin-top:16px;display:block}
 input,select,button{
   width:100%;
-  padding:14px;
-  border-radius:16px;
+  padding:14px 16px;
+  border-radius:18px;
   border:1px solid #cbd5e1;
   margin-top:6px;
+  font-size:14px;
 }
 button{
-  background:#2563eb;
+  background:linear-gradient(180deg,#2563eb,#1e40af);
   color:#fff;
   font-weight:800;
   border:none;
@@ -47,41 +52,50 @@ button{
 }
 .lista .item{
   background:#f1f5f9;
-  padding:12px;
-  border-radius:12px;
+  padding:14px;
+  border-radius:16px;
   margin-top:6px;
   cursor:pointer;
 }
+.badge{
+  display:inline-block;
+  margin-top:10px;
+  padding:6px 14px;
+  border-radius:999px;
+  background:#e0f2fe;
+  font-weight:800;
+  font-size:12px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;
+  gap:8px;
+}
 .ing{
   background:#f8fafc;
-  padding:12px 16px;
-  border-radius:12px;
+  border-radius:14px;
+  padding:10px 14px;
   margin-top:6px;
   display:flex;
   justify-content:space-between;
 }
-.grid{
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr 1fr auto;
-  gap:8px;
-}
 .kpis{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:12px;
-  margin-top:24px;
+  gap:14px;
+  margin-top:26px;
 }
 .kpi{
   background:#f8fafc;
-  padding:16px;
-  border-radius:16px;
+  border-radius:20px;
+  padding:18px;
   text-align:center;
   font-weight:800;
 }
-.kpi span{
-  display:block;
-  margin-top:6px;
-  font-size:18px;
+img.preview{
+  max-width:180px;
+  border-radius:16px;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -91,192 +105,176 @@ button{
 
 <h1>📋 Ficha Técnica</h1>
 
+<!-- PRODUTO -->
 <label>Produto (prato)</label>
-<input id="buscaProduto" placeholder="Digite o nome do produto">
+<input id="buscaProduto">
 <div id="listaProduto" class="lista"></div>
+<div id="infoProduto" class="badge"></div>
 
-<label>Ingrediente</label>
-<input id="buscaIngrediente" placeholder="Digite o nome do ingrediente">
+<label>Foto do prato</label>
+<input type="file" id="foto">
+<img id="preview" class="preview" style="display:none">
+
+<h3>🍳 Ingredientes</h3>
+
+<label>Buscar ingrediente</label>
+<input id="buscaIngrediente">
 <div id="listaIngrediente" class="lista"></div>
 
 <div class="grid">
-  <input id="qtd" type="number" step="0.001" placeholder="Qtd usada">
-  <select id="unUso">
-    <option>UN</option>
-    <option>KG</option>
-    <option>G</option>
-    <option>L</option>
-    <option>ML</option>
-  </select>
-  <input id="custo" readonly placeholder="Custo unit">
+  <input id="qtd" type="number" placeholder="Qtd usada">
+  <select id="unUso"></select>
   <input id="rend" type="number" placeholder="Rend %">
+  <input id="unOrig" readonly placeholder="Un origem">
+  <input id="custoOrig" readonly placeholder="Custo origem">
   <button onclick="addIngrediente()">+</button>
 </div>
 
 <div id="listaIng"></div>
 
 <label>Rendimento final (porções)</label>
-<input id="rendimentoFinal" type="number" value="1" min="1" oninput="render()">
+<input id="rendimentoFinal" type="number" value="1" oninput="render()">
 
 <div class="kpis">
-  <div class="kpi">CMV Total<span id="cmvTotal">R$ 0,00</span></div>
-  <div class="kpi">CMV Unit<span id="cmvUnit">R$ 0,00</span></div>
-  <div class="kpi">Preço Venda<span id="precoVenda">—</span></div>
-  <div class="kpi">Margem<span id="margem">—</span></div>
+  <div class="kpi">CMV Total<br><span id="cmvTotal">R$ 0,00</span></div>
+  <div class="kpi">CMV Unit<br><span id="cmvUnit">R$ 0,00</span></div>
+  <div class="kpi">Preço Venda<br><span id="precoVenda">R$ 0,00</span></div>
+  <div class="kpi">Margem<br><span id="margem">0%</span></div>
 </div>
 
-<button onclick="salvar()" style="margin-top:26px">Salvar Ficha Técnica</button>
+<button onclick="salvar()" style="margin-top:28px">Salvar Ficha Técnica</button>
 
 </div>
 
 <script>
 const sb = supabase.createClient(
-  "https://dsngsuetvucxeztbgbtb.supabase.co",
-  "sb_publishable_rN6fZXNxnjgwnbXTPXEP5A_7n5Ty9Cp"
+ "https://dsngsuetvucxeztbgbtb.supabase.co",
+ "sb_publishable_rN6fZXNxnjgwnbXTPXEP5A_7n5Ty9Cp"
 );
 
-let produto = null;
-let ingrediente = null;
-let ingredientes = [];
-let debounce = null;
-
-const moeda = v =>
-  "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-
-/* PRODUTO */
-buscaProduto.oninput = () => {
-  clearTimeout(debounce);
-  if (buscaProduto.value.length < 3) {
-    listaProduto.innerHTML = "";
-    return;
-  }
-  debounce = setTimeout(async () => {
-    const r = await fetch(`/api/produtos-busca?q=${buscaProduto.value}`);
-    const j = await r.json();
-    listaProduto.innerHTML = j.items.map(p => `
-      <div class="item" onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
-        ${p.descricao}
-      </div>
-    `).join("");
-  }, 300);
+/* ===== UNIDADES ===== */
+const UNIDADES={
+ g:{base:"g", fator:1},
+ kg:{base:"g", fator:1000},
+ ml:{base:"ml", fator:1},
+ l:{base:"ml", fator:1000},
+ un:{base:"un", fator:1},
+ pct:{base:"un", fator:1},
+ cx:{base:"un", fator:1}
 };
 
-async function selectProduto(id,nome){
-  const r = await fetch(`/api/produto-preco/${id}`);
-  const j = await r.json();
-  const p = j.items?.[0] || j[0] || {};
-  produto = { id, nome, preco: Number(p.precoVenda1 || 0) };
-  precoVenda.textContent = moeda(produto.preco);
-  listaProduto.innerHTML = `<b>${nome}</b>`;
-  render();
-}
+Object.keys(UNIDADES).forEach(u=>{
+  unUso.innerHTML+=`<option value="${u}">${u}</option>`;
+});
 
-/* INGREDIENTE */
-buscaIngrediente.oninput = () => {
-  clearTimeout(debounce);
-  if (buscaIngrediente.value.length < 3) {
-    listaIngrediente.innerHTML = "";
-    return;
-  }
-  debounce = setTimeout(async () => {
-    const r = await fetch(`/api/produtos-busca?q=${buscaIngrediente.value}`);
-    const j = await r.json();
-    listaIngrediente.innerHTML = j.items.map(p => `
-      <div class="item" onclick="selectIngrediente(${p.id},'${p.descricao.replace(/'/g,"")}')">
-        ${p.descricao}
-      </div>
-    `).join("");
-  }, 300);
+const moeda=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+let produto=null, ingrediente=null, ingredientes=[], cmv=0;
+
+/* ===== FOTO ===== */
+foto.onchange=()=>{
+  preview.src=URL.createObjectURL(foto.files[0]);
+  preview.style.display="block";
 };
 
-async function selectIngrediente(id,nome){
-  const r = await fetch(`/api/produto-preco/${id}`);
-  const j = await r.json();
-  const p = j.items?.[0] || j[0] || {};
-  ingrediente = { nome, custo: Number(p.precoMedioDeReposicao || p.custoProduto || 0) };
-  custo.value = ingrediente.custo.toFixed(4);
-  listaIngrediente.innerHTML = `<b>${nome}</b>`;
-}
-
-/* ADD */
-function addIngrediente(){
-  if(!ingrediente || !qtd.value) return;
-  const rendimento = (rend.value || 100) / 100;
-  const total = qtd.value * ingrediente.custo * rendimento;
-  ingredientes.push({
-    nome: ingrediente.nome,
-    quantidade: qtd.value,
-    unidade: unUso.value,
-    custo_unitario: ingrediente.custo,
-    custo_total: total
+/* ===== PRODUTO ===== */
+buscaProduto.onkeyup=async()=>{
+  if(buscaProduto.value.length<2)return listaProduto.innerHTML="";
+  const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(buscaProduto.value)}`);
+  const j=await r.json();
+  listaProduto.innerHTML="";
+  j.items.forEach(p=>{
+    listaProduto.innerHTML+=`
+      <div class="item" onclick="selectProduto(${p.id},'${p.descricao}','${p.unidadeDeVenda}')">${p.descricao}</div>`;
   });
-  qtd.value=""; rend.value="";
-  ingrediente=null;
+};
+
+async function selectProduto(id,nome,un){
+  const r=await fetch(`/api/produto-preco/${id}`);
+  const j=await r.json();
+  const p=j[0]||{};
+  produto={
+    id,nome,unidade:un,
+    preco:Number(p.precoVenda1)||0
+  };
+  precoVenda.innerText=moeda(produto.preco);
+  infoProduto.innerText=`Unidade: ${un}`;
+  listaProduto.innerHTML="";
   render();
 }
 
-/* RENDER */
-function render(){
-  const cmv = ingredientes.reduce((s,i)=>s+i.custo_total,0);
-  listaIng.innerHTML = ingredientes.map(i=>`
-    <div class="ing">
-      <span>${i.nome} (${i.quantidade} ${i.unidade})</span>
-      <strong>${moeda(i.custo_total)}</strong>
-    </div>
-  `).join("");
-  const porcoes = rendimentoFinal.value || 1;
-  cmvTotal.textContent = moeda(cmv);
-  cmvUnit.textContent = moeda(cmv/porcoes);
-  margem.textContent = produto?.preco
-    ? (((produto.preco-(cmv/porcoes))/produto.preco)*100).toFixed(1)+"%"
-    : "—";
+/* ===== INGREDIENTES ===== */
+buscaIngrediente.onkeyup=async()=>{
+  if(buscaIngrediente.value.length<2)return listaIngrediente.innerHTML="";
+  const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(buscaIngrediente.value)}`);
+  const j=await r.json();
+  listaIngrediente.innerHTML="";
+  j.items.forEach(p=>{
+    listaIngrediente.innerHTML+=`
+      <div class="item" onclick="selectIng(${p.id},'${p.descricao}','${p.unidadeDeVenda}')">${p.descricao}</div>`;
+  });
+};
+
+async function selectIng(id,nome,un){
+  const r=await fetch(`/api/produto-preco/${id}`);
+  const j=await r.json();
+  const p=j[0]||{};
+  ingrediente={
+    nome,
+    unidadeOrig:un,
+    custoOrig:Number(p.precoMedioDeReposicao)||Number(p.precoFiscalDeReposicao)||Number(p.custoProduto)||0
+  };
+  unOrig.value=un;
+  custoOrig.value=moeda(ingrediente.custoOrig);
+  listaIngrediente.innerHTML="";
 }
 
-/* SALVAR */
+function addIngrediente(){
+  if(!ingrediente||!qtd.value)return;
+
+  const uUso=UNIDADES[unUso.value];
+  const uOrig=UNIDADES[ingrediente.unidadeOrig.toLowerCase()]||uUso;
+
+  const qtdBase=qtd.value*uUso.fator;
+  const custoUnitBase=ingrediente.custoOrig/uOrig.fator;
+
+  let total=qtdBase*custoUnitBase;
+  if(rend.value) total*=((100-rend.value)/100);
+
+  ingredientes.push({...ingrediente,qtd:qtd.value,unUso:unUso.value,total});
+  cmv+=total;
+  qtd.value="";
+  render();
+}
+
+function render(){
+  listaIng.innerHTML=ingredientes.map(i=>
+    `<div class="ing"><span>${i.nome} ${i.qtd}${i.unUso}</span><strong>${moeda(i.total)}</strong></div>`
+  ).join("");
+  cmvTotal.innerText=moeda(cmv);
+  cmvUnit.innerText=moeda(cmv/(rendimentoFinal.value||1));
+  margem.innerText=produto?.preco?(((produto.preco-(cmv/(rendimentoFinal.value||1)))/produto.preco)*100).toFixed(1)+"%":"0%";
+}
+
 async function salvar(){
-  if(!produto || !ingredientes.length){
-    alert("Produto e ingredientes obrigatórios");
-    return;
+  let fotoUrl=null;
+  if(foto.files[0]){
+    const path=`${Date.now()}-${foto.files[0].name}`;
+    await sb.storage.from("ficha_tecnica").upload(path,foto.files[0]);
+    fotoUrl=sb.storage.from("ficha_tecnica").getPublicUrl(path).data.publicUrl;
   }
-
-  const cmv = ingredientes.reduce((s,i)=>s+i.custo_total,0);
-  const porcoes = rendimentoFinal.value || 1;
-
-  const { data, error } = await sb
-    .from("buffet")
-    .insert({
-      produto_id: produto.id,
-      nome: produto.nome,
-      preco_venda: produto.preco,
-      custo_total: cmv,
-      custo_unitario: cmv/porcoes,
-      margem_percentual: produto.preco
-        ? ((produto.preco-(cmv/porcoes))/produto.preco)*100
-        : null,
-      rendimento: porcoes
-    })
-    .select()
-    .single();
-
-  if(error){
-    alert("Erro ao salvar ficha");
-    console.error(error);
-    return;
-  }
-
-  for(const i of ingredientes){
-    await sb.from("buffet_itens").insert({
-      buffet_id: data.id,
-      nome: i.nome,
-      unidade_uso: i.unidade,
-      quantidade: i.quantidade,
-      custo_unitario: i.custo_unitario,
-      custo_calculado: i.custo_total
-    });
-  }
-
-  alert("Ficha técnica salva com sucesso");
-  location.reload();
+  await sb.from("ficha_tecnica").insert({
+    produto_id:produto.id,
+    produto_nome:produto.nome,
+    preco_venda:produto.preco,
+    foto_url:fotoUrl,
+    receita:ingredientes,
+    custo_total:cmv,
+    custo_unitario:cmv/(rendimentoFinal.value||1),
+    rendimento:rendimentoFinal.value,
+    margem_percentual:margem.innerText
+  });
+  alert("Ficha técnica salva!");
 }
 </script>
 </body>
