@@ -11,7 +11,6 @@
 <style>
 :root{
   --primary:#2563eb;
-  --warn:#fef3c7;
   --bg:#eef2ff;
   --card:#fff;
   --text:#0f172a;
@@ -22,6 +21,7 @@ body{
   padding:18px;
   background:linear-gradient(180deg,#eef2ff,#f8fafc);
   font-family:Inter,Arial,sans-serif;
+  color:var(--text);
 }
 .container{
   max-width:1100px;
@@ -101,8 +101,6 @@ button{
   border-radius:20px;
   margin-top:12px;
 }
-
-/* OVERLAY */
 .overlay{
   position:absolute;
   inset:0;
@@ -146,8 +144,10 @@ button{
 <div id="ingredienteBadge" class="badge" style="display:none"></div>
 
 <div class="grid">
-  <input id="qtd" type="number" placeholder="Qtd usada">
-  <select id="unUso"><option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option></select>
+  <input id="qtd" type="number" step="0.001" placeholder="Qtd usada">
+  <select id="unUso">
+    <option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option>
+  </select>
   <input id="custo" readonly placeholder="Custo unit">
   <input id="rend" type="number" placeholder="Rend %">
   <button onclick="addIngrediente()">+</button>
@@ -156,7 +156,7 @@ button{
 <div id="listaIng"></div>
 
 <label>Rendimento final (porções)</label>
-<input id="rendimentoFinal" type="number" value="1" oninput="render()">
+<input id="rendimentoFinal" type="number" value="1" min="1" oninput="render()">
 
 <div class="kpis">
   <div class="kpi">CMV Total<span id="cmvTotal">R$ 0,00</span></div>
@@ -174,8 +174,10 @@ const sb = supabase.createClient(
   "sb_publishable_rN6fZXNxnjgwnbXTPXEP5A_7n5Ty9Cp"
 );
 
-let produto=null, ingrediente=null, ingredientes=[], cmv=0;
-let debounceTimer=null;
+let produto=null;
+let ingrediente=null;
+let ingredientes=[];
+let debounce=null;
 
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 const overlay=document.getElementById("overlay");
@@ -192,21 +194,11 @@ fotoProduto.onchange=()=>{
 
 /* BUSCA PRODUTO */
 buscaProduto.oninput=()=>{
-  clearTimeout(debounceTimer);
+  clearTimeout(debounce);
   const termo=buscaProduto.value.trim();
-
-  if(!termo){
-    listaProduto.innerHTML="";
-    produto=null;
-    produtoBadge.style.display="none";
-    precoVenda.textContent="—";
-    render();
-    return;
-  }
-
   if(termo.length<3){ listaProduto.innerHTML=""; return; }
 
-  debounceTimer=setTimeout(async()=>{
+  debounce=setTimeout(async()=>{
     const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
     const j=await r.json();
     listaProduto.innerHTML=j.items.map(p=>`
@@ -218,25 +210,25 @@ buscaProduto.oninput=()=>{
 
 async function selectProduto(id,nome){
   show();
-  listaProduto.innerHTML="";
   const r=await fetch(`/api/produto-preco/${id}`);
   const j=await r.json();
-  const p=j[0]||{};
-  produto={id,nome,preco:Number(p.precoVenda1)||0};
+  const p=j.items?.[0]||j[0]||{};
+  produto={id,nome,preco:Number(p.precoVenda1||p.precoVenda||0)};
   produtoBadge.style.display="inline-block";
   produtoBadge.textContent=`${nome} • ${moeda(produto.preco)}`;
   precoVenda.textContent=moeda(produto.preco);
+  listaProduto.innerHTML="";
   hide();
   render();
 }
 
 /* INGREDIENTE */
 buscaIngrediente.oninput=()=>{
-  clearTimeout(debounceTimer);
+  clearTimeout(debounce);
   const termo=buscaIngrediente.value.trim();
   if(termo.length<3){ listaIngrediente.innerHTML=""; return; }
 
-  debounceTimer=setTimeout(async()=>{
+  debounce=setTimeout(async()=>{
     const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
     const j=await r.json();
     listaIngrediente.innerHTML=j.items.map(p=>`
@@ -248,76 +240,111 @@ buscaIngrediente.oninput=()=>{
 
 async function selectIng(id,nome){
   show();
-  listaIngrediente.innerHTML="";
   const r=await fetch(`/api/produto-preco/${id}`);
   const j=await r.json();
-  const p=j[0]||{};
-  ingrediente={nome,custo:p.precoMedioDeReposicao||p.custoProduto||0};
+  const p=j.items?.[0]||j[0]||{};
+  ingrediente={nome,custo:Number(p.precoMedioDeReposicao||p.custoProduto||0)};
   ingredienteBadge.style.display="inline-block";
   ingredienteBadge.textContent=nome;
-  custo.value=ingrediente.custo.toFixed(2);
+  custo.value=ingrediente.custo.toFixed(4);
+  listaIngrediente.innerHTML="";
   hide();
 }
 
-/* ADD */
+/* ADD INGREDIENTE */
 function addIngrediente(){
   if(!ingrediente||!qtd.value)return;
-  const total=qtd.value*ingrediente.custo*((rend.value||100)/100);
-  ingredientes.push({nome:ingrediente.nome,quantidade:qtd.value,un:unUso.value,total});
-  cmv+=total;
-  qtd.value=""; rend.value=""; ingrediente=null;
+
+  const rendimento=(rend.value||100)/100;
+  const total=qtd.value*ingrediente.custo*rendimento;
+
+  ingredientes.push({
+    nome:ingrediente.nome,
+    quantidade:Number(qtd.value),
+    unidade:unUso.value,
+    custo_unitario:ingrediente.custo,
+    custo_total:total,
+    rendimento_percentual:rend.value||100
+  });
+
+  qtd.value=""; rend.value="";
+  ingrediente=null;
   ingredienteBadge.style.display="none";
   render();
 }
 
+/* RENDER */
 function render(){
+  const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
   listaIng.innerHTML=ingredientes.map(i=>`
-    <div class="ing"><span>${i.nome} (${i.quantidade} ${i.un})</span><strong>${moeda(i.total)}</strong></div>
+    <div class="ing">
+      <span>${i.nome} (${i.quantidade} ${i.unidade})</span>
+      <strong>${moeda(i.custo_total)}</strong>
+    </div>
   `).join("");
+
+  const porcoes=rendimentoFinal.value||1;
   cmvTotal.textContent=moeda(cmv);
-  cmvUnit.textContent=moeda(cmv/(rendimentoFinal.value||1));
-  margem.textContent=produto?.preco?(((produto.preco-(cmv/(rendimentoFinal.value||1)))/produto.preco)*100).toFixed(1)+"%":"—";
+  cmvUnit.textContent=moeda(cmv/porcoes);
+  margem.textContent=produto?.preco
+    ?(((produto.preco-(cmv/porcoes))/produto.preco)*100).toFixed(1)+"%"
+    :"—";
 }
 
 /* SALVAR */
 async function salvar(){
-  if(!produto) return alert("Selecione um produto");
+  if(!produto||!ingredientes.length){
+    alert("Produto e ingredientes são obrigatórios");
+    return;
+  }
+
+  show();
 
   let fotoUrl=null;
   if(fotoProduto.files[0]){
     const file=fotoProduto.files[0];
-    const path=`${Date.now()}-${file.name}`;
-    const up=await sb.storage.from("buffet").upload(path,file,{
-      upsert:false,
-      contentType:file.type
-    });
-    if(up.error) return alert("Erro ao subir imagem");
+    const path=`fichas/${Date.now()}-${file.name}`;
+    const up=await sb.storage.from("buffet").upload(path,file);
+    if(up.error){ hide(); alert("Erro imagem"); return; }
     fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
   }
 
-const { data, error } = await sb
-  .from("buffet")
-  .insert({
-    produto_id: produto.id,
-    nome: produto.nome,
-    preco_venda: produto.preco,
-    custo_total: cmv,
-    custo_unitario: cmv/(rendimentoFinal.value||1),
-    margem_percentual: produto.preco
-      ? ((produto.preco-(cmv/(rendimentoFinal.value||1)))/produto.preco)*100
-      : null,
-    rendimento: rendimentoFinal.value,
-    foto_url: fotoUrl
-  })
-  .select()
-  .single();
+  const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
+  const porcoes=rendimentoFinal.value||1;
 
-if (error) {
-  console.error(error);
-  alert("Erro ao salvar ficha técnica");
-  return;
+  const { data, error } = await sb
+    .from("buffet")
+    .insert({
+      produto_id: produto.id,
+      nome: produto.nome,
+      preco_venda: produto.preco,
+      custo_total: cmv,
+      custo_unitario: cmv/porcoes,
+      margem_percentual: produto.preco?((produto.preco-(cmv/porcoes))/produto.preco)*100:null,
+      rendimento: porcoes,
+      foto_url: fotoUrl
+    })
+    .select()
+    .single();
+
+  if(error){ hide(); alert("Erro ao salvar ficha"); return; }
+
+  for(const i of ingredientes){
+    await sb.from("buffet_itens").insert({
+      buffet_id:data.id,
+      nome:i.nome,
+      unidade_uso:i.unidade,
+      quantidade:i.quantidade,
+      custo_unitario:i.custo_unitario,
+      custo_calculado:i.custo_total,
+      rendimento_percentual:i.rendimento_percentual
+    });
+  }
+
+  hide();
+  alert("Ficha técnica salva com sucesso!");
+  location.reload();
 }
-
 </script>
 </body>
 </html>
