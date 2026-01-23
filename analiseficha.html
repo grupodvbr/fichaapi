@@ -11,15 +11,13 @@
 <style>
 :root{
   --primary:#2563eb;
-  --bg:#f1f5f9;
-  --card:#ffffff;
-  --muted:#64748b;
   --danger:#ef4444;
+  --bg:#f1f5f9;
 }
 *{box-sizing:border-box}
 body{
   margin:0;
-  padding:26px;
+  padding:24px;
   background:var(--bg);
   font-family:Inter,Arial,sans-serif;
 }
@@ -29,32 +27,30 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:24px;
+  margin-bottom:22px;
 }
 .logout{
   background:var(--danger);
   padding:8px 14px;
   font-size:12px;
   border-radius:12px;
+  border:none;
   color:#fff;
   font-weight:800;
-  border:none;
   cursor:pointer;
-  width:auto;
 }
 
 /* GRID */
-h1{margin:0;font-weight:800}
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
   gap:22px;
 }
 
 /* CARD */
 .card{
-  background:var(--card);
-  border-radius:26px;
+  background:#fff;
+  border-radius:22px;
   box-shadow:0 25px 60px rgba(0,0,0,.12);
   overflow:hidden;
 }
@@ -63,45 +59,35 @@ h1{margin:0;font-weight:800}
   height:200px;
   object-fit:cover;
 }
-.body{padding:20px}
-.title{font-size:18px;font-weight:800}
+.card-body{
+  padding:18px;
+}
+.card h3{margin:0;font-size:18px}
 .badge{
   background:#e0f2fe;
   padding:6px 12px;
   border-radius:999px;
   font-size:12px;
   font-weight:700;
-}
-.kpis{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin:12px 0;
-}
-.kpi{
-  background:#f8fafc;
-  border-radius:16px;
-  padding:12px;
-  text-align:center;
+  display:inline-block;
+  margin:8px 0;
 }
 .ing{
-  background:#f8fafc;
-  border-radius:14px;
-  padding:8px 12px;
-  margin-top:6px;
   display:flex;
   justify-content:space-between;
+  font-size:13px;
+  margin-top:6px;
 }
-button.edit{
+.edit{
+  margin-top:14px;
   width:100%;
-  padding:14px;
-  border-radius:18px;
+  padding:12px;
+  border-radius:16px;
   border:none;
-  font-weight:800;
-  cursor:pointer;
   background:linear-gradient(180deg,#2563eb,#1e40af);
   color:#fff;
-  margin-top:12px;
+  font-weight:800;
+  cursor:pointer;
 }
 
 /* MODAL */
@@ -123,17 +109,43 @@ button.edit{
   padding:26px;
   border-radius:26px;
 }
-.ing-edit{
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr;
-  gap:8px;
-  margin-top:8px;
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
-input{
+.close{
+  background:#e5e7eb;
+  border:none;
+  border-radius:50%;
+  width:36px;
+  height:36px;
+  font-weight:900;
+  cursor:pointer;
+}
+input,select{
+  width:100%;
   padding:12px;
   border-radius:14px;
   border:1px solid #cbd5e1;
-  width:100%;
+}
+.ing-edit{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr auto;
+  gap:8px;
+  margin-top:8px;
+}
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin:18px 0;
+}
+.kpi{
+  background:#f8fafc;
+  border-radius:16px;
+  padding:12px;
+  text-align:center;
 }
 </style>
 </head>
@@ -147,20 +159,27 @@ input{
 
 <div id="cards" class="grid"></div>
 
+<!-- MODAL -->
 <div id="modal" class="modal">
   <div class="modal-box">
-    <h2 id="editTitulo"></h2>
+    <div class="modal-header">
+      <h2 id="titulo"></h2>
+      <button class="close" onclick="fechar()">✕</button>
+    </div>
 
     <label>Nome do prato</label>
-    <input id="editNome">
+    <input id="nome">
 
-    <h3 style="margin-top:16px">Ingredientes (valores atualizados)</h3>
-    <div id="listaEdit"></div>
+    <label>Rendimento (porções)</label>
+    <input id="rendimento" type="number" min="1">
+
+    <h3 style="margin-top:16px">Ingredientes (Varejo)</h3>
+    <div id="lista"></div>
 
     <div class="kpis">
-      <div class="kpi"><span>CMV Total</span><strong id="kTotal"></strong></div>
-      <div class="kpi"><span>CMV Unit</span><strong id="kUnit"></strong></div>
-      <div class="kpi"><span>Margem</span><strong id="kMargem"></strong></div>
+      <div class="kpi"><strong id="kTotal"></strong><br>CMV Total</div>
+      <div class="kpi"><strong id="kUnit"></strong><br>CMV Unit</div>
+      <div class="kpi"><strong id="kMargem"></strong><br>Margem</div>
     </div>
 
     <button class="edit" onclick="salvar()">Salvar</button>
@@ -178,7 +197,7 @@ const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:
 let ficha=null;
 let itens=[];
 
-/* LOGOUT REAL */
+/* LOGOUT */
 async function logout(){
   await sb.auth.signOut();
   location.reload();
@@ -198,17 +217,10 @@ function renderCard(f,it){
   c.className="card";
   c.innerHTML=`
     ${f.foto_url?`<img src="${f.foto_url}">`:``}
-    <div class="body">
-      <div class="title">${f.nome}</div>
+    <div class="card-body">
+      <h3>${f.nome}</h3>
       <span class="badge">Venda ${moeda(f.preco_venda)}</span>
-      <div class="kpis">
-        <div class="kpi"><strong>${moeda(f.custo_unitario)}</strong></div>
-        <div class="kpi"><strong>${Number(f.margem_percentual).toFixed(1)}%</strong></div>
-        <div class="kpi"><strong>${f.rendimento}</strong></div>
-      </div>
-      ${it.map(i=>`
-        <div class="ing"><span>${i.nome}</span><strong>${moeda(i.custo_calculado)}</strong></div>
-      `).join("")}
+      ${it.map(i=>`<div class="ing"><span>${i.nome}</span><strong>${moeda(i.custo_calculado)}</strong></div>`).join("")}
       <button class="edit" onclick="editar('${f.id}')">Editar</button>
     </div>`;
   cards.appendChild(c);
@@ -219,24 +231,42 @@ async function editar(id){
   ficha = (await sb.from("buffet").select("*").eq("id",id).single()).data;
   itens = (await sb.from("buffet_itens").select("*").eq("buffet_id",id)).data;
 
-  editTitulo.textContent=ficha.nome;
-  editNome.value=ficha.nome;
+  // PREÇO DO PRODUTO (VAREJO)
+  const p = await (await fetch(`/api/produto-preco/${ficha.produto_id}`)).json();
+  ficha.preco_venda = p.precoOferta1 ?? p.precoVenda1 ?? 0;
+
+  // PREÇO INGREDIENTES (VAREJO)
+  for(const i of itens){
+    const r = await (await fetch(`/api/produto-preco/${i.produto_id}`)).json();
+    i.custo_unitario = r.precoMedioDeReposicao ?? 0;
+    recalcular(i);
+  }
+
+  titulo.textContent=ficha.nome;
+  nome.value=ficha.nome;
+  rendimento.value=ficha.rendimento;
 
   renderEdit();
   modal.style.display="flex";
 }
 
+function recalcular(i){
+  i.custo_calculado = (i.quantidade * i.custo_unitario) / (i.rendimento_percentual/100);
+}
+
 function renderEdit(){
-  listaEdit.innerHTML=itens.map(i=>`
+  lista.innerHTML=itens.map((i,idx)=>`
     <div class="ing-edit">
       <input value="${i.nome}" disabled>
-      <input value="${i.quantidade}" disabled>
+      <input type="number" step="0.001" value="${i.quantidade}"
+        onchange="itens[${idx}].quantidade=this.value;recalcular(itens[${idx}]);renderEdit()">
       <input value="${moeda(i.custo_calculado)}" disabled>
+      <button onclick="itens.splice(${idx},1);renderEdit()">🗑️</button>
     </div>
   `).join("");
 
   const total = itens.reduce((s,i)=>s+i.custo_calculado,0);
-  const unit = total / ficha.rendimento;
+  const unit = total / rendimento.value;
 
   kTotal.textContent=moeda(total);
   kUnit.textContent=moeda(unit);
@@ -245,17 +275,30 @@ function renderEdit(){
 
 async function salvar(){
   const total = itens.reduce((s,i)=>s+i.custo_calculado,0);
-  const unit = total / ficha.rendimento;
+  const unit = total / rendimento.value;
 
   await sb.from("buffet").update({
-    nome:editNome.value,
+    nome:nome.value,
+    rendimento:rendimento.value,
     custo_total:total,
     custo_unitario:unit,
     margem_percentual:((ficha.preco_venda-unit)/ficha.preco_venda)*100
   }).eq("id",ficha.id);
 
-  modal.style.display="none";
+  for(const i of itens){
+    await sb.from("buffet_itens").update({
+      quantidade:i.quantidade,
+      custo_unitario:i.custo_unitario,
+      custo_calculado:i.custo_calculado
+    }).eq("id",i.id);
+  }
+
+  fechar();
   location.reload();
+}
+
+function fechar(){
+  modal.style.display="none";
 }
 </script>
 
