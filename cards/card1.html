@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Resumo • Fichas Técnicas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --primary:#00c2b8;
+  --bg:#f5fbfb;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+}
+
+/* RESET PARA CARD */
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:transparent;
+  font-family:Inter,Arial,sans-serif;
+  overflow:hidden;
+}
+
+/* CARD */
+.card{
+  height:100%;
+  background:var(--card);
+  border-radius:22px;
+  padding:18px 20px;
+  box-shadow:0 18px 40px rgba(0,0,0,.08);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+/* HEADER */
+.header{
+  font-weight:800;
+  font-size:15px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* GRID KPIs */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:14px;
+}
+
+/* KPI */
+.kpi{
+  background:var(--bg);
+  border-radius:16px;
+  padding:14px;
+}
+
+.kpi span{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  font-weight:600;
+}
+
+.kpi strong{
+  font-size:20px;
+  font-weight:800;
+}
+
+/* FOOTER */
+.footer{
+  margin-top:12px;
+  font-size:12px;
+  color:var(--muted);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <div>
+    <div class="header">📋 Fichas Técnicas</div>
+
+    <div class="grid">
+      <div class="kpi">
+        <span>Total cadastradas</span>
+        <strong id="total">—</strong>
+      </div>
+
+      <div class="kpi">
+        <span>CMV médio</span>
+        <strong id="cmv">—</strong>
+      </div>
+
+      <div class="kpi">
+        <span>Margem média</span>
+        <strong id="margem">—</strong>
+      </div>
+
+      <div class="kpi">
+        <span>Maior venda</span>
+        <strong id="maxVenda">—</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer" id="ultima">
+    —
+  </div>
+
+</div>
+
+<script>
+/* ================= SUPABASE ================= */
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+);
+
+const moeda = v =>
+  "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+
+/* ================= LOAD ================= */
+(async ()=>{
+  const { data, error } = await sb
+    .from("buffet")
+    .select("nome, custo_unitario, margem_percentual, preco_venda, created_at");
+
+  if(error || !data?.length){
+    document.getElementById("total").textContent = "0";
+    return;
+  }
+
+  const total = data.length;
+
+  const cmvMedio =
+    data.reduce((s,i)=>s+Number(i.custo_unitario||0),0) / total;
+
+  const margemMedia =
+    data.reduce((s,i)=>s+Number(i.margem_percentual||0),0) / total;
+
+  const maxVenda =
+    Math.max(...data.map(i=>Number(i.preco_venda||0)));
+
+  const ultima = data
+    .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];
+
+  document.getElementById("total").textContent = total;
+  document.getElementById("cmv").textContent = moeda(cmvMedio);
+  document.getElementById("margem").textContent = margemMedia.toFixed(1)+"%";
+  document.getElementById("maxVenda").textContent = moeda(maxVenda);
+
+  document.getElementById("ultima").textContent =
+    "Última ficha: " + ultima.nome;
+})();
+</script>
+
+</body>
+</html>
