@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Vendas por Produto</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --primary:#00c2b8;
+  --bg:#f5fbfb;
+  --card:#ffffff;
+  --muted:#64748b;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  height:100%;
+  font-family:Inter,Arial,sans-serif;
+}
+.card{
+  height:100%;
+  background:var(--card);
+  border-radius:22px;
+  padding:18px 20px;
+  box-shadow:0 18px 40px rgba(0,0,0,.08);
+  display:flex;
+  flex-direction:column;
+}
+.header{
+  font-weight:800;
+  font-size:15px;
+}
+.filters{
+  display:grid;
+  grid-template-columns:1fr 1fr 2fr;
+  gap:10px;
+  margin-top:12px;
+}
+.filters input{
+  padding:8px;
+  border-radius:10px;
+  border:1px solid #cbd5e1;
+  font-size:12px;
+}
+.kpi{
+  background:var(--bg);
+  border-radius:16px;
+  padding:14px;
+  margin-top:14px;
+}
+.kpi span{
+  font-size:12px;
+  color:var(--muted);
+}
+.kpi strong{
+  font-size:24px;
+  font-weight:800;
+}
+.footer{
+  margin-top:auto;
+  font-size:12px;
+  color:var(--muted);
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <div class="header">📊 Vendas por produto</div>
+
+  <div class="filters">
+    <input type="date" id="de">
+    <input type="date" id="ate">
+    <input type="text" id="produto" placeholder="Produto ID (VF)">
+  </div>
+
+  <div class="kpi">
+    <span>Quantidade vendida no período</span>
+    <strong id="qtd">—</strong>
+  </div>
+
+  <div class="footer">
+    Fonte: Cupons Fiscais (Varejo Fácil)
+  </div>
+
+</div>
+
+<script>
+const de = document.getElementById("de");
+const ate = document.getElementById("ate");
+const produto = document.getElementById("produto");
+const qtd = document.getElementById("qtd");
+
+(function(){
+  const hoje = new Date();
+  de.value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+  ate.value = hoje.toISOString().slice(0,10);
+})();
+
+async function consultar(){
+  if(!produto.value) return;
+
+  qtd.textContent = "…";
+
+  const r = await fetch(
+    `/api/vendas-produto?produtoId=${produto.value}&de=${de.value}&ate=${ate.value}`
+  );
+  const j = await r.json();
+
+  qtd.textContent = j.quantidadeVendida ?? 0;
+}
+
+[de, ate, produto].forEach(el =>
+  el.addEventListener("change", consultar)
+);
+produto.addEventListener("keyup", consultar);
+</script>
+
+</body>
+</html>
