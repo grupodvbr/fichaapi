@@ -330,26 +330,30 @@ async function selectProduto(id, nome){
   show();
 
   const r = await fetch(`/api/produto-preco/${id}`);
-  const p = await r.json(); // 👈 AQUI É O PULO DO GATO
+  const p = await r.json(); // 👈 objeto direto
+
+  const preco =
+    Number(p.precoOferta1) ||
+    Number(p.precoVenda1) ||
+    Number(p.precoVenda2) ||
+    Number(p.precoVenda3) ||
+    0;
 
   produto = {
     id,
     nome,
-    preco: Number(
-      p.precoOferta1 > 0
-        ? p.precoOferta1
-        : p.precoVenda1
-    )
+    preco
   };
 
   produtoBadge.style.display = "inline-block";
-  produtoBadge.textContent = `${nome} • ${moeda(produto.preco)}`;
-  precoVenda.textContent = moeda(produto.preco);
+  produtoBadge.textContent = `${nome} • ${moeda(preco)}`;
+  precoVenda.textContent = moeda(preco);
 
   listaProduto.innerHTML = "";
   hide();
   render();
 }
+
 
 
 /* INGREDIENTE */
@@ -369,16 +373,25 @@ buscaIngrediente.oninput=()=>{
   },300);
 };
 
-async function selectIng(id,nome){
+async function selectIng(id, nome){
   show();
-  const r=await fetch(`/api/produto-preco/${id}`);
-  const j=await r.json();
-  const p=j.items?.[0]||{};
-  ingrediente={nome,custo:Number(p.precoMedioDeReposicao||0)};
-  ingredienteBadge.style.display="inline-block";
-  ingredienteBadge.textContent=nome;
-  custo.value=ingrediente.custo.toFixed(4);
-  listaIngrediente.innerHTML="";
+
+  const r = await fetch(`/api/produto-preco/${id}`);
+  const p = await r.json(); // 👈 objeto direto
+
+  const custo = Number(p.precoMedioDeReposicao) || 0;
+
+  ingrediente = {
+    id,
+    nome,
+    custo
+  };
+
+  ingredienteBadge.style.display = "inline-block";
+  ingredienteBadge.textContent = nome;
+  custo.value = custo.toFixed(4);
+
+  listaIngrediente.innerHTML = "";
   hide();
 }
 
