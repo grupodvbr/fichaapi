@@ -29,14 +29,13 @@ body{
   overflow:hidden;
 }
 
-/* ================= APP ================= */
 .app{
   display:grid;
   grid-template-columns:88px 1fr;
   height:100vh;
 }
 
-/* ================= SIDEBAR ================= */
+/* SIDEBAR */
 .sidebar{
   background:linear-gradient(180deg,var(--primary),var(--primary-dark));
   display:flex;
@@ -50,17 +49,16 @@ body{
   width:44px;
   height:44px;
   border-radius:14px;
-  background:rgba(255,255,255,.30);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);
+  background:rgba(255,255,255,.35);
   cursor:pointer;
   transition:.2s;
 }
 .sidebar .icon:hover{
-  background:rgba(255,255,255,.45);
-  transform:scale(1.05);
+  transform:scale(1.08);
+  background:rgba(255,255,255,.55);
 }
 
-/* ================= HEADER ================= */
+/* HEADER */
 .header{
   height:68px;
   background:var(--primary-soft);
@@ -68,7 +66,6 @@ body{
   align-items:center;
   justify-content:space-between;
   padding:0 30px;
-  border-bottom:1px solid rgba(0,0,0,.04);
 }
 
 .header .left{
@@ -90,76 +87,48 @@ body{
 }
 
 .header .search{
-  width:340px;
-  height:38px;
+  width:320px;
+  height:36px;
   border-radius:999px;
-  background:#ffffff;
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);
+  background:#fff;
 }
 
-/* ================= CONTENT ================= */
+/* CONTENT */
 .content{
   padding:28px;
   height:calc(100vh - 68px);
   overflow:auto;
 }
 
-/* SCROLL PREMIUM */
-.content::-webkit-scrollbar{
-  width:8px;
-}
-.content::-webkit-scrollbar-thumb{
-  background:#cbd5e1;
-  border-radius:8px;
-}
-
-/* ================= GRID ================= */
 .grid{
   display:grid;
   grid-template-columns:repeat(12,1fr);
   gap:24px;
 }
 
-/* ================= CARD ================= */
+/* CARD */
 .card{
   background:var(--card);
   border-radius:26px;
   box-shadow:var(--shadow);
   overflow:hidden;
-  min-height:200px;
-  position:relative;
+  min-height:220px;
 }
 
-/* CARD HEADER FAKE (visual) */
-.card::before{
-  content:"";
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:14px;
-  background:linear-gradient(90deg,var(--primary),transparent);
-  opacity:.08;
-}
-
-/* GRID POSITIONS */
+/* GRID */
 .c1{grid-column:span 3}
 .c2{grid-column:span 3}
 .c3{grid-column:span 3}
 .c4{grid-column:span 3}
-
 .c5{grid-column:span 8}
 .c6{grid-column:span 4}
-
 .c7{grid-column:span 8}
 .c8{grid-column:span 4}
 
-/* ================= IFRAME ================= */
 .card iframe{
   width:100%;
   height:100%;
   border:0;
-  background:#fff;
 }
 </style>
 </head>
@@ -168,9 +137,8 @@ body{
 
 <div class="app">
 
-  <!-- ================= SIDEBAR ================= -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="icon"></div>
     <div class="icon"></div>
     <div class="icon"></div>
     <div class="icon"></div>
@@ -178,7 +146,7 @@ body{
     <div class="icon"></div>
   </aside>
 
-  <!-- ================= MAIN ================= -->
+  <!-- MAIN -->
   <main>
 
     <!-- HEADER -->
@@ -195,45 +163,59 @@ body{
 
       <div class="grid">
 
-        <!-- 🔹 CARD 1 -->
+        <!-- CARD 1 -->
         <div class="card c1">
-          <!-- ⬇️ COLOQUE SEU HTML -->
-          <iframe src="fichatecnica.html"></iframe>
+          <iframe srcdoc="
+            <html>
+            <body style='font-family:Inter;padding:20px'>
+              <h2>📋 Ficha Técnica</h2>
+              <p>Conteúdo funcionando</p>
+            </body>
+            </html>
+          "></iframe>
         </div>
 
-        <!-- 🔹 CARD 2 -->
+        <!-- CARD 2 -->
         <div class="card c2">
-          <iframe src="analiseficha.html"></iframe>
+          <iframe srcdoc="
+            <html>
+            <body style='font-family:Inter;padding:20px'>
+              <h2>📊 Análise</h2>
+              <p>Dados aqui</p>
+            </body>
+            </html>
+          "></iframe>
         </div>
 
-        <!-- 🔹 CARD 3 -->
+        <!-- CARD 3 -->
         <div class="card c3">
-          <iframe src="home.html"></iframe>
+          <iframe srcdoc="
+            <html>
+            <body style='font-family:Inter;padding:20px'>
+              <h2>🏠 Home</h2>
+            </body>
+            </html>
+          "></iframe>
         </div>
 
-        <!-- 🔹 CARD 4 -->
         <div class="card c4">
-          <iframe src="home.html"></iframe>
+          <iframe srcdoc="<html><body style='padding:20px'>Outro card</body></html>"></iframe>
         </div>
 
-        <!-- 🔹 CARD GRANDE -->
         <div class="card c5">
-          <iframe src="home.html"></iframe>
+          <iframe srcdoc="<html><body style='padding:20px'>Card grande</body></html>"></iframe>
         </div>
 
-        <!-- 🔹 CARD LATERAL -->
         <div class="card c6">
-          <iframe src="home.html"></iframe>
+          <iframe srcdoc="<html><body style='padding:20px'>Lateral</body></html>"></iframe>
         </div>
 
-        <!-- 🔹 CARD INFERIOR -->
         <div class="card c7">
-          <iframe src="home.html"></iframe>
+          <iframe srcdoc="<html><body style='padding:20px'>Inferior</body></html>"></iframe>
         </div>
 
-        <!-- 🔹 CARD INFERIOR DIREITA -->
         <div class="card c8">
-          <iframe src="home.html"></iframe>
+          <iframe srcdoc="<html><body style='padding:20px'>Inferior direita</body></html>"></iframe>
         </div>
 
       </div>
