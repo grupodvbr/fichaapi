@@ -521,7 +521,25 @@ fotoProduto.onchange=()=>{
 };
 
 /* BUSCA PRODUTO */
-function buscarProduto(imediato = false) {
+buscaProduto.oninput = () => {
+buscaProduto.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    clearTimeout(debounceProduto);
+
+    const termo = buscaProduto.value.trim().toLowerCase();
+    if (termo.length < 2) return;
+
+    // dispara busca imediata
+    debounceProduto = setTimeout(() => {
+      buscaProduto.oninput();
+    }, 0);
+  }
+});
+
+
+  
   clearTimeout(debounceProduto);
 
   const termo = buscaProduto.value.trim().toLowerCase();
@@ -531,53 +549,51 @@ function buscarProduto(imediato = false) {
     return;
   }
 
-  const delay = imediato ? 0 : 280;
-
   debounceProduto = setTimeout(async () => {
 
-    const cachedKey = Object.keys(cacheProduto)
-      .find(k => termo.startsWith(k));
+const cachedKey = Object.keys(cacheProduto)
+  .find(k => termo.startsWith(k));
 
-    if (cachedKey) {
-      const filtrados = cacheProduto[cachedKey]
-        .filter(p => p.descricao.toLowerCase().includes(termo));
+if (cachedKey) {
+  const filtrados = cacheProduto[cachedKey]
+    .filter(p =>
+      p.descricao.toLowerCase().includes(termo)
+    );
 
-      renderListaProduto(filtrados);
-      return;
-    }
-
-    if (controllerProduto) controllerProduto.abort();
-    controllerProduto = new AbortController();
-
-    try {
-      showProdutoLoading();
-
-      const r = await fetch(
-        `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
-        { signal: controllerProduto.signal }
-      );
-
-      const j = await r.json();
-      cacheProduto[termo] = j.items || [];
-      renderListaProduto(j.items || []);
-
-    } catch (e) {
-      if (e.name !== "AbortError") console.error(e);
-    } finally {
-      hideProdutoLoading();
-    }
-
-  }, delay);
+  renderListaProduto(filtrados);
+  return;
 }
 
-buscaProduto.addEventListener("input", () => buscarProduto(false));
 
-buscaProduto.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    buscarProduto(true);
+    if (controllerProduto) {
+      controllerProduto.abort();
+    }
+
+    controllerProduto = new AbortController();
+
+  try {
+  showProdutoLoading(); // ✅ AQUI: LIGA O SPINNER
+
+  const r = await fetch(
+    `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
+    { signal: controllerProduto.signal }
+  );
+
+  const j = await r.json();
+  cacheProduto[termo] = j.items || [];
+  renderListaProduto(j.items || []);
+
+} catch (e) {
+  if (e.name !== "AbortError") {
+    console.error(e);
   }
-});
+} finally {
+  hideProdutoLoading(); // ✅ AQUI: DESLIGA O SPINNER
+}
+
+
+  }, 280);
+};
 
 function renderListaProduto(items) {
   listaProduto.innerHTML = items
@@ -669,8 +685,24 @@ document.getElementById("custo").value = custoUnitario.toFixed(4);
 
 
 
+
 /* INGREDIENTE */
-function buscarIngrediente(imediato = false) {
+buscaIngrediente.oninput = () => {
+  buscaIngrediente.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    clearTimeout(debounceIngrediente);
+
+    const termo = buscaIngrediente.value.trim().toLowerCase();
+    if (termo.length < 2) return;
+
+    debounceIngrediente = setTimeout(() => {
+      buscaIngrediente.oninput();
+    }, 0);
+  }
+});
+
   clearTimeout(debounceIngrediente);
 
   const termo = buscaIngrediente.value.trim().toLowerCase();
@@ -680,54 +712,55 @@ function buscarIngrediente(imediato = false) {
     return;
   }
 
-  const delay = imediato ? 0 : 280;
-
   debounceIngrediente = setTimeout(async () => {
 
-    const cachedKey = Object.keys(cacheIngrediente)
-      .find(k => termo.startsWith(k));
+const cachedKeyIng = Object.keys(cacheIngrediente)
+  .find(k => termo.startsWith(k));
 
-    if (cachedKey) {
-      const filtrados = cacheIngrediente[cachedKey]
-        .filter(p => p.descricao.toLowerCase().includes(termo));
+if (cachedKeyIng) {
 
-      renderListaIngrediente(filtrados);
-      return;
-    }
+  hideIngredienteLoading(); // ✅ AQUI
 
-    if (controllerIngrediente) controllerIngrediente.abort();
-    controllerIngrediente = new AbortController();
+  const filtrados = cacheIngrediente[cachedKeyIng]
+    .filter(p =>
+      p.descricao.toLowerCase().includes(termo)
+    );
 
-    try {
-      showIngredienteLoading();
-
-      const r = await fetch(
-        `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
-        { signal: controllerIngrediente.signal }
-      );
-
-      const j = await r.json();
-      cacheIngrediente[termo] = j.items || [];
-      renderListaIngrediente(j.items || []);
-
-    } catch (e) {
-      if (e.name !== "AbortError") console.error(e);
-    } finally {
-      hideIngredienteLoading();
-    }
-
-  }, delay);
+  renderListaIngrediente(filtrados);
+  return;
 }
 
-buscaIngrediente.addEventListener("input", () => buscarIngrediente(false));
 
-buscaIngrediente.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    buscarIngrediente(true);
+
+    if (controllerIngrediente) {
+      controllerIngrediente.abort();
+    }
+
+    controllerIngrediente = new AbortController();
+
+try {
+  showIngredienteLoading(); // ✅ LIGA
+
+  const r = await fetch(
+    `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
+    { signal: controllerIngrediente.signal }
+  );
+
+  const j = await r.json();
+  cacheIngrediente[termo] = j.items || [];
+  renderListaIngrediente(j.items || []);
+
+} catch (e) {
+  if (e.name !== "AbortError") {
+    console.error(e);
   }
-});
+} finally {
+  hideIngredienteLoading(); // ✅ DESLIGA SEMPRE
+}
 
+
+  }, 280);
+};
 
 function renderListaIngrediente(items) {
   listaIngrediente.innerHTML = items
