@@ -14,23 +14,18 @@
   --primary-soft:#dff6f5;
   --bg:#ecf7f7;
   --card:#ffffff;
-  --text:#0f172a;
   --shadow:0 22px 60px rgba(0,0,0,.08);
 }
 
-/* RESET ABSOLUTO */
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
+/* RESET TOTAL */
+*{box-sizing:border-box;margin:0;padding:0}
 
 html,body{
   width:100%;
   height:100%;
-  overflow:hidden;
   font-family:Inter,Arial,sans-serif;
   background:var(--bg);
+  overflow:hidden;
 }
 
 /* APP */
@@ -41,17 +36,16 @@ html,body{
   height:100vh;
 }
 
-/* ================= SIDEBAR ================= */
+/* SIDEBAR */
 .sidebar{
   background:linear-gradient(180deg,var(--primary),var(--primary-dark));
   display:flex;
   flex-direction:column;
   align-items:center;
   padding:22px 0;
-  gap:22px;
+  gap:20px;
 }
 
-/* SILHUETAS */
 .sidebar .icon{
   width:44px;
   height:44px;
@@ -61,12 +55,18 @@ html,body{
   cursor:pointer;
   transition:.2s;
 }
+
 .sidebar .icon:hover{
   transform:scale(1.08);
   background:rgba(255,255,255,.55);
 }
 
-/* ================= MAIN ================= */
+.sidebar .icon.active{
+  background:#ffffff;
+  box-shadow:0 0 0 4px rgba(255,255,255,.6);
+}
+
+/* MAIN */
 .main{
   display:flex;
   flex-direction:column;
@@ -107,7 +107,7 @@ html,body{
   width:340px;
   height:38px;
   border-radius:999px;
-  background:#fff;
+  background:#ffffff;
   box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);
 }
 
@@ -118,7 +118,6 @@ html,body{
   overflow:auto;
 }
 
-/* SCROLL PREMIUM */
 .content::-webkit-scrollbar{width:8px}
 .content::-webkit-scrollbar-thumb{
   background:#cbd5e1;
@@ -141,15 +140,12 @@ html,body{
   min-height:220px;
 }
 
-/* POSIÇÕES */
+/* GRID POSITIONS */
 .c1{grid-column:span 3}
 .c2{grid-column:span 3}
 .c3{grid-column:span 3}
 .c4{grid-column:span 3}
-.c5{grid-column:span 8}
-.c6{grid-column:span 4}
-.c7{grid-column:span 8}
-.c8{grid-column:span 4}
+.c5{grid-column:span 12}
 
 /* IFRAME */
 .card iframe{
@@ -164,13 +160,13 @@ html,body{
 
 <div class="app">
 
-  <!-- SIDEBAR COLADA NO CANTO -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="icon"></div>
-    <div class="icon"></div>
-    <div class="icon"></div>
-    <div class="icon"></div>
-    <div class="icon"></div>
+    <div class="icon active" data-page="fichatecnica.html" title="Ficha Técnica"></div>
+    <div class="icon" data-page="analiseficha.html" title="Análise"></div>
+    <div class="icon" data-page="home.html" title="Home"></div>
+    <div class="icon" data-page="grafico.html" title="Gráficos"></div>
+    <div class="icon" data-page="relatorios.html" title="Relatórios"></div>
   </aside>
 
   <!-- MAIN -->
@@ -187,25 +183,43 @@ html,body{
 
     <!-- CONTENT -->
     <div class="content">
+
       <div class="grid">
 
-        <div class="card c1"><iframe src="fichatecnica.html"></iframe></div>
-        <div class="card c2"><iframe src="analiseficha.html"></iframe></div>
-        <div class="card c3"><iframe src="home.html"></iframe></div>
-        <div class="card c4"><iframe src="home.html"></iframe></div>
+        <!-- CARDS SUPERIORES (APENAS VISUAL) -->
+        <div class="card c1"></div>
+        <div class="card c2"></div>
+        <div class="card c3"></div>
+        <div class="card c4"></div>
 
-        <div class="card c5"><iframe src="grafico.html"></iframe></div>
-        <div class="card c6"><iframe src="lateral.html"></iframe></div>
-
-        <div class="card c7"><iframe src="home.html"></iframe></div>
-        <div class="card c8"><iframe src="home.html"></iframe></div>
+        <!-- IFRAME PRINCIPAL -->
+        <div class="card c5">
+          <iframe id="mainFrame" src="fichatecnica.html"></iframe>
+        </div>
 
       </div>
+
     </div>
 
   </div>
 
 </div>
+
+<!-- JS SIDEBAR FUNCIONAL -->
+<script>
+document.querySelectorAll(".sidebar .icon").forEach(icon=>{
+  icon.addEventListener("click",()=>{
+    const page = icon.dataset.page;
+    if(!page) return;
+
+    document.getElementById("mainFrame").src = page;
+
+    document.querySelectorAll(".sidebar .icon")
+      .forEach(i=>i.classList.remove("active"));
+    icon.classList.add("active");
+  });
+});
+</script>
 
 </body>
 </html>
