@@ -330,14 +330,12 @@ async function selectProduto(id, nome){
   show();
 
   const r = await fetch(`/api/produto-preco/${id}`);
-  async function selectProduto(id, nome){
-  show();
-
-  const r = await fetch(`/api/produto-preco/${id}`);
   const json = await r.json();
 
-  // API retorna ARRAY
-  const p = Array.isArray(json) ? json[0] : json?.items?.[0];
+  // normaliza retorno da API
+  const p = Array.isArray(json)
+    ? json[0]
+    : json?.items?.[0];
 
   if(!p){
     alert("Preço não encontrado para este produto");
@@ -352,7 +350,11 @@ async function selectProduto(id, nome){
     Number(p.precoVenda3) ||
     0;
 
-  produto = { id, nome, preco };
+  produto = {
+    id,
+    nome,
+    preco
+  };
 
   produtoBadge.style.display = "inline-block";
   produtoBadge.textContent = `${nome} • ${moeda(preco)}`;
@@ -363,15 +365,6 @@ async function selectProduto(id, nome){
   render();
 }
 
-
-  produtoBadge.style.display = "inline-block";
-  produtoBadge.textContent = `${nome} • ${moeda(produto.preco)}`;
-  precoVenda.textContent = moeda(produto.preco);
-
-  listaProduto.innerHTML = "";
-  hide();
-  render();
-}
 
 
 /* INGREDIENTE */
