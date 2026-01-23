@@ -2,215 +2,214 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Análise & Edição • Ficha Técnica</title>
+<title>Análise de Fichas Técnicas • CMV</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+:root{
+  --primary:#2563eb;
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --muted:#64748b;
+  --success:#16a34a;
+}
 *{box-sizing:border-box}
 body{
   margin:0;
-  padding:24px;
+  padding:28px;
+  background:var(--bg);
   font-family:Inter,Arial,sans-serif;
-  background:#f1f5f9;
 }
-.container{
-  max-width:1200px;
-  margin:auto;
-  background:#fff;
-  padding:30px;
-  border-radius:24px;
-  box-shadow:0 30px 70px rgba(0,0,0,.12);
+h1{
+  margin:0 0 24px;
+  font-weight:800;
 }
-h1{margin:0 0 20px;font-weight:800}
-table{
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:22px;
+}
+.card{
+  background:var(--card);
+  border-radius:26px;
+  box-shadow:0 25px 60px rgba(0,0,0,.12);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.card img{
   width:100%;
-  border-collapse:collapse;
+  height:200px;
+  object-fit:cover;
 }
-th,td{
-  padding:14px;
-  border-bottom:1px solid #e5e7eb;
-  text-align:left;
+.card-body{
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
 }
-th{font-size:13px;color:#64748b}
-tr:hover{background:#f8fafc;cursor:pointer}
+.title{
+  font-size:18px;
+  font-weight:800;
+}
+.badges{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
 .badge{
   padding:6px 12px;
   border-radius:999px;
   background:#e0f2fe;
-  font-weight:700;
   font-size:12px;
-}
-button{
-  padding:10px 16px;
-  border-radius:14px;
-  border:none;
   font-weight:700;
-  cursor:pointer;
 }
-.primary{background:#2563eb;color:#fff}
-.danger{background:#ef4444;color:#fff}
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
-.modal-box{
-  background:#fff;
-  width:100%;
-  max-width:900px;
-  padding:26px;
-  border-radius:22px;
-}
-.modal-box h2{margin-top:0}
-.grid{
+.kpis{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:12px;
+  gap:10px;
+}
+.kpi{
+  background:#f8fafc;
+  border-radius:16px;
+  padding:12px;
+  text-align:center;
+}
+.kpi span{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+}
+.kpi strong{
+  font-size:15px;
 }
 .ing{
   background:#f8fafc;
-  padding:12px;
   border-radius:14px;
+  padding:10px 14px;
   display:flex;
   justify-content:space-between;
+  font-size:13px;
 }
 .footer{
-  margin-top:20px;
-  display:flex;
-  justify-content:space-between;
+  padding:18px;
+  border-top:1px solid #e5e7eb;
 }
-.hidden{display:none}
+button{
+  width:100%;
+  padding:14px;
+  border-radius:18px;
+  border:none;
+  background:linear-gradient(180deg,#2563eb,#1e40af);
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+.muted{
+  color:var(--muted);
+  font-size:13px;
+}
 </style>
 </head>
 
 <body>
-<div class="container">
+
 <h1>📊 Análise de Fichas Técnicas</h1>
-
-<table>
-<thead>
-<tr>
-  <th>Produto</th>
-  <th>Preço Venda</th>
-  <th>CMV Unit</th>
-  <th>Margem</th>
-  <th>Criado</th>
-</tr>
-</thead>
-<tbody id="lista"></tbody>
-</table>
-</div>
-
-<!-- MODAL -->
-<div id="modal" class="modal">
-<div class="modal-box">
-  <h2 id="modalTitulo"></h2>
-
-  <div class="grid">
-    <input id="editPreco" type="number" step="0.01" placeholder="Preço Venda">
-    <input id="editRendimento" type="number" placeholder="Rendimento">
-  </div>
-
-  <h3>Ingredientes</h3>
-  <div id="listaItens"></div>
-
-  <div class="footer">
-    <button class="danger" onclick="fechar()">Fechar</button>
-    <button class="primary" onclick="salvarEdicao()">Salvar Alterações</button>
-  </div>
-</div>
-</div>
+<div id="cards" class="grid"></div>
 
 <script>
-/* ================= SUPABASE ================= */
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-let fichaAtual=null;
-let itensAtuais=[];
+const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
-/* ================= LOAD ================= */
-async function carregar(){
-  const { data: session } = await sb.auth.getSession();
-  if(!session.session){
+/* AUTH CHECK */
+async function check(){
+  const { data } = await sb.auth.getSession();
+  if(!data.session){
     alert("Faça login primeiro");
     location.href="index.html";
     return;
   }
+}
+check();
 
-  const { data } = await sb
+/* LOAD */
+async function carregar(){
+  const { data:fichas } = await sb
     .from("buffet")
     .select("*")
     .order("created_at",{ascending:false});
 
-  lista.innerHTML = data.map(f=>`
-    <tr onclick="abrir('${f.id}')">
-      <td>${f.nome}</td>
-      <td>R$ ${f.preco_venda?.toFixed(2)}</td>
-      <td>R$ ${f.custo_unitario?.toFixed(2)}</td>
-      <td>${f.margem_percentual?.toFixed(1)}%</td>
-      <td>${new Date(f.created_at).toLocaleDateString()}</td>
-    </tr>
-  `).join("");
+  for(const f of fichas){
+    const itens = await sb
+      .from("buffet_itens")
+      .select("*")
+      .eq("buffet_id",f.id);
+
+    renderCard(f,itens.data||[]);
+  }
 }
-carregar();
 
-/* ================= ABRIR ================= */
-async function abrir(id){
-  const { data } = await sb.from("buffet").select("*").eq("id",id).single();
-  const itens = await sb.from("buffet_itens").select("*").eq("buffet_id",id);
+function renderCard(f,itens){
+  const div=document.createElement("div");
+  div.className="card";
 
-  fichaAtual=data;
-  itensAtuais=itens.data;
+  div.innerHTML=`
+    ${f.foto_url ? `<img src="${f.foto_url}">` : ``}
 
-  modalTitulo.textContent=data.nome;
-  editPreco.value=data.preco_venda;
-  editRendimento.value=data.rendimento;
+    <div class="card-body">
+      <div class="title">${f.nome}</div>
 
-  listaItens.innerHTML = itensAtuais.map(i=>`
-    <div class="ing">
-      <span>${i.nome} (${i.quantidade} ${i.unidade_uso})</span>
-      <strong>R$ ${i.custo_calculado.toFixed(2)}</strong>
+      <div class="badges">
+        <span class="badge">Venda ${moeda(f.preco_venda)}</span>
+        <span class="badge">Rendimento ${f.rendimento}</span>
+        <span class="badge">Margem ${Number(f.margem_percentual||0).toFixed(1)}%</span>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <span>CMV Total</span>
+          <strong>${moeda(f.custo_total)}</strong>
+        </div>
+        <div class="kpi">
+          <span>CMV Unit</span>
+          <strong>${moeda(f.custo_unitario)}</strong>
+        </div>
+        <div class="kpi">
+          <span>Preço</span>
+          <strong>${moeda(f.preco_venda)}</strong>
+        </div>
+      </div>
+
+      <div class="muted">Ingredientes</div>
+      ${itens.map(i=>`
+        <div class="ing">
+          <span>${i.nome}</span>
+          <strong>${moeda(i.custo_calculado)}</strong>
+        </div>
+      `).join("")}
     </div>
-  `).join("");
 
-  modal.style.display="flex";
+    <div class="footer">
+      <button onclick="editar('${f.id}')">✏️ Editar Ficha</button>
+    </div>
+  `;
+
+  cards.appendChild(div);
 }
 
-function fechar(){
-  modal.style.display="none";
+function editar(id){
+  location.href = `ficha-edicao.html?id=${id}`;
 }
 
-/* ================= SALVAR ================= */
-async function salvarEdicao(){
-  const novoPreco=Number(editPreco.value);
-  const novoRendimento=Number(editRendimento.value);
-
-  const cmvTotal = itensAtuais.reduce((s,i)=>s+i.custo_calculado,0);
-  const cmvUnit = cmvTotal / novoRendimento;
-  const margem = ((novoPreco - cmvUnit) / novoPreco) * 100;
-
-  await sb.from("buffet")
-    .update({
-      preco_venda: novoPreco,
-      rendimento: novoRendimento,
-      custo_unitario: cmvUnit,
-      margem_percentual: margem
-    })
-    .eq("id", fichaAtual.id);
-
-  alert("Ficha atualizada");
-  fechar();
-  carregar();
-}
+carregar();
 </script>
+
 </body>
 </html>
