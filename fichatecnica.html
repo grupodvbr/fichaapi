@@ -10,14 +10,13 @@
 
 <style>
 :root{
-  --primary:#00c2b8;
-  --primary-dark:#00a6a0;
+  --primary:#2563eb;
   --bg:transparent;
   --card:#ffffff;
   --text:#0f172a;
 }
 
-/* RESET TOTAL */
+/* RESET TOTAL PARA IFRAME */
 *{
   box-sizing:border-box;
 }
@@ -33,9 +32,11 @@ html,body{
   color:var(--text);
 }
 
-/* CONTAINER PRINCIPAL */
+/* CONTAINER = CARD PRINCIPAL */
 .container{
   width:100%;
+  max-width:none;              /* 🔥 remove centralização */
+  margin:0;                    /* 🔥 remove margin auto */
   padding:28px;
   background:var(--card);
   border-radius:24px;
@@ -49,8 +50,13 @@ h1,h3{
   font-weight:800;
 }
 
-h1{ margin-bottom:18px; }
-h3{ margin:26px 0 12px; }
+h1{
+  margin-bottom:18px;
+}
+
+h3{
+  margin:26px 0 12px;
+}
 
 /* LABELS */
 label{
@@ -83,7 +89,14 @@ button{
   cursor:pointer;
 }
 
-/* LISTAS */
+
+/* BOTÃO SECUNDÁRIO */
+.secondary{
+  background:#e5e7eb;
+  color:#111827;
+}
+
+/* LISTAS DE BUSCA */
 .lista .item{
   background:#f1f5f9;
   padding:14px;
@@ -91,9 +104,12 @@ button{
   margin-top:6px;
   cursor:pointer;
 }
-.lista .item:hover{ background:#e2e8f0; }
 
-/* BADGE */
+.lista .item:hover{
+  background:#e2e8f0;
+}
+
+/* BADGES */
 .badge{
   display:inline-block;
   margin-top:10px;
@@ -111,7 +127,7 @@ button{
   gap:8px;
 }
 
-/* INGREDIENTE */
+/* ITEM INGREDIENTE */
 .ing{
   background:#f8fafc;
   border-radius:14px;
@@ -143,74 +159,16 @@ button{
   font-size:18px;
 }
 
-/* =========================
-/* =========================
-   BLOCO DA IMAGEM (FINAL)
-========================= */
-
-.preview-box{
-  position:absolute;
-  top:24px;
-  right:24px;
-  width:220px;
-  height:220px;
-  border-radius:18px;
-  overflow:hidden;
-  box-shadow:0 14px 30px rgba(0,0,0,.25);
-  z-index:10;
-}
-
-/* imagem real */
-.preview-img{
+/* IMAGEM */
+.preview{
   width:100%;
-  height:100%;
+  max-height:220px;
   object-fit:cover;
-  display:block;
+  border-radius:18px;
+  margin-top:12px;
 }
 
-/* overlay escuro */
-.preview-overlay{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(
-    to top,
-    rgba(0,0,0,.7),
-    rgba(0,0,0,.15)
-  );
-}
-
-/* textos por cima */
-.preview-info{
-  position:absolute;
-  bottom:14px;
-  left:14px;
-  right:14px;
-  color:#fff;
-  z-index:5;
-  font-size:12px;
-  font-weight:700;
-  line-height:1.3;
-}
-
-.preview-info strong{
-  display:block;
-  font-size:14px;
-  font-weight:800;
-}
-
-.preview-info span{
-  opacity:.95;
-}
-
-
-/* TOPBAR */
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-/* OVERLAY GLOBAL */
+/* OVERLAY */
 .overlay{
   position:absolute;
   inset:0;
@@ -226,7 +184,52 @@ button{
 .overlay span{
   font-size:18px;
   font-weight:800;
-  color:var(--primary);
+  color:#2563eb;
+}
+
+.hidden{
+  display:none;
+}
+
+/* TOPBAR */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+/* LOGOUT */
+.logout{
+  background:#ef4444;
+  padding:8px 14px;
+  font-size:12px;
+  border-radius:12px;
+  width:auto;
+  margin-top:0;
+}
+
+/* AUTH */
+.auth-box{
+  max-width:420px;
+  margin:40px auto;
+}
+
+/* LOADING INPUT */
+.input-loading{
+  position:relative;
+}
+
+.input-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,.75);
+  backdrop-filter:blur(2px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  border-radius:16px;
+  z-index:5;
+  pointer-events:none;
 }
 
 /* SPINNER */
@@ -234,13 +237,13 @@ button{
   width:22px;
   height:22px;
   border:3px solid #cbd5e1;
-  border-top-color:var(--primary);
+  border-top-color:#2563eb;
   border-radius:50%;
   animation:spin .8s linear infinite;
 }
 
 @keyframes spin{
-  to{ transform:rotate(360deg); }
+  to{transform:rotate(360deg)}
 }
 
 </style>
@@ -301,15 +304,7 @@ button{
 
 <label>Foto do prato</label>
 <input type="file" id="fotoProduto" accept="image/*">
-<div class="preview-box" id="previewBox" style="display:none">
-  <img id="previewFoto" class="preview-img">
-  <div class="preview-overlay"></div>
-
-  <div class="preview-info">
-    <strong id="previewNome">—</strong>
-    <span id="previewPreco">—</span>
-  </div>
-</div>
+<img id="previewFoto" class="preview" style="display:none">
 
 <h3>🍳 Ingredientes</h3>
 
@@ -469,8 +464,8 @@ const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:
 fotoProduto.onchange=()=>{
   const f=fotoProduto.files[0];
   if(!f)return;
-previewFoto.src = URL.createObjectURL(f);
-previewBox.style.display = "block";
+  previewFoto.src=URL.createObjectURL(f);
+  previewFoto.style.display="block";
 };
 
 /* BUSCA PRODUTO */
