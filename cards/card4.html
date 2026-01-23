@@ -16,9 +16,7 @@
   --text:#0f172a;
   --muted:#64748b;
 }
-
 *{box-sizing:border-box}
-
 html,body{
   margin:0;
   padding:0;
@@ -28,7 +26,6 @@ html,body{
   font-family:Inter,Arial,sans-serif;
   overflow:hidden;
 }
-
 .card{
   height:100%;
   background:var(--card);
@@ -38,113 +35,80 @@ html,body{
   display:flex;
   flex-direction:column;
 }
-
 .header{
   font-weight:800;
   font-size:15px;
-  display:flex;
-  align-items:center;
-  gap:8px;
 }
-
 .filters{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
   gap:10px;
   margin-top:12px;
 }
-
 .filters input{
   padding:8px 10px;
   border-radius:10px;
   border:1px solid #cbd5e1;
   font-size:12px;
 }
-
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:14px;
   margin-top:14px;
 }
-
 .kpi{
   background:var(--bg);
   border-radius:16px;
   padding:14px;
 }
-
 .kpi span{
-  display:block;
   font-size:12px;
   color:var(--muted);
-  font-weight:600;
 }
-
 .kpi strong{
   font-size:20px;
   font-weight:800;
 }
-
 .table-box{
   margin-top:12px;
   flex:1;
   overflow:auto;
 }
-
 table{
   width:100%;
   border-collapse:collapse;
   font-size:12px;
 }
-
 thead th{
   text-align:left;
   color:var(--muted);
-  font-weight:700;
   padding-bottom:6px;
 }
-
 tbody td{
   padding:6px 0;
   border-bottom:1px solid #e5e7eb;
 }
-
 .footer{
   margin-top:10px;
   font-size:12px;
   color:var(--muted);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
 }
 </style>
 </head>
 
 <body>
-
 <div class="card">
 
-  <div class="header">
-    📦 Requisições entregues
-  </div>
+  <div class="header">📦 Requisições (compradas / entregues)</div>
 
-  <!-- FILTROS -->
   <div class="filters">
     <input type="date" id="de">
     <input type="date" id="ate">
-
-    <!-- AUTOCOMPLETE REAL -->
-    <input
-      type="text"
-      id="produto"
-      list="listaProdutos"
-      placeholder="Produto"
-    />
+    <input type="text" id="produto" list="listaProdutos" placeholder="Produto">
     <datalist id="listaProdutos"></datalist>
   </div>
 
-  <!-- KPIs -->
   <div class="grid">
     <div class="kpi">
       <span>Total de itens</span>
@@ -156,7 +120,6 @@ tbody td{
     </div>
   </div>
 
-  <!-- TABELA -->
   <div class="table-box">
     <table>
       <thead>
@@ -172,13 +135,12 @@ tbody td{
   </div>
 
   <div class="footer">
-    Status considerado: <strong>ENTREGUE</strong>
+    Status considerados: <strong>COMPRADO</strong> e <strong>ENTREGUE</strong>
   </div>
 
 </div>
 
 <script>
-/* ================= SUPABASE ================= */
 const sb = supabase.createClient(
   "https://mybsriouiwqsdufujbsc.supabase.co",
   "sb_publishable_AUyBEIVCAMUoXwDKUmlqSw_v8EY8rVN"
@@ -187,80 +149,70 @@ const sb = supabase.createClient(
 const moeda = v =>
   "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
-/* ================= AUTOCOMPLETE ================= */
+function setDatasPadrao(){
+  const hoje = new Date();
+  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  de.value = inicioMes.toISOString().slice(0,10);
+  ate.value = hoje.toISOString().slice(0,10);
+}
+
 async function carregarAutocomplete(){
-  const { data, error } = await sb
+  const { data } = await sb
     .from("requisicoes")
     .select("produto")
-    .eq("status","ENTREGUE");
+    .in("status",["COMPRADO","ENTREGUE"]);
 
-  if(error || !data) return;
-
-  const unicos = [...new Set(data.map(r => r.produto))];
   const dl = document.getElementById("listaProdutos");
-
   dl.innerHTML = "";
-  unicos.forEach(p=>{
-    const opt = document.createElement("option");
-    opt.value = p;
-    dl.appendChild(opt);
+
+  [...new Set((data||[]).map(r=>r.produto))].forEach(p=>{
+    const o=document.createElement("option");
+    o.value=p;
+    dl.appendChild(o);
   });
 }
 
-/* ================= LOAD PRINCIPAL ================= */
 async function carregar(){
-  const de = document.getElementById("de").value;
-  const ate = document.getElementById("ate").value;
-  const prod = document.getElementById("produto").value.trim();
-
   let q = sb
     .from("requisicoes")
     .select("produto, quantidade, custo, created_at")
-    .eq("status","ENTREGUE")
+    .in("status",["COMPRADO","ENTREGUE"])
     .order("created_at",{ascending:false});
 
-  if(de) q = q.gte("created_at", de);
-  if(ate) q = q.lte("created_at", ate + "T23:59:59");
-
-  // 🔥 FILTRO DE PRODUTO NO BANCO (ILIKE)
-  if(prod) q = q.ilike("produto", `%${prod}%`);
+  if(de.value) q = q.gte("created_at",de.value);
+  if(ate.value) q = q.lte("created_at",ate.value+"T23:59:59");
+  if(produto.value) q = q.ilike("produto",`%${produto.value}%`);
 
   const { data } = await q;
 
-  const lista = document.getElementById("lista");
-  lista.innerHTML = "";
-
-  let totalQtd = 0;
-  let totalCusto = 0;
+  lista.innerHTML="";
+  let qtd=0, custo=0;
 
   (data||[]).forEach(r=>{
-    const qtd = Number(r.quantidade||0);
-    const custoItem = Number(r.custo||0) * qtd;
-
-    totalQtd += qtd;
-    totalCusto += custoItem;
+    const qn=Number(r.quantidade||0);
+    const ct=Number(r.custo||0)*qn;
+    qtd+=qn; custo+=ct;
 
     lista.insertAdjacentHTML("beforeend",`
       <tr>
         <td>${r.produto}</td>
-        <td>${qtd}</td>
-        <td>${moeda(custoItem)}</td>
+        <td>${qn}</td>
+        <td>${moeda(ct)}</td>
         <td>${new Date(r.created_at).toLocaleDateString()}</td>
       </tr>
     `);
   });
 
-  document.getElementById("totalQtd").textContent = totalQtd;
-  document.getElementById("totalCusto").textContent = moeda(totalCusto);
+  totalQtd.textContent=qtd;
+  totalCusto.textContent=moeda(custo);
 }
 
-/* ================= EVENTOS ================= */
-["de","ate","produto"].forEach(id=>{
-  document.getElementById(id).addEventListener("change",carregar);
-  document.getElementById(id).addEventListener("keyup",carregar);
+["de","ate","produto"].forEach(i=>{
+  document.getElementById(i).addEventListener("change",carregar);
+  document.getElementById(i).addEventListener("keyup",carregar);
 });
 
-/* ================= INIT ================= */
+setDatasPadrao();
 carregarAutocomplete();
 carregar();
 </script>
