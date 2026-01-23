@@ -191,6 +191,31 @@ input,select{
   text-align:center;
   font-weight:800;
 }
+
+/* FILTROS */
+.filters{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:14px;
+  padding:0 24px 24px;
+}
+
+.filters input,
+.filters select{
+  padding:14px 16px;
+  border-radius:16px;
+  border:1px solid #cbd5e1;
+  font-weight:600;
+}
+
+/* MOBILE */
+@media (max-width:640px){
+  .filters{
+    grid-template-columns:1fr;
+    padding:0 14px 14px;
+  }
+}
+
 @media (max-width: 640px){
   .grid{
     grid-template-columns:repeat(2,1fr);
@@ -215,6 +240,23 @@ input,select{
 
 <div class="topbar">
   <h1>📊 Fichas Técnicas</h1>
+</div>
+<!-- FILTROS -->
+<div class="filters">
+  <input
+    id="filtroNome"
+    placeholder="🔍 Buscar prato pelo nome"
+    oninput="aplicarFiltros()"
+  >
+
+  <select id="filtroTipo" onchange="aplicarFiltros()">
+    <option value="">Todos os tipos</option>
+    <option value="Prato Principal">Prato Principal</option>
+    <option value="Entrada">Entrada</option>
+    <option value="Sobremesa">Sobremesa</option>
+    <option value="Drink">Drink</option>
+    <option value="Acompanhamento">Acompanhamento</option>
+  </select>
 </div>
 
 <div id="cards" class="grid"></div>
@@ -251,6 +293,7 @@ const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
+let fichas = [];
 
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
@@ -265,26 +308,59 @@ async function logout(){
 
 /* LOAD */
 (async()=>{
-  const { data } = await sb.from("buffet").select("*").order("created_at",{ascending:false});
-  for(const f of data){
-    const it = await sb.from("buffet_itens").select("*").eq("buffet_id",f.id);
-    renderCard(f,it.data||[]);
-  }
+  const { data } = await sb
+    .from("buffet")
+    .select("*")
+    .order("created_at",{ascending:false});
+
+  fichas = data || [];
+  aplicarFiltros();
 })();
 
-function renderCard(f,it){
+
+async function renderCard(f){
+  const it = await sb
+    .from("buffet_itens")
+    .select("*")
+    .eq("buffet_id",f.id);
+
   const c=document.createElement("div");
   c.className="card";
   c.innerHTML=`
     ${f.foto_url?`<img src="${f.foto_url}">`:``}
     <div class="card-body">
       <h3>${f.nome}</h3>
+      <span class="badge">${f.tipo || "Sem tipo"}</span>
       <span class="badge">Venda ${moeda(f.preco_venda)}</span>
-      ${it.map(i=>`<div class="ing"><span>${i.nome}</span><strong>${moeda(i.custo_calculado)}</strong></div>`).join("")}
+
+      ${(it.data||[]).map(i=>`
+        <div class="ing">
+          <span>${i.nome}</span>
+          <strong>${moeda(i.custo_calculado)}</strong>
+        </div>
+      `).join("")}
+
       <button class="edit" onclick="editar('${f.id}')">Editar</button>
     </div>`;
   cards.appendChild(c);
 }
+function aplicarFiltros(){
+  const nomeFiltro =
+    document.getElementById("filtroNome").value.toLowerCase();
+
+  const tipoFiltro =
+    document.getElementById("filtroTipo").value;
+
+  cards.innerHTML = "";
+
+  fichas
+    .filter(f =>
+      (!nomeFiltro || f.nome.toLowerCase().includes(nomeFiltro)) &&
+      (!tipoFiltro || f.tipo === tipoFiltro)
+    )
+    .forEach(f => renderCard(f));
+}
+
 
 /* EDITAR */
 async function editar(id){
