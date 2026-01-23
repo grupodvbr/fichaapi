@@ -2,7 +2,9 @@ export default async function handler(req, res) {
   const { produtoId, de, ate } = req.query;
 
   if (!produtoId || !de || !ate) {
-    return res.status(400).json({ error: "Parâmetros obrigatórios: produtoId, de, ate" });
+    return res.status(400).json({
+      error: "Parâmetros obrigatórios: produtoId, de, ate"
+    });
   }
 
   const TOKEN = process.env.VF_TOKEN;
@@ -25,8 +27,12 @@ export default async function handler(req, res) {
         }
       });
 
-      const j = await r.json();
+      if (!r.ok) {
+        const txt = await r.text();
+        throw new Error(txt);
+      }
 
+      const j = await r.json();
       total = j.total || 0;
 
       (j.items || []).forEach(cupom => {
@@ -47,7 +53,9 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Erro ao consultar vendas" });
+    console.error("Erro vendas-produto:", err);
+    return res.status(500).json({
+      error: "Erro ao consultar vendas no Varejo Fácil"
+    });
   }
 }
