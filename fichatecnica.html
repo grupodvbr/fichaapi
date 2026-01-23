@@ -365,17 +365,20 @@ if (cachedKey) {
       }
     }
 
-  }, 180);
+  }, 280);
 };
 
 function renderListaProduto(items) {
-  listaProduto.innerHTML = items.map(p => `
-    <div class="item"
-      onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
-      ${p.descricao}
-    </div>
-  `).join("");
+  listaProduto.innerHTML = items
+    .slice(0, 10)
+    .map(p => `
+      <div class="item"
+        onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
+        ${p.descricao}
+      </div>
+    `).join("");
 }
+
 
 
 async function selectProduto(id, nome){
@@ -469,10 +472,19 @@ buscaIngrediente.oninput = () => {
 
   debounceIngrediente = setTimeout(async () => {
 
-    if (cacheIngrediente[termo]) {
-      renderListaIngrediente(cacheIngrediente[termo]);
-      return;
-    }
+const cachedKeyIng = Object.keys(cacheIngrediente)
+  .find(k => termo.startsWith(k));
+
+if (cachedKeyIng) {
+  const filtrados = cacheIngrediente[cachedKeyIng]
+    .filter(p =>
+      p.descricao.toLowerCase().includes(termo)
+    );
+
+  renderListaIngrediente(filtrados);
+  return;
+}
+
 
     if (controllerIngrediente) {
       controllerIngrediente.abort();
@@ -495,7 +507,7 @@ buscaIngrediente.oninput = () => {
       }
     }
 
-  }, 180);
+  }, 280);
 };
 
 function renderListaIngrediente(items) {
