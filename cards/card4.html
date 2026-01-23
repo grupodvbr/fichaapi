@@ -133,18 +133,26 @@ tbody td{
   <div class="filters">
     <input type="date" id="de">
     <input type="date" id="ate">
-    <input type="text" id="produto" placeholder="Produto">
+
+    <!-- AUTOCOMPLETE REAL -->
+    <input
+      type="text"
+      id="produto"
+      list="listaProdutos"
+      placeholder="Produto"
+    />
+    <datalist id="listaProdutos"></datalist>
   </div>
 
   <!-- KPIs -->
   <div class="grid">
     <div class="kpi">
       <span>Total de itens</span>
-      <strong id="totalQtd">—</strong>
+      <strong id="totalQtd">0</strong>
     </div>
     <div class="kpi">
       <span>Custo total</span>
-      <strong id="totalCusto">—</strong>
+      <strong id="totalCusto">R$ 0,00</strong>
     </div>
   </div>
 
@@ -179,10 +187,31 @@ const sb = supabase.createClient(
 const moeda = v =>
   "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
+/* ================= AUTOCOMPLETE ================= */
+async function carregarAutocomplete(){
+  const { data, error } = await sb
+    .from("requisicoes")
+    .select("produto")
+    .eq("status","ENTREGUE");
+
+  if(error || !data) return;
+
+  const unicos = [...new Set(data.map(r => r.produto))];
+  const dl = document.getElementById("listaProdutos");
+
+  dl.innerHTML = "";
+  unicos.forEach(p=>{
+    const opt = document.createElement("option");
+    opt.value = p;
+    dl.appendChild(opt);
+  });
+}
+
+/* ================= LOAD PRINCIPAL ================= */
 async function carregar(){
   const de = document.getElementById("de").value;
   const ate = document.getElementById("ate").value;
-  const prod = document.getElementById("produto").value.toLowerCase();
+  const prod = document.getElementById("produto").value.trim();
 
   let q = sb
     .from("requisicoes")
@@ -190,10 +219,13 @@ async function carregar(){
     .eq("status","ENTREGUE")
     .order("created_at",{ascending:false});
 
-  if(de) q = q.gte("created_at",de);
-  if(ate) q = q.lte("created_at",ate+"T23:59:59");
+  if(de) q = q.gte("created_at", de);
+  if(ate) q = q.lte("created_at", ate + "T23:59:59");
 
-  const {data} = await q;
+  // 🔥 FILTRO DE PRODUTO NO BANCO (ILIKE)
+  if(prod) q = q.ilike("produto", `%${prod}%`);
+
+  const { data } = await q;
 
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
@@ -201,33 +233,35 @@ async function carregar(){
   let totalQtd = 0;
   let totalCusto = 0;
 
-  (data||[])
-    .filter(r=>!prod || r.produto.toLowerCase().includes(prod))
-    .forEach(r=>{
-      const custoItem = Number(r.custo||0) * Number(r.quantidade||1);
-      totalQtd += Number(r.quantidade||0);
-      totalCusto += custoItem;
+  (data||[]).forEach(r=>{
+    const qtd = Number(r.quantidade||0);
+    const custoItem = Number(r.custo||0) * qtd;
 
-      lista.insertAdjacentHTML("beforeend",`
-        <tr>
-          <td>${r.produto}</td>
-          <td>${r.quantidade}</td>
-          <td>${moeda(custoItem)}</td>
-          <td>${new Date(r.created_at).toLocaleDateString()}</td>
-        </tr>
-      `);
-    });
+    totalQtd += qtd;
+    totalCusto += custoItem;
+
+    lista.insertAdjacentHTML("beforeend",`
+      <tr>
+        <td>${r.produto}</td>
+        <td>${qtd}</td>
+        <td>${moeda(custoItem)}</td>
+        <td>${new Date(r.created_at).toLocaleDateString()}</td>
+      </tr>
+    `);
+  });
 
   document.getElementById("totalQtd").textContent = totalQtd;
   document.getElementById("totalCusto").textContent = moeda(totalCusto);
 }
 
-// eventos
+/* ================= EVENTOS ================= */
 ["de","ate","produto"].forEach(id=>{
   document.getElementById(id).addEventListener("change",carregar);
   document.getElementById(id).addEventListener("keyup",carregar);
 });
 
+/* ================= INIT ================= */
+carregarAutocomplete();
 carregar();
 </script>
 
