@@ -13,6 +13,7 @@
   --primary-dark:#0f766e;
   --card:#ffffff;
   --muted:#64748b;
+  --bg:#f8fafc;
 }
 *{box-sizing:border-box}
 html,body{
@@ -33,9 +34,8 @@ html,body{
   font-weight:800;
   font-size:15px;
 }
-.filters{
-  margin-top:14px;
-}
+
+/* INPUT + BUSCA */
 .input-loading{ position:relative }
 .input-overlay{
   position:absolute;
@@ -74,6 +74,7 @@ html,body{
   font-size:12px;
 }
 
+/* PERÍODO */
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -87,8 +88,9 @@ html,body{
   font-size:12px;
 }
 
+/* KPI */
 .kpi{
-  background:#f8fafc;
+  background:var(--bg);
   border-radius:18px;
   padding:18px;
   margin-top:18px;
@@ -102,6 +104,29 @@ html,body{
 .kpi strong{
   font-size:26px;
   font-weight:800;
+}
+
+/* PROGRESSO */
+.progress{
+  margin-top:12px;
+}
+.progress-bar{
+  height:10px;
+  background:#e5e7eb;
+  border-radius:999px;
+  overflow:hidden;
+}
+.progress-bar div{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--primary),var(--primary-dark));
+  transition:width .2s ease;
+}
+.progress-text{
+  margin-top:6px;
+  font-size:12px;
+  color:var(--muted);
+  text-align:center;
 }
 
 .footer{
@@ -119,7 +144,7 @@ html,body{
 
   <div class="header">📊 Vendas por produto (Fiscal)</div>
 
-  <!-- BUSCA PRODUTO -->
+  <!-- PRODUTO -->
   <label>Produto</label>
   <div class="input-loading">
     <input id="buscaProduto" placeholder="Digite o nome do produto">
@@ -127,6 +152,7 @@ html,body{
       <div class="spinner"></div>
     </div>
   </div>
+
   <div id="listaProduto" class="lista"></div>
   <div id="produtoBadge" class="badge hidden"></div>
 
@@ -142,6 +168,14 @@ html,body{
     <strong id="qtd">—</strong>
   </div>
 
+  <!-- PROGRESSO -->
+  <div class="progress">
+    <div class="progress-bar">
+      <div id="progressBar"></div>
+    </div>
+    <div class="progress-text" id="progressText">0%</div>
+  </div>
+
   <div class="footer">
     Fonte: Cupons fiscais • Varejo Fácil
   </div>
@@ -149,16 +183,19 @@ html,body{
 </div>
 
 <script>
-let produtoSelecionado = null;
-let debounce = null;
-let controller = null;
-const cache = {};
+let produtoSelecionado=null;
+let debounce=null;
+let controller=null;
+let cache={};
+let cancelado=false;
 
-const buscaProduto = document.getElementById("buscaProduto");
-const listaProduto = document.getElementById("listaProduto");
-const badge = document.getElementById("produtoBadge");
-const loading = document.getElementById("loadingProduto");
-const qtd = document.getElementById("qtd");
+const buscaProduto=document.getElementById("buscaProduto");
+const listaProduto=document.getElementById("listaProduto");
+const badge=document.getElementById("produtoBadge");
+const loading=document.getElementById("loadingProduto");
+const qtd=document.getElementById("qtd");
+const progressBar=document.getElementById("progressBar");
+const progressText=document.getElementById("progressText");
 
 const showLoading=()=>loading.style.display="flex";
 const hideLoading=()=>loading.style.display="none";
@@ -170,13 +207,16 @@ const hideLoading=()=>loading.style.display="none";
   ate.value=hoje.toISOString().slice(0,10);
 })();
 
-/* BUSCA PRODUTO (IGUAL AO SEU PADRÃO) */
+/* BUSCA PRODUTO */
 buscaProduto.oninput=()=>{
   clearTimeout(debounce);
-  const termo=buscaProduto.value.trim().toLowerCase();
+  cancelado=true;
   produtoSelecionado=null;
   badge.classList.add("hidden");
+  progressBar.style.width="0%";
+  progressText.textContent="0%";
 
+  const termo=buscaProduto.value.trim().toLowerCase();
   if(termo.length<2){
     listaProduto.innerHTML="";
     return;
@@ -184,7 +224,8 @@ buscaProduto.oninput=()=>{
 
   debounce=setTimeout(async()=>{
     if(cache[termo]){
-      renderLista(cache[termo]); return;
+      renderLista(cache[termo]);
+      return;
     }
 
     if(controller) controller.abort();
@@ -199,7 +240,7 @@ buscaProduto.oninput=()=>{
       cache[termo]=j.items||[];
       renderLista(j.items||[]);
     }catch(e){
-      if(e.name!=="AbortError")console.error(e);
+      if(e.name!=="AbortError") console.error(e);
     }finally{
       hideLoading();
     }
@@ -223,36 +264,48 @@ window.selecionarProduto=(id,nome)=>{
   consultar();
 };
 
+/* CONSULTA PAGINADA COM % */
 async function consultar(){
   if(!produtoSelecionado) return;
 
-  let start = 0;
-  let total = 0;
+  cancelado=false;
+  let start=0;
+  let totalQtd=0;
+  let totalCupons=0;
+  const count=50;
 
-  qtd.textContent = "0";
+  qtd.textContent="0";
+  progressBar.style.width="0%";
+  progressText.textContent="0%";
 
-  while (true) {
-    const r = await fetch(
-      `/api/vendas-produto?` +
-      `produtoId=${produtoSelecionado.id}` +
-      `&de=${de.value}` +
-      `&ate=${ate.value}` +
-      `&start=${start}`
+  while(true){
+    if(cancelado) return;
+
+    const r=await fetch(
+      `/api/vendas-produto?produtoId=${produtoSelecionado.id}&de=${de.value}&ate=${ate.value}&start=${start}`
     );
+    const j=await r.json();
 
-    const j = await r.json();
+    totalQtd+=Number(j.somaPagina||0);
+    qtd.textContent=totalQtd.toFixed(3);
 
-    total += Number(j.somaPagina || 0);
+    totalCupons=j.total;
+    start=j.proximoStart;
 
-    // 🔥 Atualiza UI em tempo real
-    qtd.textContent = total.toFixed(3);
+    const pct=Math.min(100,(start/totalCupons)*100);
+    progressBar.style.width=pct.toFixed(1)+"%";
+    progressText.textContent=pct.toFixed(1)+"%";
 
-    if (j.terminou) break;
-
-    start = j.proximoStart;
+    if(j.terminou) break;
   }
+
+  progressBar.style.width="100%";
+  progressText.textContent="100% concluído";
 }
 
+["de","ate"].forEach(i=>{
+  document.getElementById(i).addEventListener("change",consultar);
+});
 </script>
 
 </body>
