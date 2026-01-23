@@ -379,20 +379,22 @@ async function selectIng(id, nome){
     return;
   }
 
-  const custo =
-    Number(p.precoMedioDeReposicao) ||
-    Number(p.precoFiscalDeReposicao) ||
-    0;
+const custoUnitario =
+  Number(p.precoMedioDeReposicao) ||
+  Number(p.precoFiscalDeReposicao) ||
+  0;
 
-  ingrediente = {
-    id,
-    nome,
-    custo
-  };
+ingrediente = {
+  id,
+  nome,
+  custo: custoUnitario
+};
 
-  ingredienteBadge.style.display = "inline-block";
-  ingredienteBadge.textContent = nome;
-  custo.value = custo.toFixed(4);
+ingredienteBadge.style.display = "inline-block";
+ingredienteBadge.textContent = nome;
+
+// input DOM
+document.getElementById("custo").value = custoUnitario.toFixed(4);
 
   listaIngrediente.innerHTML = "";
   hide();
