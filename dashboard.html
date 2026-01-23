@@ -17,7 +17,7 @@
   --shadow:0 22px 60px rgba(0,0,0,.08);
 }
 
-/* RESET TOTAL */
+/* RESET */
 *{box-sizing:border-box;margin:0;padding:0}
 
 html,body{
@@ -51,18 +51,12 @@ html,body{
   height:44px;
   border-radius:14px;
   background:rgba(255,255,255,.35);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);
   cursor:pointer;
   transition:.2s;
 }
-
-.sidebar .icon:hover{
-  transform:scale(1.08);
-  background:rgba(255,255,255,.55);
-}
-
+.sidebar .icon:hover{transform:scale(1.08)}
 .sidebar .icon.active{
-  background:#ffffff;
+  background:#fff;
   box-shadow:0 0 0 4px rgba(255,255,255,.6);
 }
 
@@ -90,69 +84,61 @@ html,body{
   align-items:center;
   gap:14px;
 }
-
 .header .avatar{
   width:36px;
   height:36px;
   border-radius:50%;
   background:#cbd5e1;
 }
-
 .header .title{
   font-size:18px;
   font-weight:800;
 }
-
 .header .search{
   width:340px;
   height:38px;
   border-radius:999px;
-  background:#ffffff;
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);
+  background:#fff;
 }
 
 /* CONTENT */
 .content{
   flex:1;
-  padding:28px;
-  overflow:auto;
-}
-
-.content::-webkit-scrollbar{width:8px}
-.content::-webkit-scrollbar-thumb{
-  background:#cbd5e1;
-  border-radius:8px;
-}
-
-/* GRID */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(12,1fr);
-  gap:24px;
-}
-
-/* CARD */
-.card{
-  background:var(--card);
-  border-radius:26px;
-  box-shadow:var(--shadow);
+  position:relative;
   overflow:hidden;
-  min-height:220px;
 }
 
-/* GRID POSITIONS */
-.c1{grid-column:span 3}
-.c2{grid-column:span 3}
-.c3{grid-column:span 3}
-.c4{grid-column:span 3}
-.c5{grid-column:span 12}
-
-/* IFRAME */
-.card iframe{
+/* IFRAME FULL */
+#mainFrame{
   width:100%;
   height:100%;
   border:0;
 }
+
+/* HOME OVERLAY (CARDS) */
+.home-cards{
+  position:absolute;
+  inset:0;
+  padding:28px;
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:24px;
+  pointer-events:auto;
+}
+
+.home-card{
+  background:var(--card);
+  border-radius:26px;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  transition:.2s;
+}
+.home-card:hover{transform:translateY(-4px)}
+
+.c1{grid-column:span 3}
+.c2{grid-column:span 3}
+.c3{grid-column:span 3}
+.c4{grid-column:span 3}
 </style>
 </head>
 
@@ -162,9 +148,9 @@ html,body{
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="icon active" data-page="fichatecnica.html" title="Ficha Técnica"></div>
+    <div class="icon active" data-page="home.html" title="Home"></div>
+    <div class="icon" data-page="fichatecnica.html" title="Ficha Técnica"></div>
     <div class="icon" data-page="analiseficha.html" title="Análise"></div>
-    <div class="icon" data-page="home.html" title="Home"></div>
     <div class="icon" data-page="grafico.html" title="Gráficos"></div>
     <div class="icon" data-page="relatorios.html" title="Relatórios"></div>
   </aside>
@@ -184,19 +170,15 @@ html,body{
     <!-- CONTENT -->
     <div class="content">
 
-      <div class="grid">
+      <!-- IFRAME -->
+      <iframe id="mainFrame" src="home.html"></iframe>
 
-        <!-- CARDS SUPERIORES (APENAS VISUAL) -->
-        <div class="card c1"></div>
-        <div class="card c2"></div>
-        <div class="card c3"></div>
-        <div class="card c4"></div>
-
-        <!-- IFRAME PRINCIPAL -->
-        <div class="card c5">
-          <iframe id="mainFrame" src="fichatecnica.html"></iframe>
-        </div>
-
+      <!-- CARDS DO HOME -->
+      <div id="homeCards" class="home-cards">
+        <div class="home-card c1" onclick="openPage('fichatecnica.html')"></div>
+        <div class="home-card c2" onclick="openPage('analiseficha.html')"></div>
+        <div class="home-card c3" onclick="openPage('grafico.html')"></div>
+        <div class="home-card c4" onclick="openPage('relatorios.html')"></div>
       </div>
 
     </div>
@@ -205,18 +187,35 @@ html,body{
 
 </div>
 
-<!-- JS SIDEBAR FUNCIONAL -->
 <script>
+const frame = document.getElementById("mainFrame");
+const homeCards = document.getElementById("homeCards");
+
+function openPage(page){
+  frame.src = page;
+  homeCards.style.display = "none";
+  setActive(page);
+}
+
+function setActive(page){
+  document.querySelectorAll(".sidebar .icon").forEach(i=>{
+    i.classList.toggle("active", i.dataset.page === page);
+  });
+}
+
+// SIDEBAR
 document.querySelectorAll(".sidebar .icon").forEach(icon=>{
   icon.addEventListener("click",()=>{
     const page = icon.dataset.page;
-    if(!page) return;
+    frame.src = page;
 
-    document.getElementById("mainFrame").src = page;
+    if(page === "home.html"){
+      homeCards.style.display = "grid";
+    }else{
+      homeCards.style.display = "none";
+    }
 
-    document.querySelectorAll(".sidebar .icon")
-      .forEach(i=>i.classList.remove("active"));
-    icon.classList.add("active");
+    setActive(page);
   });
 });
 </script>
