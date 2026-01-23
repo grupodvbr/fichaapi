@@ -10,7 +10,8 @@
 
 <style>
 :root{
-  --primary:#2563eb;
+  --primary:#14b8a6;        /* verde dashboard */
+  --primary-dark:#0f766e;   /* verde mais escuro */
   --bg:transparent;
   --card:#ffffff;
   --text:#0f172a;
@@ -260,28 +261,26 @@ button{
   justify-content:center;
 }
 
-/* CARD DE SALVAR – CTA PRINCIPAL */
-.save-card{
-  margin-top:32px;
-  padding:24px;
-  border-radius:22px;
+/* BOTÃO SALVAR – PADRÃO DASHBOARD */
+button[onclick="salvar()"]{
+  margin-top:28px;
   background:linear-gradient(
     180deg,
     var(--primary),
-    #1e40af
+    var(--primary-dark)
   );
-  box-shadow:0 18px 40px rgba(37,99,235,.35);
+  color:#ffffff;
+  font-size:15px;
+  font-weight:800;
+  padding:14px;
+  border-radius:16px;
+  border:none;
+  box-shadow:0 6px 14px rgba(20,184,166,.35);
 }
 
-/* BOTÃO DENTRO DO CARD */
-.save-card button{
-  background:#fff;
-  color:#1e40af;
-  font-size:16px;
-  font-weight:900;
-  border-radius:18px;
-  padding:16px;
-  border:none;
+/* hover sutil */
+button[onclick="salvar()"]:hover{
+  filter:brightness(0.95);
 }
 
 /* HOVER PREMIUM */
@@ -396,9 +395,8 @@ button{
   <div class="kpi">Margem<span id="margem">—</span></div>
 </div>
 
-<div class="save-card">
-  <button onclick="salvar()">Salvar Ficha Técnica</button>
-</div>
+<button onclick="salvar()">Salvar Ficha Técnica</button>
+
 
 
 </div>
