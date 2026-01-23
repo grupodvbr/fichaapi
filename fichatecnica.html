@@ -298,6 +298,8 @@ let produto=null;
 let ingrediente=null;
 let ingredientes=[];
 let debounce=null;
+let searchController = null;
+const searchCache = {};
 
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
@@ -310,21 +312,58 @@ fotoProduto.onchange=()=>{
 };
 
 /* BUSCA PRODUTO */
-buscaProduto.oninput=()=>{
+buscaProduto.oninput = () => {
   clearTimeout(debounce);
-  const termo=buscaProduto.value.trim();
-  if(termo.length<3){ listaProduto.innerHTML=""; return; }
+  const termo = buscaProduto.value.trim().toLowerCase();
 
-  debounce=setTimeout(async()=>{
-    const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
-    const j=await r.json();
-    listaProduto.innerHTML=j.items.map(p=>`
-      <div class="item"
-        onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
-        ${p.descricao}
-      </div>`).join("");
-  },300);
+  if (termo.length < 2) {
+    listaProduto.innerHTML = "";
+    return;
+  }
+
+  debounce = setTimeout(async () => {
+
+    // cache local
+    if (searchCache[termo]) {
+      renderListaProduto(searchCache[termo]);
+      return;
+    }
+
+    // cancela request anterior
+    if (searchController) {
+      searchController.abort();
+    }
+
+    searchController = new AbortController();
+
+    try {
+      const r = await fetch(
+        `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
+        { signal: searchController.signal }
+      );
+
+      const j = await r.json();
+      searchCache[termo] = j.items || [];
+
+      renderListaProduto(j.items || []);
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        console.error(e);
+      }
+    }
+  }, 120); // 🔥 muito mais rápido
 };
+
+function renderListaProduto(items) {
+  listaProduto.innerHTML = items.map(p => `
+    <div class="item"
+      onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
+      ${p.descricao}
+    </div>
+  `).join("");
+}
+
+
 async function selectProduto(id, nome){
   show();
 
@@ -404,21 +443,55 @@ document.getElementById("custo").value = custoUnitario.toFixed(4);
 
 
 /* INGREDIENTE */
-buscaIngrediente.oninput=()=>{
+buscaIngrediente.oninput = () => {
   clearTimeout(debounce);
-  const termo=buscaIngrediente.value.trim();
-  if(termo.length<3){ listaIngrediente.innerHTML=""; return; }
+  const termo = buscaIngrediente.value.trim().toLowerCase();
 
-  debounce=setTimeout(async()=>{
-    const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
-    const j=await r.json();
-    listaIngrediente.innerHTML=j.items.map(p=>`
-      <div class="item"
-        onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
-        ${p.descricao}
-      </div>`).join("");
-  },300);
+  if (termo.length < 2) {
+    listaIngrediente.innerHTML = "";
+    return;
+  }
+
+  debounce = setTimeout(async () => {
+
+    if (searchCache[termo]) {
+      renderListaIngrediente(searchCache[termo]);
+      return;
+    }
+
+    if (searchController) {
+      searchController.abort();
+    }
+
+    searchController = new AbortController();
+
+    try {
+      const r = await fetch(
+        `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
+        { signal: searchController.signal }
+      );
+
+      const j = await r.json();
+      searchCache[termo] = j.items || [];
+
+      renderListaIngrediente(j.items || []);
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        console.error(e);
+      }
+    }
+  }, 120);
 };
+
+function renderListaIngrediente(items) {
+  listaIngrediente.innerHTML = items.map(p => `
+    <div class="item"
+      onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
+      ${p.descricao}
+    </div>
+  `).join("");
+}
+
 
 
 function addIngrediente(){
