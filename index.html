@@ -14,6 +14,7 @@
   --bg:#eaf6f6;
   --card:#ffffff;
   --text:#0f172a;
+  --muted:#94a3b8;
 }
 
 *{box-sizing:border-box}
@@ -26,30 +27,31 @@ body{
   overflow:hidden;
 }
 
+/* APP LAYOUT */
 .app{
   display:grid;
-  grid-template-columns:76px 1fr;
+  grid-template-columns:84px 1fr;
   height:100vh;
 }
 
-/* SIDEBAR */
+/* ================= SIDEBAR ================= */
 .sidebar{
   background:linear-gradient(180deg,var(--primary),var(--primary-dark));
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding:16px 0;
-  gap:18px;
+  padding:18px 0;
+  gap:20px;
 }
 
 .sidebar .icon{
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  background:rgba(255,255,255,.25);
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  background:rgba(255,255,255,.28);
 }
 
-/* HEADER */
+/* ================= HEADER ================= */
 .header{
   height:64px;
   background:#dff3f3;
@@ -76,10 +78,10 @@ body{
   width:320px;
   height:36px;
   border-radius:999px;
-  background:#fff;
+  background:#ffffff;
 }
 
-/* CONTENT */
+/* ================= CONTENT ================= */
 .content{
   padding:26px;
   overflow:auto;
@@ -91,13 +93,13 @@ body{
   gap:22px;
 }
 
-/* CARD */
+/* ================= CARD ================= */
 .card{
   background:var(--card);
-  border-radius:20px;
+  border-radius:22px;
   box-shadow:0 18px 40px rgba(0,0,0,.08);
   overflow:hidden;
-  min-height:160px;
+  min-height:180px;
 }
 
 /* GRID POSITIONS (IGUAL AO MODELO) */
@@ -125,8 +127,9 @@ body{
 
 <div class="app">
 
-  <!-- SIDEBAR -->
+  <!-- ================= SIDEBAR ================= -->
   <aside class="sidebar">
+    <div class="icon"></div>
     <div class="icon"></div>
     <div class="icon"></div>
     <div class="icon"></div>
@@ -134,7 +137,7 @@ body{
     <div class="icon"></div>
   </aside>
 
-  <!-- MAIN -->
+  <!-- ================= MAIN ================= -->
   <main>
 
     <!-- HEADER -->
@@ -151,43 +154,51 @@ body{
 
       <div class="grid">
 
-        <!-- 🔹 CARD 1 (ex: home.html) -->
+        <!-- 🔹 CARD 1 -->
         <div class="card c1">
+          <!-- 🔽 TROQUE AQUI -->
           <iframe src="fichatecnica.html"></iframe>
         </div>
 
         <!-- 🔹 CARD 2 -->
         <div class="card c2">
+          <!-- 🔽 TROQUE AQUI -->
           <iframe src="analiseficha.html"></iframe>
         </div>
 
         <!-- 🔹 CARD 3 -->
         <div class="card c3">
+          <!-- 🔽 TROQUE AQUI -->
           <iframe src="home.html"></iframe>
         </div>
 
         <!-- 🔹 CARD 4 -->
         <div class="card c4">
+          <!-- 🔽 TROQUE AQUI -->
           <iframe src="home.html"></iframe>
         </div>
 
-        <!-- 🔹 CARD GRANDE (ex: grafico.html) -->
+        <!-- 🔹 CARD GRANDE -->
         <div class="card c5">
+          <!-- 🔽 TROQUE AQUI -->
           <iframe src="home.html"></iframe>
         </div>
 
         <!-- 🔹 CARD LATERAL -->
         <div class="card c6">
+          <!-- 🔽 TROQUE AQUI -->
           <iframe src="home.html"></iframe>
         </div>
 
         <!-- 🔹 CARD INFERIOR -->
         <div class="card c7">
+          <!-- 🔽 TROQUE AQUI -->
           <iframe src="home.html"></iframe>
         </div>
 
         <!-- 🔹 CARD INFERIOR DIREITA -->
         <div class="card c8">
+          <!-- 🔽 TROQUE AQUI -->
           <iframe src="home.html"></iframe>
         </div>
 
