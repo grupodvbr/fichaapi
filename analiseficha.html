@@ -417,6 +417,22 @@ async function renderCard(f){
 
   cards.appendChild(c);
 }
+function aplicarFiltros(){
+  const nomeFiltro =
+    document.getElementById("filtroNome").value.toLowerCase();
+
+  const tipoFiltro =
+    document.getElementById("filtroTipo").value;
+
+  cards.innerHTML = "";
+
+  fichas
+    .filter(f =>
+      (!nomeFiltro || f.nome.toLowerCase().includes(nomeFiltro)) &&
+      (!tipoFiltro || f.tipo === tipoFiltro)
+    )
+    .forEach(f => renderCard(f));
+}
 
 /* EDITAR */
 async function editar(id){
