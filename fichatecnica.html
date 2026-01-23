@@ -33,7 +33,7 @@ body{
   position:relative;
 }
 h1,h3{margin:0;font-weight:800}
-h1{margin-bottom:24px}
+h1{margin-bottom:18px}
 h3{margin:26px 0 12px}
 label{font-size:13px;font-weight:800;margin-top:16px;display:block}
 input,select,button{
@@ -49,6 +49,10 @@ button{
   font-weight:800;
   border:none;
   cursor:pointer;
+}
+.secondary{
+  background:#e5e7eb;
+  color:#111827;
 }
 .lista .item{
   background:#f1f5f9;
@@ -104,7 +108,7 @@ button{
 .overlay{
   position:absolute;
   inset:0;
-  background:rgba(255,255,255,.8);
+  background:rgba(255,255,255,.85);
   backdrop-filter:blur(3px);
   display:none;
   align-items:center;
@@ -126,9 +130,16 @@ button{
 .logout{
   background:#ef4444;
 }
-.login-box{
+.auth-box{
   max-width:420px;
   margin:auto;
+}
+.toggle{
+  text-align:center;
+  margin-top:14px;
+  font-weight:700;
+  cursor:pointer;
+  color:#2563eb;
 }
 </style>
 </head>
@@ -138,17 +149,21 @@ button{
 
 <div id="overlay" class="overlay"><span>Carregando…</span></div>
 
-<!-- LOGIN -->
-<div id="loginBox" class="login-box">
-  <h1>🔐 Acesso Restrito</h1>
+<!-- AUTH -->
+<div id="authBox" class="auth-box">
+  <h1 id="authTitle">🔐 Entrar</h1>
 
   <label>Email</label>
-  <input id="loginEmail" type="email" placeholder="email@empresa.com">
+  <input id="authEmail" type="email" placeholder="email@empresa.com">
 
   <label>Senha</label>
-  <input id="loginSenha" type="password" placeholder="••••••••">
+  <input id="authSenha" type="password" placeholder="••••••••">
 
-  <button onclick="login()">Entrar</button>
+  <button id="authBtn" onclick="login()">Entrar</button>
+
+  <div class="toggle" onclick="toggleAuth()">
+    Criar nova conta
+  </div>
 </div>
 
 <!-- APP -->
@@ -217,14 +232,41 @@ const show = () => overlay.style.display = "flex";
 const hide = () => overlay.style.display = "none";
 
 /* ================= AUTH ================= */
+let isSignup=false;
+
+function toggleAuth(){
+  isSignup=!isSignup;
+  authTitle.textContent=isSignup?"🆕 Criar Conta":"🔐 Entrar";
+  authBtn.textContent=isSignup?"Criar Conta":"Entrar";
+}
+
 async function login(){
   show();
-  const { error } = await sb.auth.signInWithPassword({
-    email: loginEmail.value,
-    password: loginSenha.value
-  });
+  let res;
+  if(isSignup){
+    res = await sb.auth.signUp({
+      email: authEmail.value,
+      password: authSenha.value
+    });
+  }else{
+    res = await sb.auth.signInWithPassword({
+      email: authEmail.value,
+      password: authSenha.value
+    });
+  }
   hide();
-  if(error){ alert("Email ou senha inválidos"); return; }
+
+  if(res.error){
+    alert(res.error.message);
+    return;
+  }
+
+  if(isSignup){
+    alert("Conta criada com sucesso! Você já pode entrar.");
+    toggleAuth();
+    return;
+  }
+
   init();
 }
 
@@ -236,10 +278,10 @@ async function logout(){
 async function init(){
   const { data } = await sb.auth.getSession();
   if(data.session){
-    loginBox.classList.add("hidden");
+    authBox.classList.add("hidden");
     app.classList.remove("hidden");
   }else{
-    loginBox.classList.remove("hidden");
+    authBox.classList.remove("hidden");
     app.classList.add("hidden");
   }
 }
@@ -375,11 +417,11 @@ async function salvar(){
 
     const path=`fichas/${Date.now()}-${safeName}`;
 
-    const up=await sb.storage
-      .from("buffet")
+    const up=await sb.storage.from("buffet")
       .upload(path,file,{contentType:file.type});
 
     if(up.error){ hide(); alert("Erro imagem"); return; }
+
     fotoUrl=sb.storage.from("buffet")
       .getPublicUrl(path).data.publicUrl;
   }
