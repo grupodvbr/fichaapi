@@ -72,10 +72,7 @@ html,body{
   height:36px;
   border-radius:12px;
   background:#b2ebe7;
-  cursor:pointer;
-  transition:.2s;
 }
-.subicon:hover{background:#8fe1dc}
 
 /* ===== MAIN ===== */
 .main{
@@ -90,7 +87,6 @@ html,body{
   background:var(--primary-soft);
   display:flex;
   align-items:center;
-  justify-content:space-between;
   padding:0 30px;
   font-weight:800;
 }
@@ -109,15 +105,15 @@ iframe{
 
 <div class="app">
 
-  <!-- SIDEBAR PRINCIPAL -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="icon active" onclick="openPage('home.html', this)"></div>
-    <div class="icon" onclick="openPage('fichatecnica.html', this)"></div>
-    <div class="icon" onclick="openPage('analiseficha.html', this)"></div>
-    <div class="icon" onclick="openPage('cards/card3.html', this)"></div>
+    <div class="icon active" onclick="openPage('home.html', this)" title="Home"></div>
+    <div class="icon" onclick="openPage('cards/card1.html', this)" title="Card 1"></div>
+    <div class="icon" onclick="openPage('cards/card2.html', this)" title="Card 2"></div>
+    <div class="icon" onclick="openPage('cards/card3.html', this)" title="Card 3"></div>
   </aside>
 
-  <!-- SUB NAVBAR (SILUETAS) -->
+  <!-- SUB NAVBAR -->
   <aside class="subnav">
     <div class="subicon"></div>
     <div class="subicon"></div>
@@ -126,6 +122,11 @@ iframe{
     <div class="subicon"></div>
   </aside>
 
+  <!-- MAIN -->
+  <div class="main">
+    <div class="header">Dashboard</div>
+    <iframe id="frame" src="home.html"></iframe>
+  </div>
 
 </div>
 
