@@ -326,29 +326,31 @@ buscaProduto.oninput=()=>{
   },300);
 };
 
-async function selectProduto(id,nome){
+async function selectProduto(id, nome){
   show();
-  const r=await fetch(`/api/produto-preco/${id}`);
-  const j=await r.json();
-  const p=j.items?.[0]||{};
-produto = {
-  id,
-  nome,
-  preco: Number(
-    p.precoVenda ??
-    p.preco ??
-    p.valor ??
-    0
-  )
-};
 
-  produtoBadge.style.display="inline-block";
-  produtoBadge.textContent=`${nome} • ${moeda(produto.preco)}`;
-  precoVenda.textContent=moeda(produto.preco);
-  listaProduto.innerHTML="";
+  const r = await fetch(`/api/produto-preco/${id}`);
+  const p = await r.json(); // 👈 AQUI É O PULO DO GATO
+
+  produto = {
+    id,
+    nome,
+    preco: Number(
+      p.precoOferta1 > 0
+        ? p.precoOferta1
+        : p.precoVenda1
+    )
+  };
+
+  produtoBadge.style.display = "inline-block";
+  produtoBadge.textContent = `${nome} • ${moeda(produto.preco)}`;
+  precoVenda.textContent = moeda(produto.preco);
+
+  listaProduto.innerHTML = "";
   hide();
   render();
 }
+
 
 /* INGREDIENTE */
 buscaIngrediente.oninput=()=>{
