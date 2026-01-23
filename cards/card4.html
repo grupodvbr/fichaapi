@@ -44,6 +44,7 @@ html,body{
   grid-template-columns:1fr 1fr 1fr;
   gap:10px;
   margin-top:12px;
+  position:relative;
 }
 .filters input{
   padding:8px 10px;
@@ -51,6 +52,28 @@ html,body{
   border:1px solid #cbd5e1;
   font-size:12px;
 }
+.lista-produtos{
+  position:absolute;
+  top:42px;
+  right:0;
+  left:0;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 10px 25px rgba(0,0,0,.12);
+  max-height:180px;
+  overflow:auto;
+  z-index:10;
+}
+.item-produto{
+  padding:10px;
+  font-size:12px;
+  cursor:pointer;
+}
+.item-produto:hover{
+  background:#f1f5f9;
+}
+.hidden{display:none}
+
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -98,20 +121,23 @@ tbody td{
 </head>
 
 <body>
+
 <div class="card">
 
-  <div class="header">📦 Requisições (compradas / entregues)</div>
+  <div class="header">📦 Requisições entregues</div>
 
+  <!-- FILTROS -->
   <div class="filters">
     <input type="date" id="de">
     <input type="date" id="ate">
-    <input type="text" id="produto" list="listaProdutos" placeholder="Produto">
-    <datalist id="listaProdutos"></datalist>
+    <input type="text" id="produtoBusca" placeholder="Buscar produto">
+    <div id="listaProdutos" class="lista-produtos hidden"></div>
   </div>
 
+  <!-- KPIs -->
   <div class="grid">
     <div class="kpi">
-      <span>Total de itens</span>
+      <span>Quantidade entregue</span>
       <strong id="totalQtd">0</strong>
     </div>
     <div class="kpi">
@@ -120,6 +146,7 @@ tbody td{
     </div>
   </div>
 
+  <!-- TABELA -->
   <div class="table-box">
     <table>
       <thead>
@@ -135,7 +162,7 @@ tbody td{
   </div>
 
   <div class="footer">
-    Status considerados: <strong>COMPRADO</strong> e <strong>ENTREGUE</strong>
+    Status considerado: <strong>ENTREGUE</strong>
   </div>
 
 </div>
@@ -149,41 +176,66 @@ const sb = supabase.createClient(
 const moeda = v =>
   "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
-function setDatasPadrao(){
-  const hoje = new Date();
-  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-  de.value = inicioMes.toISOString().slice(0,10);
-  ate.value = hoje.toISOString().slice(0,10);
-}
+let produtosUnicos = [];
+let produtoSelecionado = null;
 
-async function carregarAutocomplete(){
-  const { data } = await sb
+/* DATAS PADRÃO */
+(function(){
+  const hoje=new Date();
+  de.value=new Date(hoje.getFullYear(),hoje.getMonth(),1).toISOString().slice(0,10);
+  ate.value=hoje.toISOString().slice(0,10);
+})();
+
+/* CARREGA PRODUTOS */
+async function carregarProdutos(){
+  const {data}=await sb
     .from("requisicoes")
     .select("produto")
-    .in("status",["COMPRADO","ENTREGUE"]);
+    .eq("status","ENTREGUE");
 
-  const dl = document.getElementById("listaProdutos");
-  dl.innerHTML = "";
-
-  [...new Set((data||[]).map(r=>r.produto))].forEach(p=>{
-    const o=document.createElement("option");
-    o.value=p;
-    dl.appendChild(o);
-  });
+  produtosUnicos=[...new Set((data||[]).map(r=>r.produto))];
 }
 
+/* BUSCA CONTROLADA */
+produtoBusca.oninput=()=>{
+  const q=produtoBusca.value.toLowerCase();
+  const box=listaProdutos;
+  box.innerHTML="";
+  produtoSelecionado=null;
+
+  if(!q){ box.classList.add("hidden"); carregar(); return; }
+
+  produtosUnicos
+    .filter(p=>p.toLowerCase().includes(q))
+    .forEach(p=>{
+      box.insertAdjacentHTML("beforeend",
+        `<div class="item-produto" onclick="selecionarProduto('${p}')">${p}</div>`
+      );
+    });
+
+  box.classList.toggle("hidden",box.innerHTML==="");
+};
+
+function selecionarProduto(p){
+  produtoSelecionado=p;
+  produtoBusca.value=p;
+  listaProdutos.classList.add("hidden");
+  carregar();
+}
+
+/* LOAD PRINCIPAL */
 async function carregar(){
-  let q = sb
+  let q=sb
     .from("requisicoes")
     .select("produto, quantidade, custo, created_at")
-    .in("status",["COMPRADO","ENTREGUE"])
+    .eq("status","ENTREGUE")
     .order("created_at",{ascending:false});
 
-  if(de.value) q = q.gte("created_at",de.value);
-  if(ate.value) q = q.lte("created_at",ate.value+"T23:59:59");
-  if(produto.value) q = q.ilike("produto",`%${produto.value}%`);
+  if(de.value) q=q.gte("created_at",de.value);
+  if(ate.value) q=q.lte("created_at",ate.value+"T23:59:59");
+  if(produtoSelecionado) q=q.eq("produto",produtoSelecionado);
 
-  const { data } = await q;
+  const {data}=await q;
 
   lista.innerHTML="";
   let qtd=0, custo=0;
@@ -207,14 +259,11 @@ async function carregar(){
   totalCusto.textContent=moeda(custo);
 }
 
-["de","ate","produto"].forEach(i=>{
-  document.getElementById(i).addEventListener("change",carregar);
-  document.getElementById(i).addEventListener("keyup",carregar);
-});
+/* EVENTOS */
+["de","ate"].forEach(i=>document.getElementById(i).addEventListener("change",carregar));
 
-setDatasPadrao();
-carregarAutocomplete();
-carregar();
+/* INIT */
+carregarProdutos().then(carregar);
 </script>
 
 </body>
