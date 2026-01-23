@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Resumo • Ingredientes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --primary:#00c2b8;
+  --bg:#f5fbfb;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+}
+
+/* RESET CARD */
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:transparent;
+  font-family:Inter,Arial,sans-serif;
+  overflow:hidden;
+}
+
+/* CARD */
+.card{
+  height:100%;
+  background:var(--card);
+  border-radius:22px;
+  padding:18px 20px;
+  box-shadow:0 18px 40px rgba(0,0,0,.08);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+/* HEADER */
+.header{
+  font-weight:800;
+  font-size:15px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:14px;
+}
+
+/* KPI */
+.kpi{
+  background:var(--bg);
+  border-radius:16px;
+  padding:14px;
+}
+
+.kpi span{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  font-weight:600;
+}
+
+.kpi strong{
+  font-size:18px;
+  font-weight:800;
+}
+
+/* FOOTER */
+.footer{
+  margin-top:12px;
+  font-size:12px;
+  color:var(--muted);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <div>
+    <div class="header">🧂 Ingredientes</div>
+
+    <div class="grid">
+      <div class="kpi">
+        <span>Total cadastrados</span>
+        <strong id="total">—</strong>
+      </div>
+
+      <div class="kpi">
+        <span>Custo total</span>
+        <strong id="custoTotal">—</strong>
+      </div>
+
+      <div class="kpi">
+        <span>Maior impacto</span>
+        <strong id="maiorCusto">—</strong>
+      </div>
+
+      <div class="kpi">
+        <span>Mais usado</span>
+        <strong id="maisUsado">—</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer" id="critico">
+    —
+  </div>
+
+</div>
+
+<script>
+/* ================= SUPABASE ================= */
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+);
+
+const moeda = v =>
+  "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+
+/* ================= LOAD ================= */
+(async ()=>{
+  const { data, error } = await sb
+    .from("buffet_itens")
+    .select("nome, quantidade, custo_unitario, custo_calculado");
+
+  if(error || !data?.length){
+    document.getElementById("total").textContent = "0";
+    return;
+  }
+
+  const total = data.length;
+
+  const custoTotal =
+    data.reduce((s,i)=>s+Number(i.custo_calculado||0),0);
+
+  const maiorCustoItem =
+    data.reduce((a,b)=>Number(b.custo_calculado)>Number(a.custo_calculado)?b:a);
+
+  const maisUsadoItem =
+    data.reduce((a,b)=>Number(b.quantidade)>Number(a.quantidade)?b:a);
+
+  const maisCaroUnit =
+    data.reduce((a,b)=>Number(b.custo_unitario)>Number(a.custo_unitario)?b:a);
+
+  document.getElementById("total").textContent = total;
+  document.getElementById("custoTotal").textContent = moeda(custoTotal);
+  document.getElementById("maiorCusto").textContent = moeda(maiorCustoItem.custo_calculado);
+  document.getElementById("maisUsado").textContent =
+    Number(maisUsadoItem.quantidade).toFixed(3);
+
+  document.getElementById("critico").textContent =
+    "Ingrediente crítico: " + maisCaroUnit.nome;
+})();
+</script>
+
+</body>
+</html>
