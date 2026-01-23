@@ -35,8 +35,8 @@ html,body{
   font-size:15px;
 }
 
-/* INPUT + BUSCA */
-.input-loading{ position:relative }
+/* BUSCA */
+.input-loading{position:relative}
 .input-overlay{
   position:absolute;
   inset:0;
@@ -120,7 +120,7 @@ html,body{
   height:100%;
   width:0%;
   background:linear-gradient(90deg,var(--primary),var(--primary-dark));
-  transition:width .2s ease;
+  transition:width .25s ease;
 }
 .progress-text{
   margin-top:6px;
@@ -183,128 +183,135 @@ html,body{
 </div>
 
 <script>
-let produtoSelecionado=null;
-let debounce=null;
-let controller=null;
-let cache={};
-let cancelado=false;
+let produtoSelecionado = null;
+let debounce = null;
+let controller = null;
+let cache = {};
+let cancelado = false;
 
-const buscaProduto=document.getElementById("buscaProduto");
-const listaProduto=document.getElementById("listaProduto");
-const badge=document.getElementById("produtoBadge");
-const loading=document.getElementById("loadingProduto");
-const qtd=document.getElementById("qtd");
-const progressBar=document.getElementById("progressBar");
-const progressText=document.getElementById("progressText");
+const buscaProduto = document.getElementById("buscaProduto");
+const listaProduto = document.getElementById("listaProduto");
+const badge = document.getElementById("produtoBadge");
+const loading = document.getElementById("loadingProduto");
+const qtd = document.getElementById("qtd");
+const progressBar = document.getElementById("progressBar");
+const progressText = document.getElementById("progressText");
 
-const showLoading=()=>loading.style.display="flex";
-const hideLoading=()=>loading.style.display="none";
+const showLoading = () => loading.style.display = "flex";
+const hideLoading = () => loading.style.display = "none";
 
-/* DATAS PADRÃO */
+/* DATAS PADRÃO: início do mês → hoje */
 (function(){
-  const hoje=new Date();
-  de.value=new Date(hoje.getFullYear(),hoje.getMonth(),1).toISOString().slice(0,10);
-  ate.value=hoje.toISOString().slice(0,10);
+  const hoje = new Date();
+  de.value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+  ate.value = hoje.toISOString().slice(0,10);
 })();
 
-/* BUSCA PRODUTO */
-buscaProduto.oninput=()=>{
+/* BUSCA PRODUTO (VF) */
+buscaProduto.oninput = () => {
   clearTimeout(debounce);
-  cancelado=true;
-  produtoSelecionado=null;
+  cancelado = true;
+  produtoSelecionado = null;
   badge.classList.add("hidden");
-  progressBar.style.width="0%";
-  progressText.textContent="0%";
+  progressBar.style.width = "0%";
+  progressText.textContent = "0%";
 
-  const termo=buscaProduto.value.trim().toLowerCase();
-  if(termo.length<2){
-    listaProduto.innerHTML="";
+  const termo = buscaProduto.value.trim().toLowerCase();
+  if (termo.length < 2) {
+    listaProduto.innerHTML = "";
     return;
   }
 
-  debounce=setTimeout(async()=>{
-    if(cache[termo]){
+  debounce = setTimeout(async () => {
+    if (cache[termo]) {
       renderLista(cache[termo]);
       return;
     }
 
-    if(controller) controller.abort();
-    controller=new AbortController();
+    if (controller) controller.abort();
+    controller = new AbortController();
 
-    try{
+    try {
       showLoading();
-      const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`,{
-        signal:controller.signal
+      const r = await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`, {
+        signal: controller.signal
       });
-      const j=await r.json();
-      cache[termo]=j.items||[];
-      renderLista(j.items||[]);
-    }catch(e){
-      if(e.name!=="AbortError") console.error(e);
-    }finally{
+      const j = await r.json();
+      cache[termo] = j.items || [];
+      renderLista(j.items || []);
+    } catch (e) {
+      if (e.name !== "AbortError") console.error(e);
+    } finally {
       hideLoading();
     }
-  },280);
+  }, 280);
 };
 
 function renderLista(items){
-  listaProduto.innerHTML=items.slice(0,10).map(p=>`
+  listaProduto.innerHTML = items.slice(0,10).map(p => `
     <div class="item" onclick="selecionarProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
       ${p.descricao}
     </div>
   `).join("");
 }
 
-window.selecionarProduto=(id,nome)=>{
-  produtoSelecionado={id,nome};
-  buscaProduto.value=nome;
-  badge.textContent=`${nome} • ID ${id}`;
+window.selecionarProduto = (id, nome) => {
+  produtoSelecionado = { id, nome };
+  buscaProduto.value = nome;
+  badge.textContent = `${nome} • ID ${id}`;
   badge.classList.remove("hidden");
-  listaProduto.innerHTML="";
+  listaProduto.innerHTML = "";
   consultar();
 };
 
-/* CONSULTA PAGINADA COM % */
+/* CONSULTA PAGINADA COM % CONCLUÍDO */
 async function consultar(){
-  if(!produtoSelecionado) return;
+  if (!produtoSelecionado) return;
 
-  cancelado=false;
-  let start=0;
-  let totalQtd=0;
-  let totalCupons=0;
-  const count=50;
+  cancelado = false;
+  let start = 0;
+  let totalQtd = 0;
+  let totalRegistros = 0;
 
-  qtd.textContent="0";
-  progressBar.style.width="0%";
-  progressText.textContent="0%";
+  qtd.textContent = "0";
+  progressBar.style.width = "0%";
+  progressText.textContent = "0%";
 
-  while(true){
-    if(cancelado) return;
+  while (true) {
+    if (cancelado) return;
 
-    const r=await fetch(
-      `/api/vendas-produto?produtoId=${produtoSelecionado.id}&de=${de.value}&ate=${ate.value}&start=${start}`
+    const r = await fetch(
+      `/api/vendas-produto` +
+      `?produtoId=${produtoSelecionado.id}` +
+      `&de=${de.value}` +
+      `&ate=${ate.value}` +
+      `&start=${start}`
     );
-    const j=await r.json();
 
-    totalQtd+=Number(j.somaPagina||0);
-    qtd.textContent=totalQtd.toFixed(3);
+    const j = await r.json();
 
-    totalCupons=j.total;
-    start=j.proximoStart;
+    totalQtd += Number(j.somaPagina || 0);
+    qtd.textContent = totalQtd.toFixed(3);
 
-    const pct=Math.min(100,(start/totalCupons)*100);
-    progressBar.style.width=pct.toFixed(1)+"%";
-    progressText.textContent=pct.toFixed(1)+"%";
+    totalRegistros = j.totalRegistros || 0;
+    start = j.proximoStart;
 
-    if(j.terminou) break;
+    const pct = totalRegistros
+      ? Math.min(100, (start / totalRegistros) * 100)
+      : 100;
+
+    progressBar.style.width = pct.toFixed(1) + "%";
+    progressText.textContent = pct.toFixed(1) + "%";
+
+    if (j.terminou) break;
   }
 
-  progressBar.style.width="100%";
-  progressText.textContent="100% concluído";
+  progressBar.style.width = "100%";
+  progressText.textContent = "100% concluído";
 }
 
-["de","ate"].forEach(i=>{
-  document.getElementById(i).addEventListener("change",consultar);
+["de","ate"].forEach(id => {
+  document.getElementById(id).addEventListener("change", consultar);
 });
 </script>
 
