@@ -325,14 +325,12 @@ buscaProduto.oninput=()=>{
       </div>`).join("");
   },300);
 };
-
 async function selectProduto(id, nome){
   show();
 
   const r = await fetch(`/api/produto-preco/${id}`);
   const json = await r.json();
 
-  // normaliza retorno da API
   const p = Array.isArray(json)
     ? json[0]
     : json?.items?.[0];
@@ -365,35 +363,18 @@ async function selectProduto(id, nome){
   render();
 }
 
-
-
-/* INGREDIENTE */
-buscaIngrediente.oninput=()=>{
-  clearTimeout(debounce);
-  const termo=buscaIngrediente.value.trim();
-  if(termo.length<3){ listaIngrediente.innerHTML=""; return; }
-
-  debounce=setTimeout(async()=>{
-    const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
-    const j=await r.json();
-    listaIngrediente.innerHTML=j.items.map(p=>`
-      <div class="item"
-        onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
-        ${p.descricao}
-      </div>`).join("");
-  },300);
-};
-
 async function selectIng(id, nome){
   show();
 
   const r = await fetch(`/api/produto-preco/${id}`);
   const json = await r.json();
 
-  const p = Array.isArray(json) ? json[0] : json?.items?.[0];
+  const p = Array.isArray(json)
+    ? json[0]
+    : json?.items?.[0];
 
   if(!p){
-    alert("Custo não encontrado");
+    alert("Custo não encontrado para este ingrediente");
     hide();
     return;
   }
@@ -416,6 +397,27 @@ async function selectIng(id, nome){
   listaIngrediente.innerHTML = "";
   hide();
 }
+
+
+
+
+/* INGREDIENTE */
+buscaIngrediente.oninput=()=>{
+  clearTimeout(debounce);
+  const termo=buscaIngrediente.value.trim();
+  if(termo.length<3){ listaIngrediente.innerHTML=""; return; }
+
+  debounce=setTimeout(async()=>{
+    const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
+    const j=await r.json();
+    listaIngrediente.innerHTML=j.items.map(p=>`
+      <div class="item"
+        onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
+        ${p.descricao}
+      </div>`).join("");
+  },300);
+};
+
 
 function addIngrediente(){
   if(!ingrediente||!qtd.value)return;
