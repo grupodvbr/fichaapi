@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Riscos & Oportunidades</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --primary:#00c2b8;
+  --danger:#ef4444;
+  --warning:#f59e0b;
+  --bg:#f5fbfb;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+}
+
+/* RESET */
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:transparent;
+  font-family:Inter,Arial,sans-serif;
+  overflow:hidden;
+}
+
+/* CARD */
+.card{
+  height:100%;
+  background:var(--card);
+  border-radius:22px;
+  padding:18px 20px;
+  box-shadow:0 18px 40px rgba(0,0,0,.08);
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* HEADER */
+.header{
+  font-size:15px;
+  font-weight:800;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* ALERT */
+.alert{
+  background:#fff7ed;
+  border-left:5px solid var(--warning);
+  padding:12px 14px;
+  border-radius:14px;
+  font-size:13px;
+  font-weight:600;
+}
+
+/* BLOCK */
+.block{
+  background:var(--bg);
+  border-radius:16px;
+  padding:14px;
+}
+
+.block span{
+  font-size:12px;
+  color:var(--muted);
+  font-weight:600;
+  display:block;
+}
+
+.block strong{
+  font-size:15px;
+  font-weight:800;
+  display:block;
+  margin-top:4px;
+}
+
+/* DANGER */
+.danger{
+  background:#fef2f2;
+  border-left:5px solid var(--danger);
+}
+
+/* FOOTER */
+.footer{
+  margin-top:auto;
+  font-size:11px;
+  color:var(--muted);
+  text-align:right;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <div class="header">⚠️ Riscos & Oportunidades</div>
+
+  <div class="alert" id="alertMargem">Carregando análise…</div>
+
+  <div class="block danger">
+    <span>Ingrediente crítico</span>
+    <strong id="ingredienteCritico">—</strong>
+    <span id="ingredienteImpacto">—</span>
+  </div>
+
+  <div class="block">
+    <span>Receita mais cara de produzir</span>
+    <strong id="receitaCara">—</strong>
+    <span id="receitaDetalhe">—</span>
+  </div>
+
+  <div class="footer">Análise automática do CMV</div>
+
+</div>
+
+<script>
+/* ================= SUPABASE ================= */
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+);
+
+const moeda = v =>
+  "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+
+/* ================= LOAD ================= */
+(async ()=>{
+
+  /* ===== FICHAS ===== */
+  const { data: fichas } = await sb
+    .from("buffet")
+    .select("id, nome, custo_total, preco_venda, margem_percentual");
+
+  /* ===== ITENS ===== */
+  const { data: itens } = await sb
+    .from("buffet_itens")
+    .select("nome, custo_calculado, buffet_id");
+
+  if(!fichas?.length || !itens?.length){
+    document.getElementById("alertMargem").textContent =
+      "Dados insuficientes para análise";
+    return;
+  }
+
+  /* ===== 1. RECEITAS COM MARGEM BAIXA ===== */
+  const margemLimite = 60;
+  const criticas = fichas.filter(f =>
+    Number(f.margem_percentual) < margemLimite
+  );
+
+  document.getElementById("alertMargem").innerHTML =
+    criticas.length
+      ? `🚨 <strong>${criticas.length}</strong> receitas abaixo de ${margemLimite}% de margem`
+      : `✅ Nenhuma receita com margem crítica`;
+
+  /* ===== 2. INGREDIENTE CRÍTICO ===== */
+  const mapIng = {};
+
+  itens.forEach(i=>{
+    if(!mapIng[i.nome]){
+      mapIng[i.nome] = {
+        nome:i.nome,
+        custo:0,
+        receitas:new Set()
+      };
+    }
+    mapIng[i.nome].custo += Number(i.custo_calculado||0);
+    mapIng[i.nome].receitas.add(i.buffet_id);
+  });
+
+  const ingredienteCritico =
+    Object.values(mapIng)
+      .sort((a,b)=>b.custo - a.custo)[0];
+
+  document.getElementById("ingredienteCritico").textContent =
+    ingredienteCritico.nome;
+
+  document.getElementById("ingredienteImpacto").textContent =
+    `Usado em ${ingredienteCritico.receitas.size} receitas • ${moeda(ingredienteCritico.custo)}`;
+
+  /* ===== 3. RECEITA MAIS CARA ===== */
+  const receitaCara =
+    fichas.sort((a,b)=>Number(b.custo_total)-Number(a.custo_total))[0];
+
+  document.getElementById("receitaCara").textContent =
+    receitaCara.nome;
+
+  document.getElementById("receitaDetalhe").textContent =
+    `${moeda(receitaCara.custo_total)} • Margem ${Number(receitaCara.margem_percentual).toFixed(1)}%`;
+
+})();
+</script>
+
+</body>
+</html>
