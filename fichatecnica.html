@@ -330,10 +330,19 @@ buscaProduto.oninput = () => {
 
   debounceProduto = setTimeout(async () => {
 
-    if (cacheProduto[termo]) {
-      renderListaProduto(cacheProduto[termo]);
-      return;
-    }
+const cachedKey = Object.keys(cacheProduto)
+  .find(k => termo.startsWith(k));
+
+if (cachedKey) {
+  const filtrados = cacheProduto[cachedKey]
+    .filter(p =>
+      p.descricao.toLowerCase().includes(termo)
+    );
+
+  renderListaProduto(filtrados);
+  return;
+}
+
 
     if (controllerProduto) {
       controllerProduto.abort();
