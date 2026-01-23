@@ -11,38 +11,72 @@
 <style>
 :root{
   --primary:#2563eb;
-  --bg:#eef2ff;
-  --card:#fff;
+  --bg:transparent;
+  --card:#ffffff;
   --text:#0f172a;
 }
-*{box-sizing:border-box}
-body{
+
+/* RESET TOTAL PARA IFRAME */
+*{
+  box-sizing:border-box;
+}
+
+html,body{
+  width:100%;
+  height:100%;
   margin:0;
-  padding:18px;
-  background:linear-gradient(180deg,#eef2ff,#f8fafc);
+  padding:0;
+  background:transparent;
   font-family:Inter,Arial,sans-serif;
+  overflow:auto;
   color:var(--text);
 }
+
+/* CONTAINER = CARD PRINCIPAL */
 .container{
-  max-width:1100px;
-  margin:auto;
-  background:#fff;
-  border-radius:30px;
-  padding:30px;
-  box-shadow:0 35px 80px rgba(0,0,0,.12);
+  width:100%;
+  max-width:none;              /* 🔥 remove centralização */
+  margin:0;                    /* 🔥 remove margin auto */
+  padding:28px;
+  background:var(--card);
+  border-radius:24px;
+  box-shadow:0 18px 40px rgba(0,0,0,.08);
   position:relative;
 }
-h1,h3{margin:0;font-weight:800}
-h1{margin-bottom:18px}
-h3{margin:26px 0 12px}
-label{font-size:13px;font-weight:800;margin-top:16px;display:block}
+
+/* TÍTULOS */
+h1,h3{
+  margin:0;
+  font-weight:800;
+}
+
+h1{
+  margin-bottom:18px;
+}
+
+h3{
+  margin:26px 0 12px;
+}
+
+/* LABELS */
+label{
+  font-size:13px;
+  font-weight:800;
+  margin-top:16px;
+  display:block;
+}
+
+/* INPUTS */
 input,select,button{
   width:100%;
   padding:14px 16px;
-  border-radius:18px;
+  border-radius:16px;
   border:1px solid #cbd5e1;
   margin-top:6px;
+  font-family:inherit;
 }
+
+/* BOTÃO PRINCIPAL */
 button{
   background:linear-gradient(180deg,#2563eb,#1e40af);
   color:#fff;
@@ -50,18 +84,27 @@ button{
   border:none;
   cursor:pointer;
 }
+
+/* BOTÃO SECUNDÁRIO */
 .secondary{
   background:#e5e7eb;
   color:#111827;
 }
+
+/* LISTAS DE BUSCA */
 .lista .item{
   background:#f1f5f9;
   padding:14px;
-  border-radius:16px;
+  border-radius:14px;
   margin-top:6px;
   cursor:pointer;
 }
-.lista .item:hover{background:#e2e8f0}
+
+.lista .item:hover{
+  background:#e2e8f0;
+}
+
+/* BADGES */
 .badge{
   display:inline-block;
   margin-top:10px;
@@ -71,11 +114,15 @@ button{
   font-weight:800;
   font-size:12px;
 }
+
+/* GRID INGREDIENTES */
 .grid{
   display:grid;
   grid-template-columns:2fr 1fr 1fr 1fr auto;
   gap:8px;
 }
+
+/* ITEM INGREDIENTE */
 .ing{
   background:#f8fafc;
   border-radius:14px;
@@ -84,27 +131,39 @@ button{
   display:flex;
   justify-content:space-between;
 }
+
+/* KPIs */
 .kpis{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:14px;
   margin-top:26px;
 }
+
 .kpi{
   background:#f8fafc;
-  border-radius:20px;
+  border-radius:18px;
   padding:18px;
   text-align:center;
   font-weight:800;
 }
-.kpi span{display:block;margin-top:6px;font-size:18px}
+
+.kpi span{
+  display:block;
+  margin-top:6px;
+  font-size:18px;
+}
+
+/* IMAGEM */
 .preview{
   width:100%;
   max-height:220px;
   object-fit:cover;
-  border-radius:20px;
+  border-radius:18px;
   margin-top:12px;
 }
+
+/* OVERLAY */
 .overlay{
   position:absolute;
   inset:0;
@@ -114,40 +173,43 @@ button{
   align-items:center;
   justify-content:center;
   z-index:30;
-  border-radius:30px;
+  border-radius:24px;
 }
+
 .overlay span{
   font-size:18px;
   font-weight:800;
   color:#2563eb;
 }
-.hidden{display:none}
+
+.hidden{
+  display:none;
+}
+
+/* TOPBAR */
 .topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
+
+/* LOGOUT */
 .logout{
   background:#ef4444;
-  padding:8px 14px;      /* 🔽 menor */
-  font-size:12px;       /* 🔽 texto menor */
-  border-radius:12px;   /* 🔽 mais compacto */
-  width:auto;           /* 🔽 não ocupa largura toda */
+  padding:8px 14px;
+  font-size:12px;
+  border-radius:12px;
+  width:auto;
   margin-top:0;
 }
 
+/* AUTH */
 .auth-box{
   max-width:420px;
-  margin:auto;
-}
-.toggle{
-  text-align:center;
-  margin-top:14px;
-  font-weight:700;
-  cursor:pointer;
-  color:#2563eb;
+  margin:40px auto;
 }
 
+/* LOADING INPUT */
 .input-loading{
   position:relative;
 }
@@ -160,11 +222,12 @@ button{
   display:none;
   align-items:center;
   justify-content:center;
-  border-radius:18px;
+  border-radius:16px;
   z-index:5;
   pointer-events:none;
 }
 
+/* SPINNER */
 .spinner{
   width:22px;
   height:22px;
