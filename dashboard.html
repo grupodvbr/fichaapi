@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 :root{
@@ -18,7 +19,6 @@
 
 /* RESET */
 *{margin:0;padding:0;box-sizing:border-box}
-
 html,body{
   width:100%;
   height:100%;
@@ -27,11 +27,65 @@ html,body{
   overflow:hidden;
 }
 
+/* LOGIN */
+.login{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(180deg,var(--primary),var(--primary-dark));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.login-box{
+  background:#fff;
+  width:100%;
+  max-width:420px;
+  padding:32px;
+  border-radius:28px;
+  box-shadow:0 40px 90px rgba(0,0,0,.25);
+}
+
+.login-box h1{
+  font-size:22px;
+  font-weight:800;
+  margin-bottom:18px;
+}
+
+.login-box label{
+  font-size:13px;
+  font-weight:700;
+  margin-top:14px;
+  display:block;
+}
+
+.login-box input{
+  width:100%;
+  padding:14px 16px;
+  border-radius:16px;
+  border:1px solid #cbd5e1;
+  margin-top:6px;
+}
+
+.login-box button{
+  width:100%;
+  margin-top:22px;
+  padding:14px;
+  border-radius:18px;
+  border:none;
+  background:linear-gradient(180deg,#2563eb,#1e40af);
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+
 /* APP */
 .app{
   display:grid;
   grid-template-columns:88px 1fr;
   height:100vh;
+  display:none;
 }
 
 /* SIDEBAR */
@@ -44,7 +98,6 @@ html,body{
   gap:18px;
 }
 
-/* MENU CARD */
 .icon{
   width:48px;
   height:48px;
@@ -58,36 +111,27 @@ html,body{
 }
 
 .icon:hover{transform:scale(1.08)}
-
 .icon.active{
   background:#fff;
   box-shadow:0 0 0 4px rgba(255,255,255,.55);
 }
 
-/* GLYPH BASE */
-.glyph{
-  width:22px;
-  height:22px;
-  position:relative;
-}
-
-/* HOME */
+/* GLYPHS */
+.glyph{width:22px;height:22px;position:relative}
 .glyph.home::before{
   content:"";
   position:absolute;
   inset:0;
   background:#00a6a0;
-  clip-path:polygon(50% 0, 100% 40%, 100% 100%, 0 100%, 0 40%);
+  clip-path:polygon(50% 0,100% 40%,100% 100%,0 100%,0 40%);
   border-radius:4px;
 }
-
-/* FICHA */
 .glyph.doc::before{
   content:"";
   position:absolute;
   inset:0;
-  border-radius:4px;
   background:#00a6a0;
+  border-radius:4px;
 }
 .glyph.doc::after{
   content:"";
@@ -97,10 +141,8 @@ html,body{
   right:4px;
   height:3px;
   background:#e6f7f7;
-  box-shadow:0 6px 0 #e6f7f7, 0 12px 0 #e6f7f7;
+  box-shadow:0 6px 0 #e6f7f7,0 12px 0 #e6f7f7;
 }
-
-/* ANALISE */
 .glyph.chart::before{
   content:"";
   position:absolute;
@@ -109,10 +151,8 @@ html,body{
   width:5px;
   height:14px;
   background:#00a6a0;
-  box-shadow:8px -6px 0 #00a6a0, 16px -2px 0 #00a6a0;
+  box-shadow:8px -6px 0 #00a6a0,16px -2px 0 #00a6a0;
 }
-
-/* CONFIG */
 .glyph.settings{
   border:3px solid #00a6a0;
   border-radius:50%;
@@ -131,18 +171,24 @@ html,body{
   flex-direction:column;
   height:100%;
 }
-
-/* HEADER */
 .header{
   height:68px;
   background:var(--primary-soft);
   display:flex;
   align-items:center;
+  justify-content:space-between;
   padding:0 30px;
   font-weight:800;
 }
-
-/* IFRAME */
+.logout{
+  background:#ef4444;
+  border:none;
+  padding:8px 14px;
+  border-radius:12px;
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
 iframe{
   flex:1;
   width:100%;
@@ -154,39 +200,85 @@ iframe{
 
 <body>
 
-<div class="app">
+<!-- LOGIN -->
+<div id="login" class="login">
+  <div class="login-box">
+    <h1>🔐 Acesso ao Sistema</h1>
 
-  <!-- SIDEBAR -->
+    <label>Email</label>
+    <input id="email" type="email">
+
+    <label>Senha</label>
+    <input id="senha" type="password">
+
+    <button onclick="login()">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app">
+
   <aside class="sidebar">
-
     <div class="icon active" onclick="openPage('home.html',this)">
       <span class="glyph home"></span>
     </div>
-
     <div class="icon" onclick="openPage('fichatecnica.html',this)">
       <span class="glyph doc"></span>
     </div>
-
     <div class="icon" onclick="openPage('analiseficha.html',this)">
       <span class="glyph chart"></span>
     </div>
-
     <div class="icon" onclick="openPage('cards/card3.html',this)">
       <span class="glyph settings"></span>
     </div>
-
   </aside>
 
-  <!-- MAIN -->
   <div class="main">
-    <div class="header">Dashboard</div>
-    <iframe id="frame" src="home.html"></iframe>
+    <div class="header">
+      Dashboard
+      <button class="logout" onclick="logout()">Sair</button>
+    </div>
+    <iframe id="frame" src=""></iframe>
   </div>
 
 </div>
 
 <script>
-function openPage(page, el){
+const sb = supabase.createClient(
+  "SUA_URL_SUPABASE",
+  "SUA_PUBLIC_KEY"
+);
+
+async function check(){
+  const { data } = await sb.auth.getSession();
+  if(data.session){
+    loginBox(false);
+    openPage("home.html",document.querySelector(".icon"));
+  }
+}
+check();
+
+async function login(){
+  const { error } = await sb.auth.signInWithPassword({
+    email: email.value,
+    password: senha.value
+  });
+  if(error){ alert(error.message); return; }
+  loginBox(false);
+  openPage("home.html",document.querySelector(".icon"));
+}
+
+async function logout(){
+  await sb.auth.signOut();
+  location.reload();
+}
+
+function loginBox(show){
+  document.getElementById("login").style.display = show?"flex":"none";
+  document.getElementById("app").style.display = show?"none":"grid";
+}
+
+function openPage(page,el){
   document.getElementById("frame").src = page;
   document.querySelectorAll(".icon").forEach(i=>i.classList.remove("active"));
   el.classList.add("active");
