@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Resumo • Ingredientes</title>
+<title>Ingredientes • Análise</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -11,15 +11,15 @@
 <style>
 :root{
   --primary:#00c2b8;
-  --bg:#f5fbfb;
+  --soft:#e6f7f7;
+  --danger:#ef4444;
   --card:#ffffff;
   --text:#0f172a;
   --muted:#64748b;
 }
 
-/* RESET CARD */
+/* RESET */
 *{box-sizing:border-box}
-
 html,body{
   margin:0;
   padding:0;
@@ -35,7 +35,7 @@ html,body{
   height:100%;
   background:var(--card);
   border-radius:22px;
-  padding:18px 20px;
+  padding:20px;
   box-shadow:0 18px 40px rgba(0,0,0,.08);
   display:flex;
   flex-direction:column;
@@ -51,17 +51,16 @@ html,body{
   gap:8px;
 }
 
-/* GRID */
-.grid{
+/* KPIs */
+.kpis{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:14px;
   margin-top:14px;
 }
 
-/* KPI */
 .kpi{
-  background:var(--bg);
+  background:var(--soft);
   border-radius:16px;
   padding:14px;
 }
@@ -78,14 +77,34 @@ html,body{
   font-weight:800;
 }
 
-/* FOOTER */
-.footer{
-  margin-top:12px;
+/* DESTAQUE */
+.highlight{
+  margin-top:16px;
+  background:#fff5f5;
+  border:1px solid #fecaca;
+  border-radius:16px;
+  padding:14px;
+}
+
+.highlight h4{
+  margin:0 0 6px;
+  font-size:13px;
+  font-weight:800;
+  color:var(--danger);
+}
+
+.highlight p{
+  margin:0;
+  font-size:13px;
+  font-weight:600;
+  color:var(--text);
+}
+
+.highlight small{
+  display:block;
+  margin-top:4px;
   font-size:12px;
   color:var(--muted);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
 }
 </style>
 </head>
@@ -95,31 +114,34 @@ html,body{
 <div class="card">
 
   <div>
-    <div class="grid">
+
+    <div class="kpis">
       <div class="kpi">
-        <span>Total cadastrados</span>
+        <span>Total de ingredientes</span>
         <strong id="total">—</strong>
       </div>
 
       <div class="kpi">
-        <span>Custo total</span>
-        <strong id="custoTotal">—</strong>
+        <span>CMV total</span>
+        <strong id="cmv">—</strong>
       </div>
 
       <div class="kpi">
         <span>Maior impacto</span>
-        <strong id="maiorCusto">—</strong>
+        <strong id="impacto">—</strong>
       </div>
 
       <div class="kpi">
-        <span>Mais usado</span>
-        <strong id="maisUsado">—</strong>
+        <span>Receitas afetadas</span>
+        <strong id="receitas">—</strong>
       </div>
     </div>
-  </div>
 
-  <div class="footer" id="critico">
-    —
+    <div class="highlight">
+      <h4>Ingrediente mais caro</h4>
+      <p id="ingrediente">—</p>
+      <small id="unitario">—</small>
+    </div>
   </div>
 
 </div>
@@ -135,38 +157,39 @@ const moeda = v =>
   "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
 /* ================= LOAD ================= */
-(async ()=>{
+(async()=>{
   const { data, error } = await sb
     .from("buffet_itens")
-    .select("nome, quantidade, custo_unitario, custo_calculado");
+    .select("nome, buffet_id, custo_unitario, custo_calculado");
 
   if(error || !data?.length){
-    document.getElementById("total").textContent = "0";
     return;
   }
 
-  const total = data.length;
+  document.getElementById("total").textContent = data.length;
 
-  const custoTotal =
-    data.reduce((s,i)=>s+Number(i.custo_calculado||0),0);
+  const cmvTotal = data.reduce((s,i)=>s+Number(i.custo_calculado||0),0);
+  document.getElementById("cmv").textContent = moeda(cmvTotal);
 
-  const maiorCustoItem =
-    data.reduce((a,b)=>Number(b.custo_calculado)>Number(a.custo_calculado)?b:a);
+  const maiorImpacto = data.reduce((a,b)=>
+    Number(b.custo_calculado) > Number(a.custo_calculado) ? b : a
+  );
+  document.getElementById("impacto").textContent =
+    moeda(maiorImpacto.custo_calculado);
 
-  const maisUsadoItem =
-    data.reduce((a,b)=>Number(b.quantidade)>Number(a.quantidade)?b:a);
+  const maisCaro = data.reduce((a,b)=>
+    Number(b.custo_unitario) > Number(a.custo_unitario) ? b : a
+  );
 
-  const maisCaroUnit =
-    data.reduce((a,b)=>Number(b.custo_unitario)>Number(a.custo_unitario)?b:a);
+  const receitas = new Set(
+    data.filter(i=>i.nome === maisCaro.nome).map(i=>i.buffet_id)
+  ).size;
 
-  document.getElementById("total").textContent = total;
-  document.getElementById("custoTotal").textContent = moeda(custoTotal);
-  document.getElementById("maiorCusto").textContent = moeda(maiorCustoItem.custo_calculado);
-  document.getElementById("maisUsado").textContent =
-    Number(maisUsadoItem.quantidade).toFixed(3);
+  document.getElementById("ingrediente").textContent = maisCaro.nome;
+  document.getElementById("unitario").textContent =
+    `Custo unitário ${moeda(maisCaro.custo_unitario)} • usado em ${receitas} receita(s)`;
 
-  document.getElementById("critico").textContent =
-    "Ingrediente crítico: " + maisCaroUnit.nome;
+  document.getElementById("receitas").textContent = receitas;
 })();
 </script>
 
