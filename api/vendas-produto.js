@@ -7,32 +7,52 @@ export default async function handler(req, res) {
     });
   }
 
-  const TOKEN = process.env.VF_TOKEN;
-  const BASE_URL = "https://mercatto.varejofacil.com/api/v1/venda/cupons-fiscais";
-
-  let start = 0;
-  const count = 100;
-  let total = 1;
-  let quantidadeTotal = 0;
-
   try {
+    /* ================= AUTH ================= */
+    const authRes = await fetch(
+      `${req.headers.origin}/api/auth`
+    );
+
+    if (!authRes.ok) {
+      const txt = await authRes.text();
+      throw new Error("Erro auth: " + txt);
+    }
+
+    const authJson = await authRes.json();
+    const TOKEN = authJson.accessToken;
+
+    if (!TOKEN) {
+      throw new Error("Token não retornado pela API auth");
+    }
+
+    /* ================= CUPONS ================= */
+    const BASE_URL =
+      "https://mercatto.varejofacil.com/api/v1/venda/cupons-fiscais";
+
+    let start = 0;
+    const count = 100;
+    let total = 1;
+    let quantidadeTotal = 0;
+
     while (start < total) {
       const url =
         `${BASE_URL}?start=${start}&count=${count}` +
-        `&q=dataVenda>=${de} AND dataVenda<=${ate}`;
+        `&dataVendaInicial=${de}&dataVendaFinal=${ate}`;
 
       const r = await fetch(url, {
         headers: {
-          Authorization: `${TOKEN}`
+          Authorization: TOKEN
         }
       });
 
+      const raw = await r.text();
+
       if (!r.ok) {
-        const txt = await r.text();
-        throw new Error(txt);
+        console.error("VF ERRO:", raw);
+        throw new Error(raw);
       }
 
-      const j = await r.json();
+      const j = JSON.parse(raw);
       total = j.total || 0;
 
       (j.items || []).forEach(cupom => {
@@ -46,16 +66,17 @@ export default async function handler(req, res) {
       start += count;
     }
 
-    return res.json({
+    return res.status(200).json({
       produtoId,
       periodo: { de, ate },
       quantidadeVendida: quantidadeTotal
     });
 
   } catch (err) {
-    console.error("Erro vendas-produto:", err);
+    console.error("ERRO vendas-produto:", err);
     return res.status(500).json({
-      error: "Erro ao consultar vendas no Varejo Fácil"
+      error: "Erro ao consultar vendas",
+      message: err.message
     });
   }
 }
