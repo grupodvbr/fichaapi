@@ -26,7 +26,7 @@ body{
 h1{margin:0 0 24px;font-weight:800}
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
   gap:22px;
 }
 .card{
@@ -34,8 +34,6 @@ h1{margin:0 0 24px;font-weight:800}
   border-radius:26px;
   box-shadow:0 25px 60px rgba(0,0,0,.12);
   overflow:hidden;
-  display:flex;
-  flex-direction:column;
 }
 .card img{
   width:100%;
@@ -44,9 +42,6 @@ h1{margin:0 0 24px;font-weight:800}
 }
 .body{
   padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:14px;
 }
 .title{font-size:18px;font-weight:800}
 .badge{
@@ -55,12 +50,12 @@ h1{margin:0 0 24px;font-weight:800}
   border-radius:999px;
   font-size:12px;
   font-weight:700;
-  display:inline-block;
 }
 .kpis{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:10px;
+  margin:12px 0;
 }
 .kpi{
   background:#f8fafc;
@@ -68,19 +63,13 @@ h1{margin:0 0 24px;font-weight:800}
   padding:12px;
   text-align:center;
 }
-.kpi span{font-size:12px;color:var(--muted)}
-.kpi strong{font-size:15px}
 .ing{
   background:#f8fafc;
   border-radius:14px;
-  padding:10px 14px;
+  padding:8px 12px;
+  margin-top:6px;
   display:flex;
   justify-content:space-between;
-  font-size:13px;
-}
-.footer{
-  padding:18px;
-  border-top:1px solid #e5e7eb;
 }
 button{
   width:100%;
@@ -111,27 +100,11 @@ button{
   padding:26px;
   border-radius:26px;
 }
-.modal-box h2{margin-top:0}
-.grid2{
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:18px;
-}
-input,select{
-  width:100%;
-  padding:12px;
-  border-radius:14px;
-  border:1px solid #cbd5e1;
-}
 .ing-edit{
   display:grid;
-  grid-template-columns:2fr 1fr 1fr auto;
+  grid-template-columns:2fr 1fr 1fr;
   gap:8px;
   margin-top:8px;
-}
-.remove{
-  background:var(--danger);
-  color:#fff;
 }
 </style>
 </head>
@@ -141,38 +114,24 @@ input,select{
 <h1>📊 Fichas Técnicas</h1>
 <div id="cards" class="grid"></div>
 
-<!-- MODAL EDIÇÃO -->
 <div id="modal" class="modal">
-<div class="modal-box">
-  <h2 id="editTitulo"></h2>
+  <div class="modal-box">
+    <h2 id="editTitulo"></h2>
 
-  <div class="grid2">
-    <div>
-      <label>Nome do prato</label>
-      <input id="editNome">
+    <label>Nome do prato</label>
+    <input id="editNome">
 
-      <label style="margin-top:10px">Foto</label>
-      <input type="file" id="editFoto" accept="image/*">
-      <img id="preview" style="width:100%;border-radius:18px;margin-top:10px">
+    <h3 style="margin-top:16px">Ingredientes (valores atualizados do Varejo)</h3>
+    <div id="listaEdit"></div>
+
+    <div class="kpis">
+      <div class="kpi"><span>CMV Total</span><strong id="kTotal"></strong></div>
+      <div class="kpi"><span>CMV Unit</span><strong id="kUnit"></strong></div>
+      <div class="kpi"><span>Margem</span><strong id="kMargem"></strong></div>
     </div>
 
-    <div>
-      <div class="kpis">
-        <div class="kpi"><span>CMV Total</span><strong id="kCmvTotal"></strong></div>
-        <div class="kpi"><span>CMV Unit</span><strong id="kCmvUnit"></strong></div>
-        <div class="kpi"><span>Margem</span><strong id="kMargem"></strong></div>
-      </div>
-    </div>
+    <button class="edit" onclick="salvar()">Salvar</button>
   </div>
-
-  <h3 style="margin-top:20px">Ingredientes</h3>
-  <div id="listaEdit"></div>
-
-  <div class="footer">
-    <button class="remove" onclick="fechar()">Cancelar</button>
-    <button class="edit" onclick="salvar()">Salvar Alterações</button>
-  </div>
-</div>
 </div>
 
 <script>
@@ -186,26 +145,16 @@ const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:
 let ficha=null;
 let itens=[];
 
-/* AUTH */
+/* LOAD */
 (async()=>{
-  const { data } = await sb.auth.getSession();
-  if(!data.session){
-    alert("Faça login");
-    location.href="index.html";
+  const { data } = await sb.from("buffet").select("*").order("created_at",{ascending:false});
+  for(const f of data){
+    const it = await sb.from("buffet_itens").select("*").eq("buffet_id",f.id);
+    renderCard(f,it.data||[]);
   }
 })();
 
-/* LOAD */
-async function carregar(){
-  const { data } = await sb.from("buffet").select("*").order("created_at",{ascending:false});
-  for(const f of data){
-    const itensDb = await sb.from("buffet_itens").select("*").eq("buffet_id",f.id);
-    render(f,itensDb.data||[]);
-  }
-}
-carregar();
-
-function render(f,it){
+function renderCard(f,it){
   const c=document.createElement("div");
   c.className="card";
   c.innerHTML=`
@@ -214,81 +163,69 @@ function render(f,it){
       <div class="title">${f.nome}</div>
       <span class="badge">Venda ${moeda(f.preco_venda)}</span>
       <div class="kpis">
-        <div class="kpi"><span>CMV</span><strong>${moeda(f.custo_unitario)}</strong></div>
-        <div class="kpi"><span>Margem</span><strong>${Number(f.margem_percentual).toFixed(1)}%</strong></div>
-        <div class="kpi"><span>Porções</span><strong>${f.rendimento}</strong></div>
+        <div class="kpi"><strong>${moeda(f.custo_unitario)}</strong></div>
+        <div class="kpi"><strong>${Number(f.margem_percentual).toFixed(1)}%</strong></div>
+        <div class="kpi"><strong>${f.rendimento}</strong></div>
       </div>
       ${it.map(i=>`
-        <div class="ing">
-          <span>${i.nome}</span>
-          <strong>${moeda(i.custo_calculado)}</strong>
-        </div>
+        <div class="ing"><span>${i.nome}</span><strong>${moeda(i.custo_calculado)}</strong></div>
       `).join("")}
-    </div>
-    <div class="footer">
-      <button class="edit" onclick="editar('${f.id}')">✏️ Editar</button>
-    </div>
-  `;
+      <button class="edit" onclick="editar('${f.id}')">Editar</button>
+    </div>`;
   cards.appendChild(c);
 }
 
-/* EDITAR */
+/* EDITAR COM VAREJO */
 async function editar(id){
-  const r1 = await sb.from("buffet").select("*").eq("id",id).single();
-  const r2 = await sb.from("buffet_itens").select("*").eq("buffet_id",id);
+  ficha = (await sb.from("buffet").select("*").eq("id",id).single()).data;
+  itens = (await sb.from("buffet_itens").select("*").eq("buffet_id",id)).data;
 
-  ficha=r1.data;
-  itens=r2.data;
+  // 🔥 RECONSULTA PREÇO DO PRODUTO NO VAREJO
+  const p = await (await fetch(`/api/produto-preco/${ficha.produto_id}`)).json();
+  ficha.preco_venda = p.precoOferta1 ?? p.precoVenda1 ?? 0;
+
+  // 🔥 RECONSULTA CUSTO DOS INGREDIENTES
+  for(const i of itens){
+    const r = await (await fetch(`/api/produto-preco/${i.produto_id}`)).json();
+    i.custo_unitario = r.precoMedioDeReposicao ?? 0;
+    i.custo_calculado = (i.quantidade * i.custo_unitario) / (i.rendimento_percentual/100);
+  }
 
   editTitulo.textContent=ficha.nome;
   editNome.value=ficha.nome;
-  preview.src=ficha.foto_url||"";
 
   renderEdit();
   modal.style.display="flex";
 }
 
 function renderEdit(){
-  listaEdit.innerHTML=itens.map((i,idx)=>`
+  listaEdit.innerHTML=itens.map(i=>`
     <div class="ing-edit">
       <input value="${i.nome}" disabled>
-      <input type="number" value="${i.quantidade}" onchange="itens[${idx}].quantidade=this.value">
-      <input type="number" value="${i.rendimento_percentual}" onchange="itens[${idx}].rendimento_percentual=this.value">
-      <button class="remove" onclick="itens.splice(${idx},1);renderEdit()">X</button>
+      <input value="${i.quantidade}">
+      <input value="${moeda(i.custo_calculado)}" disabled>
     </div>
   `).join("");
-  recalcular();
-}
 
-function recalcular(){
-  const total=itens.reduce((s,i)=>s+i.custo_calculado,0);
-  const unit=total/ficha.rendimento;
-  kCmvTotal.textContent=moeda(total);
-  kCmvUnit.textContent=moeda(unit);
+  const total = itens.reduce((s,i)=>s+i.custo_calculado,0);
+  const unit = total / ficha.rendimento;
+
+  kTotal.textContent=moeda(total);
+  kUnit.textContent=moeda(unit);
   kMargem.textContent=(((ficha.preco_venda-unit)/ficha.preco_venda)*100).toFixed(1)+"%";
 }
 
 async function salvar(){
-  let foto=ficha.foto_url;
-
-  if(editFoto.files[0]){
-    const f=editFoto.files[0];
-    const path=`fichas/${Date.now()}-${f.name}`;
-    await sb.storage.from("buffet").upload(path,f);
-    foto=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
-  }
-
   await sb.from("buffet").update({
     nome:editNome.value,
-    foto_url:foto
+    preco_venda:ficha.preco_venda,
+    custo_total:itens.reduce((s,i)=>s+i.custo_calculado,0),
+    custo_unitario:(itens.reduce((s,i)=>s+i.custo_calculado,0)/ficha.rendimento),
+    margem_percentual:(((ficha.preco_venda-(itens.reduce((s,i)=>s+i.custo_calculado,0)/ficha.rendimento))/ficha.preco_venda)*100)
   }).eq("id",ficha.id);
 
-  fechar();
-  location.reload();
-}
-
-function fechar(){
   modal.style.display="none";
+  location.reload();
 }
 </script>
 
