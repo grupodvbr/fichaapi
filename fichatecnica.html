@@ -393,6 +393,24 @@ fotoProduto.onchange=()=>{
 
 /* BUSCA PRODUTO */
 buscaProduto.oninput = () => {
+buscaProduto.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    clearTimeout(debounceProduto);
+
+    const termo = buscaProduto.value.trim().toLowerCase();
+    if (termo.length < 2) return;
+
+    // dispara busca imediata
+    debounceProduto = setTimeout(() => {
+      buscaProduto.oninput();
+    }, 0);
+  }
+});
+
+
+  
   clearTimeout(debounceProduto);
 
   const termo = buscaProduto.value.trim().toLowerCase();
@@ -541,6 +559,21 @@ document.getElementById("custo").value = custoUnitario.toFixed(4);
 
 /* INGREDIENTE */
 buscaIngrediente.oninput = () => {
+  buscaIngrediente.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    clearTimeout(debounceIngrediente);
+
+    const termo = buscaIngrediente.value.trim().toLowerCase();
+    if (termo.length < 2) return;
+
+    debounceIngrediente = setTimeout(() => {
+      buscaIngrediente.oninput();
+    }, 0);
+  }
+});
+
   clearTimeout(debounceIngrediente);
 
   const termo = buscaIngrediente.value.trim().toLowerCase();
