@@ -223,21 +223,36 @@ window.selecionarProduto=(id,nome)=>{
   consultar();
 };
 
-/* CONSULTA VENDAS */
 async function consultar(){
   if(!produtoSelecionado) return;
 
-  qtd.textContent="…";
+  let start = 0;
+  let total = 0;
 
-  const r=await fetch(
-    `/api/vendas-produto?produtoId=${produtoSelecionado.id}&de=${de.value}&ate=${ate.value}`
-  );
-  const j=await r.json();
+  qtd.textContent = "0";
 
-  qtd.textContent=j.quantidadeVendida ?? 0;
+  while (true) {
+    const r = await fetch(
+      `/api/vendas-produto?` +
+      `produtoId=${produtoSelecionado.id}` +
+      `&de=${de.value}` +
+      `&ate=${ate.value}` +
+      `&start=${start}`
+    );
+
+    const j = await r.json();
+
+    total += Number(j.somaPagina || 0);
+
+    // 🔥 Atualiza UI em tempo real
+    qtd.textContent = total.toFixed(3);
+
+    if (j.terminou) break;
+
+    start = j.proximoStart;
+  }
 }
 
-["de","ate"].forEach(i=>document.getElementById(i).addEventListener("change",consultar));
 </script>
 
 </body>
