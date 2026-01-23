@@ -190,9 +190,10 @@ h1{
 
 <script>
 const sb = supabase.createClient(
-  "https://dsngsuetvucxeztbgbtb.supabase.co",
-  "sb_publishable_rN6fZXNxnjgwnbXTPXEP5A_7n5Ty9Cp"
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
+
 async function carregar(){
   const {data}=await sb.from("ficha_tecnica").select("*").order("produto_nome");
   grid.innerHTML="";
