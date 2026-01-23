@@ -232,6 +232,51 @@ input,select{
     grid-template-columns:repeat(3,1fr);
   }
 }
+/* LISTA DE INGREDIENTES COM SCROLL */
+.ing-list{
+  max-height:92px;            /* altura pra ~4 itens */
+  overflow-y:auto;
+  margin-top:8px;
+  padding-right:4px;
+}
+
+/* scrollbar discreta */
+.ing-list::-webkit-scrollbar{
+  width:6px;
+}
+.ing-list::-webkit-scrollbar-thumb{
+  background:#cbd5e1;
+  border-radius:999px;
+}
+
+/* TOTAL DE INGREDIENTES */
+.total-custo{
+  margin-top:8px;
+  font-size:13px;
+  font-weight:800;
+  color:#1e293b;
+}
+
+/* CARD DE LUCRO */
+.lucro{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:14px;
+  font-weight:900;
+  font-size:14px;
+  text-align:center;
+}
+
+/* cores lucro */
+.lucro.positivo{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.lucro.negativo{
+  background:#fee2e2;
+  color:#991b1b;
+}
 
 </style>
 </head>
@@ -324,43 +369,54 @@ async function renderCard(f){
     .select("*")
     .eq("buffet_id",f.id);
 
+  const ingredientes = it.data || [];
+
+  // custo total ingredientes
+  const custoTotal = ingredientes.reduce(
+    (s,i)=>s+Number(i.custo_calculado||0),0
+  );
+
+  // lucro
+  const lucro = Number(f.preco_venda||0) - custoTotal;
+  const lucroClasse = lucro >= 0 ? "positivo" : "negativo";
+
   const c=document.createElement("div");
   c.className="card";
+
   c.innerHTML=`
-    ${f.foto_url?`<img src="${f.foto_url}">`:``}
+    ${f.foto_url ? `<img src="${f.foto_url}">` : ``}
+
     <div class="card-body">
       <h3>${f.nome}</h3>
+
       <span class="badge">${f.tipo || "Sem tipo"}</span>
       <span class="badge">Venda ${moeda(f.preco_venda)}</span>
 
-      ${(it.data||[]).map(i=>`
-        <div class="ing">
-          <span>${i.nome}</span>
-          <strong>${moeda(i.custo_calculado)}</strong>
-        </div>
-      `).join("")}
+      <div class="total-custo">
+        Custo ingredientes: ${moeda(custoTotal)}
+      </div>
 
-      <button class="edit" onclick="editar('${f.id}')">Editar</button>
-    </div>`;
+      <div class="ing-list">
+        ${ingredientes.slice(0,4).map(i=>`
+          <div class="ing">
+            <span>${i.nome}</span>
+            <strong>${moeda(i.custo_calculado)}</strong>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="lucro ${lucroClasse}">
+        Lucro: ${moeda(lucro)}
+      </div>
+
+      <button class="edit" onclick="editar('${f.id}')">
+        Editar
+      </button>
+    </div>
+  `;
+
   cards.appendChild(c);
 }
-function aplicarFiltros(){
-  const nomeFiltro =
-    document.getElementById("filtroNome").value.toLowerCase();
-
-  const tipoFiltro =
-    document.getElementById("filtroTipo").value;
-
-  cards.innerHTML = "";
-
-  fichas
-    .filter(f =>
-      (!nomeFiltro || f.nome.toLowerCase().includes(nomeFiltro)) &&
-      (!tipoFiltro || f.tipo === tipoFiltro)
-    )
-    .forEach(f => renderCard(f));
-}
-
 
 /* EDITAR */
 async function editar(id){
