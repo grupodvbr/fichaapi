@@ -104,18 +104,31 @@ button{
 .overlay{
   position:absolute;
   inset:0;
-  background:rgba(255,255,255,.75);
-  backdrop-filter:blur(2px);
+  background:rgba(255,255,255,.8);
+  backdrop-filter:blur(3px);
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:20;
+  z-index:30;
   border-radius:30px;
 }
 .overlay span{
   font-size:18px;
   font-weight:800;
   color:#2563eb;
+}
+.hidden{display:none}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.logout{
+  background:#ef4444;
+}
+.login-box{
+  max-width:420px;
+  margin:auto;
 }
 </style>
 </head>
@@ -125,7 +138,26 @@ button{
 
 <div id="overlay" class="overlay"><span>Carregando…</span></div>
 
-<h1>📋 Ficha Técnica</h1>
+<!-- LOGIN -->
+<div id="loginBox" class="login-box">
+  <h1>🔐 Acesso Restrito</h1>
+
+  <label>Email</label>
+  <input id="loginEmail" type="email" placeholder="email@empresa.com">
+
+  <label>Senha</label>
+  <input id="loginSenha" type="password" placeholder="••••••••">
+
+  <button onclick="login()">Entrar</button>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
+<div class="topbar">
+  <h1>📋 Ficha Técnica</h1>
+  <button class="logout" onclick="logout()">Sair</button>
+</div>
 
 <label>Produto (prato)</label>
 <input id="buscaProduto" placeholder="Digite o nome do produto">
@@ -146,7 +178,8 @@ button{
 <div class="grid">
   <input id="qtd" type="number" step="0.001" placeholder="Qtd usada">
   <select id="unUso">
-    <option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option>
+    <option>UN</option><option>KG</option><option>G</option>
+    <option>L</option><option>ML</option>
   </select>
   <input id="custo" readonly placeholder="Custo unit">
   <input id="rend" type="number" placeholder="Rend %">
@@ -165,30 +198,60 @@ button{
   <div class="kpi">Margem<span id="margem">—</span></div>
 </div>
 
-<button onclick="salvar()" style="margin-top:28px">Salvar Ficha Técnica</button>
+<button onclick="salvar()" style="margin-top:28px">
+  Salvar Ficha Técnica
+</button>
+
+</div>
 </div>
 
 <script>
+/* ================= SUPABASE ================= */
 const sb = supabase.createClient(
   "https://dsngsuetvucxeztbgbtb.supabase.co",
   "sb_publishable_rN6fZXNxnjgwnbXTPXEP5A_7n5Ty9Cp"
 );
-// 🔑 AUTH ANÔNIMO (ESSENCIAL)
-(async () => {
-  const { data, error } = await sb.auth.signInAnonymously();
-  if (error) {
-    console.error("Erro auth anon:", error);
+
+const overlay = document.getElementById("overlay");
+const show = () => overlay.style.display = "flex";
+const hide = () => overlay.style.display = "none";
+
+/* ================= AUTH ================= */
+async function login(){
+  show();
+  const { error } = await sb.auth.signInWithPassword({
+    email: loginEmail.value,
+    password: loginSenha.value
+  });
+  hide();
+  if(error){ alert("Email ou senha inválidos"); return; }
+  init();
+}
+
+async function logout(){
+  await sb.auth.signOut();
+  location.reload();
+}
+
+async function init(){
+  const { data } = await sb.auth.getSession();
+  if(data.session){
+    loginBox.classList.add("hidden");
+    app.classList.remove("hidden");
+  }else{
+    loginBox.classList.remove("hidden");
+    app.classList.add("hidden");
   }
-})();
+}
+init();
+
+/* ================= LÓGICA FICHA ================= */
 let produto=null;
 let ingrediente=null;
 let ingredientes=[];
 let debounce=null;
 
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-const overlay=document.getElementById("overlay");
-const show=()=>overlay.style.display="flex";
-const hide=()=>overlay.style.display="none";
 
 /* FOTO */
 fotoProduto.onchange=()=>{
@@ -208,7 +271,8 @@ buscaProduto.oninput=()=>{
     const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
     const j=await r.json();
     listaProduto.innerHTML=j.items.map(p=>`
-      <div class="item" onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
+      <div class="item"
+        onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
         ${p.descricao}
       </div>`).join("");
   },300);
@@ -218,8 +282,8 @@ async function selectProduto(id,nome){
   show();
   const r=await fetch(`/api/produto-preco/${id}`);
   const j=await r.json();
-  const p=j.items?.[0]||j[0]||{};
-  produto={id,nome,preco:Number(p.precoVenda1||p.precoVenda||0)};
+  const p=j.items?.[0]||{};
+  produto={id,nome,preco:Number(p.precoVenda1||0)};
   produtoBadge.style.display="inline-block";
   produtoBadge.textContent=`${nome} • ${moeda(produto.preco)}`;
   precoVenda.textContent=moeda(produto.preco);
@@ -238,7 +302,8 @@ buscaIngrediente.oninput=()=>{
     const r=await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`);
     const j=await r.json();
     listaIngrediente.innerHTML=j.items.map(p=>`
-      <div class="item" onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
+      <div class="item"
+        onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
         ${p.descricao}
       </div>`).join("");
   },300);
@@ -248,8 +313,8 @@ async function selectIng(id,nome){
   show();
   const r=await fetch(`/api/produto-preco/${id}`);
   const j=await r.json();
-  const p=j.items?.[0]||j[0]||{};
-  ingrediente={nome,custo:Number(p.precoMedioDeReposicao||p.custoProduto||0)};
+  const p=j.items?.[0]||{};
+  ingrediente={nome,custo:Number(p.precoMedioDeReposicao||0)};
   ingredienteBadge.style.display="inline-block";
   ingredienteBadge.textContent=nome;
   custo.value=ingrediente.custo.toFixed(4);
@@ -257,10 +322,8 @@ async function selectIng(id,nome){
   hide();
 }
 
-/* ADD INGREDIENTE */
 function addIngrediente(){
   if(!ingrediente||!qtd.value)return;
-
   const rendimento=(rend.value||100)/100;
   const total=qtd.value*ingrediente.custo*rendimento;
 
@@ -279,15 +342,13 @@ function addIngrediente(){
   render();
 }
 
-/* RENDER */
 function render(){
   const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
   listaIng.innerHTML=ingredientes.map(i=>`
     <div class="ing">
       <span>${i.nome} (${i.quantidade} ${i.unidade})</span>
       <strong>${moeda(i.custo_total)}</strong>
-    </div>
-  `).join("");
+    </div>`).join("");
 
   const porcoes=rendimentoFinal.value||1;
   cmvTotal.textContent=moeda(cmv);
@@ -297,7 +358,6 @@ function render(){
     :"—";
 }
 
-/* SALVAR */
 async function salvar(){
   if(!produto||!ingredientes.length){
     alert("Produto e ingredientes são obrigatórios");
@@ -309,38 +369,35 @@ async function salvar(){
   let fotoUrl=null;
   if(fotoProduto.files[0]){
     const file=fotoProduto.files[0];
-const safeName = file.name
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .replace(/[^a-zA-Z0-9._-]/g, "_");
+    const safeName=file.name
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-zA-Z0-9._-]/g,"_");
 
-const path = `fichas/${Date.now()}-${safeName}`;
-    const up=await sb.storage.from("buffet").upload(path, file, {
-  contentType: file.type,
-  upsert: false
-});
+    const path=`fichas/${Date.now()}-${safeName}`;
+
+    const up=await sb.storage
+      .from("buffet")
+      .upload(path,file,{contentType:file.type});
 
     if(up.error){ hide(); alert("Erro imagem"); return; }
-    fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
+    fotoUrl=sb.storage.from("buffet")
+      .getPublicUrl(path).data.publicUrl;
   }
 
   const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
   const porcoes=rendimentoFinal.value||1;
 
-  const { data, error } = await sb
-    .from("buffet")
-    .insert({
-      produto_id: produto.id,
-      nome: produto.nome,
-      preco_venda: produto.preco,
-      custo_total: cmv,
-      custo_unitario: cmv/porcoes,
-      margem_percentual: produto.preco?((produto.preco-(cmv/porcoes))/produto.preco)*100:null,
-      rendimento: porcoes,
-      foto_url: fotoUrl
-    })
-    .select()
-    .single();
+  const { data, error } = await sb.from("buffet").insert({
+    produto_id:produto.id,
+    nome:produto.nome,
+    preco_venda:produto.preco,
+    custo_total:cmv,
+    custo_unitario:cmv/porcoes,
+    margem_percentual:
+      produto.preco?((produto.preco-(cmv/porcoes))/produto.preco)*100:null,
+    rendimento:porcoes,
+    foto_url:fotoUrl
+  }).select().single();
 
   if(error){ hide(); alert("Erro ao salvar ficha"); return; }
 
