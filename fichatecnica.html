@@ -2,203 +2,130 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Ficha Técnica • CMV Profissional (DEBUG)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ficha Técnica • DEBUG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --primary:#2563eb;
-  --bg:#eef2ff;
-  --card:#fff;
-  --text:#0f172a;
-  --logbg:#0f172a;
-  --logtext:#e5e7eb;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  padding:18px;
-  background:linear-gradient(180deg,#eef2ff,#f8fafc);
-  font-family:Inter,Arial,sans-serif;
-  color:var(--text);
-}
-.wrapper{
-  display:grid;
-  grid-template-columns:1fr 420px;
-  gap:16px;
-}
-.container{
-  background:#fff;
-  border-radius:30px;
-  padding:30px;
-  box-shadow:0 35px 80px rgba(0,0,0,.12);
-}
-.log{
-  background:var(--logbg);
-  color:var(--logtext);
-  border-radius:20px;
-  padding:14px;
-  font-family:monospace;
-  font-size:12px;
-  overflow:auto;
-  max-height:92vh;
-}
-.log h3{
-  margin:0 0 10px;
-  font-size:14px;
-  color:#60a5fa;
-}
-.log pre{
-  white-space:pre-wrap;
-  margin:0 0 12px;
-  border-bottom:1px dashed #334155;
-  padding-bottom:8px;
-}
-input,select,button{
-  width:100%;
-  padding:14px;
-  border-radius:14px;
-  border:1px solid #cbd5e1;
-  margin-top:6px;
-}
-button{
-  background:linear-gradient(180deg,#2563eb,#1e40af);
-  color:#fff;
-  font-weight:800;
-  border:none;
-}
-.lista .item{
-  background:#f1f5f9;
-  padding:10px;
-  border-radius:12px;
-  margin-top:4px;
-  cursor:pointer;
-}
-.badge{
-  display:inline-block;
-  padding:6px 12px;
-  border-radius:999px;
-  background:#e0f2fe;
-  font-weight:800;
-  font-size:12px;
-  margin-top:8px;
-}
+body{font-family:Inter;background:#f1f5f9;margin:0;padding:20px}
+.container{display:grid;grid-template-columns:2fr 1fr;gap:20px;max-width:1400px;margin:auto}
+.card{background:#fff;border-radius:20px;padding:24px}
+h1{margin-top:0}
+input{width:100%;padding:12px;border-radius:12px;border:1px solid #cbd5e1}
+.item{padding:10px;border-radius:10px;background:#f8fafc;margin-top:6px;cursor:pointer}
+.item:hover{background:#e2e8f0}
+.badge{margin-top:10px;display:inline-block;padding:6px 14px;border-radius:999px;background:#e0f2fe;font-weight:800}
+.log{background:#020617;color:#e5e7eb;border-radius:20px;padding:20px;height:80vh;overflow:auto;font-size:13px}
+.log b{color:#38bdf8}
 </style>
 </head>
 
 <body>
 
-<div class="wrapper">
-
-<!-- APP -->
 <div class="container">
 
-<h1>📋 Ficha Técnica (DEBUG)</h1>
+<!-- APP -->
+<div class="card">
+  <h1>📋 Ficha Técnica (DEBUG)</h1>
 
-<label>Produto (prato)</label>
-<input id="buscaProduto" placeholder="Digite o nome do produto">
-<div id="listaProduto" class="lista"></div>
-<div id="produtoBadge" class="badge" style="display:none"></div>
+  <label>Produto</label>
+  <input id="buscaProduto" placeholder="Digite o nome do produto">
+  <div id="listaProduto"></div>
 
-<label>Preço Venda</label>
-<input id="precoVenda" readonly>
+  <div id="produtoBadge" class="badge" style="display:none"></div>
+
+  <h3>Preço Venda</h3>
+  <input id="precoVenda" readonly>
 
 </div>
 
 <!-- LOG -->
-<div class="log">
-  <h3>🧠 LOG EM TEMPO REAL</h3>
-  <div id="logArea"></div>
+<div class="log" id="log">
+  <b>🧠 LOG EM TEMPO REAL</b><br><br>
 </div>
 
 </div>
 
 <script>
-/* ================= LOG ================= */
-const logArea = document.getElementById("logArea");
-
-function log(titulo, obj){
-  const time = new Date().toLocaleTimeString();
-  const pre = document.createElement("pre");
-  pre.innerText =
-`[${time}] ${titulo}
-${obj ? JSON.stringify(obj,null,2) : ""}`;
-  logArea.prepend(pre);
+const logBox = document.getElementById("log");
+function log(msg, obj){
+  const h = new Date().toLocaleTimeString();
+  logBox.innerHTML += `<div>[${h}] <b>${msg}</b><pre>${JSON.stringify(obj,null,2)}</pre></div>`;
+  logBox.scrollTop = logBox.scrollHeight;
 }
 
-/* ================= BUSCA PRODUTO ================= */
 let debounce=null;
+let produto=null;
 
+/* BUSCA */
 buscaProduto.oninput=()=>{
   clearTimeout(debounce);
   const termo = buscaProduto.value.trim();
+  if(termo.length<3) return;
 
-  log("⌨️ Digitado no campo de produto", { termo });
-
-  if(termo.length < 3){
-    listaProduto.innerHTML="";
-    return;
-  }
+  log("⌨️ Digitado no campo de produto",{termo});
 
   debounce=setTimeout(async()=>{
-    const url = `/api/produtos-busca?q=${encodeURIComponent(termo)}`;
-    log("📡 Chamando API de busca", { url });
+    const url=`/api/produtos-busca?q=${encodeURIComponent(termo)}`;
+    log("📡 Chamando API de busca",{url});
 
-    const r = await fetch(url);
-    const j = await r.json();
+    const r=await fetch(url);
+    const j=await r.json();
 
-    log("📦 Retorno da busca", j);
+    log("📦 Retorno da busca",j);
 
-    listaProduto.innerHTML = (j.items||[]).map(p=>`
-      <div class="item"
-        onclick="selectProduto(${p.id}, '${p.descricao.replace(/'/g,"")}')">
+    listaProduto.innerHTML=j.items.map(p=>`
+      <div class="item" onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
         ${p.descricao}
       </div>
     `).join("");
   },300);
 };
 
-/* ================= SELECIONAR PRODUTO ================= */
-async function selectProduto(id, nome){
-  log("🖱️ Produto selecionado", { id, nome });
+/* SELEÇÃO */
+async function selectProduto(id,nome){
+  log("🖱️ Produto selecionado",{id,nome});
 
-  const url = `/api/produto-preco/${id}`;
-  log("📡 Chamando API de preço", { url });
+  const url=`/api/produto-preco/${id}`;
+  log("📡 Chamando API de preço",{url});
 
-  const r = await fetch(url);
-  const p = await r.json();
+  const r=await fetch(url);
+  const json=await r.json();
 
-  log("📦 JSON bruto do preço", p);
+  log("📦 JSON bruto do preço",json);
 
-  const precoOferta = Number(p.precoOferta1);
-  const preco1 = Number(p.precoVenda1);
-  const preco2 = Number(p.precoVenda2);
-  const preco3 = Number(p.precoVenda3);
+  const p = Array.isArray(json) ? json[0] : json.items?.[0];
 
-  log("🔎 Campos avaliados", {
-    precoOferta1: precoOferta,
-    precoVenda1: preco1,
-    precoVenda2: preco2,
-    precoVenda3: preco3
-  });
+  if(!p){
+    log("❌ Nenhum preço encontrado",json);
+    return;
+  }
 
-  const precoFinal =
-    precoOferta ||
-    preco1 ||
-    preco2 ||
-    preco3 ||
+  const campos = {
+    precoOferta1:p.precoOferta1,
+    precoVenda1:p.precoVenda1,
+    precoVenda2:p.precoVenda2,
+    precoVenda3:p.precoVenda3
+  };
+
+  log("🔎 Campos avaliados",campos);
+
+  const preco =
+    (Number(p.precoOferta1) > 0 && Number(p.precoOferta1)) ||
+    Number(p.precoVenda1) ||
+    Number(p.precoVenda2) ||
+    Number(p.precoVenda3) ||
     0;
 
-  log("💰 Preço final calculado", { precoFinal });
+  log("💰 Preço final calculado",{precoFinal:preco});
+
+  produto={id,nome,preco};
 
   produtoBadge.style.display="inline-block";
-  produtoBadge.textContent = `${nome} • R$ ${precoFinal.toFixed(2)}`;
-  precoVenda.value = `R$ ${precoFinal.toFixed(2)}`;
+  produtoBadge.textContent=`${nome} • R$ ${preco.toFixed(2)}`;
 
-  listaProduto.innerHTML="";
+  precoVenda.value=`R$ ${preco.toFixed(2)}`;
 }
 </script>
 
