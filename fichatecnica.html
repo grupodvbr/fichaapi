@@ -511,13 +511,16 @@ if (cachedKeyIng) {
 };
 
 function renderListaIngrediente(items) {
-  listaIngrediente.innerHTML = items.map(p => `
-    <div class="item"
-      onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
-      ${p.descricao}
-    </div>
-  `).join("");
+  listaIngrediente.innerHTML = items
+    .slice(0, 10)
+    .map(p => `
+      <div class="item"
+        onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
+        ${p.descricao}
+      </div>
+    `).join("");
 }
+
 
 
 
