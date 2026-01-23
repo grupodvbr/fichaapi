@@ -5,7 +5,7 @@ async function autenticarVF() {
   <password>99861</password>
 </Usuario>`;
 
-  const response = await fetch(
+  const r = await fetch(
     "https://mercatto.varejofacil.com/api/auth",
     {
       method: "POST",
@@ -17,79 +17,55 @@ async function autenticarVF() {
     }
   );
 
-  const raw = await response.text();
+  const raw = await r.text();
+  if (!r.ok) throw new Error(raw);
 
-  if (!response.ok) {
-    console.error("AUTH ERRO:", raw);
-    throw new Error("Erro ao autenticar no Varejo Fácil");
-  }
-
-  const json = JSON.parse(raw);
-  return json.accessToken;
+  return JSON.parse(raw).accessToken;
 }
 
 export default async function handler(req, res) {
-  const { produtoId, de, ate } = req.query;
+  const { produtoId, de, ate, start = 0 } = req.query;
 
   if (!produtoId || !de || !ate) {
-    return res.status(400).json({
-      error: "Parâmetros obrigatórios: produtoId, de, ate"
-    });
+    return res.status(400).json({ error: "Parâmetros obrigatórios" });
   }
 
   try {
-    /* ================= AUTH ================= */
     const TOKEN = await autenticarVF();
 
-    /* ================= CUPONS ================= */
-    const BASE_URL =
-      "https://mercatto.varejofacil.com/api/v1/venda/cupons-fiscais";
+    const COUNT = 50;
+    const url =
+      `https://mercatto.varejofacil.com/api/v1/venda/cupons-fiscais` +
+      `?start=${start}&count=${COUNT}` +
+      `&dataVendaInicial=${de}&dataVendaFinal=${ate}`;
 
-    let start = 0;
-    const count = 100;
-    let total = 1;
-    let quantidadeTotal = 0;
+    const r = await fetch(url, {
+      headers: { Authorization: TOKEN }
+    });
 
-    while (start < total) {
-      const url =
-        `${BASE_URL}?start=${start}&count=${count}` +
-        `&dataVendaInicial=${de}&dataVendaFinal=${ate}`;
+    const j = await r.json();
 
-      const r = await fetch(url, {
-        headers: {
-          Authorization: TOKEN
+    let somaPagina = 0;
+
+    (j.items || []).forEach(cupom => {
+      (cupom.itensVenda || []).forEach(item => {
+        if (String(item.produtoId) === String(produtoId)) {
+          somaPagina += Number(item.quantidadeVenda || 0);
         }
       });
-
-      const raw = await r.text();
-
-      if (!r.ok) {
-        console.error("VF ERRO:", raw);
-        throw new Error("Erro ao buscar cupons fiscais");
-      }
-
-      const j = JSON.parse(raw);
-      total = j.total || 0;
-
-      (j.items || []).forEach(cupom => {
-        (cupom.itensVenda || []).forEach(item => {
-          if (String(item.produtoId) === String(produtoId)) {
-            quantidadeTotal += Number(item.quantidadeVenda || 0);
-          }
-        });
-      });
-
-      start += count;
-    }
+    });
 
     return res.status(200).json({
-      produtoId,
-      periodo: { de, ate },
-      quantidadeVendida: quantidadeTotal
+      start: Number(start),
+      count: COUNT,
+      total: j.total,
+      somaPagina,
+      proximoStart: Number(start) + COUNT,
+      terminou: Number(start) + COUNT >= j.total
     });
 
   } catch (err) {
-    console.error("ERRO vendas-produto:", err);
+    console.error(err);
     return res.status(500).json({
       error: "Erro ao consultar vendas",
       message: err.message
