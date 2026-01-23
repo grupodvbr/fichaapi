@@ -287,8 +287,14 @@ async function init(){
 }
 init();
 
+async function getUserId(){
+  const { data } = await sb.auth.getSession();
+  return data.session.user.id;
+}
+
 /* ================= LÓGICA FICHA ================= */
 let produto=null;
+
 let ingrediente=null;
 let ingredientes=[];
 let debounce=null;
@@ -429,19 +435,32 @@ async function salvar(){
   const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
   const porcoes=rendimentoFinal.value||1;
 
-  const { data, error } = await sb.from("buffet").insert({
-    produto_id:produto.id,
-    nome:produto.nome,
-    preco_venda:produto.preco,
-    custo_total:cmv,
-    custo_unitario:cmv/porcoes,
-    margem_percentual:
-      produto.preco?((produto.preco-(cmv/porcoes))/produto.preco)*100:null,
-    rendimento:porcoes,
-    foto_url:fotoUrl
-  }).select().single();
+ const userId = await getUserId();
 
-  if(error){ hide(); alert("Erro ao salvar ficha"); return; }
+const { data, error } = await sb
+  .from("buffet")
+  .insert({
+    user_id: userId,
+    produto_id: produto.id,
+    nome: produto.nome,
+    preco_venda: produto.preco,
+    custo_total: cmv,
+    custo_unitario: cmv / porcoes,
+    margem_percentual: produto.preco
+      ? ((produto.preco - (cmv / porcoes)) / produto.preco) * 100
+      : null,
+    rendimento: porcoes,
+    foto_url: fotoUrl
+  })
+  .select()
+  .single();
+
+if(error){
+  console.error(error);
+  hide();
+  alert(error.message);
+  return;
+}
 
   for(const i of ingredientes){
     await sb.from("buffet_itens").insert({
