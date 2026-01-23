@@ -1,3 +1,33 @@
+async function autenticarVF() {
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Usuario>
+  <username>NALBERT SOUZA</username>
+  <password>99861</password>
+</Usuario>`;
+
+  const response = await fetch(
+    "https://mercatto.varejofacil.com/api/auth",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/xml",
+        "Accept": "application/json"
+      },
+      body: xml
+    }
+  );
+
+  const raw = await response.text();
+
+  if (!response.ok) {
+    console.error("AUTH ERRO:", raw);
+    throw new Error("Erro ao autenticar no Varejo Fácil");
+  }
+
+  const json = JSON.parse(raw);
+  return json.accessToken;
+}
+
 export default async function handler(req, res) {
   const { produtoId, de, ate } = req.query;
 
@@ -9,21 +39,7 @@ export default async function handler(req, res) {
 
   try {
     /* ================= AUTH ================= */
-    const authRes = await fetch(
-      `${req.headers.origin}/api/auth`
-    );
-
-    if (!authRes.ok) {
-      const txt = await authRes.text();
-      throw new Error("Erro auth: " + txt);
-    }
-
-    const authJson = await authRes.json();
-    const TOKEN = authJson.accessToken;
-
-    if (!TOKEN) {
-      throw new Error("Token não retornado pela API auth");
-    }
+    const TOKEN = await autenticarVF();
 
     /* ================= CUPONS ================= */
     const BASE_URL =
@@ -49,7 +65,7 @@ export default async function handler(req, res) {
 
       if (!r.ok) {
         console.error("VF ERRO:", raw);
-        throw new Error(raw);
+        throw new Error("Erro ao buscar cupons fiscais");
       }
 
       const j = JSON.parse(raw);
