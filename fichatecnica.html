@@ -141,6 +141,37 @@ button{
   cursor:pointer;
   color:#2563eb;
 }
+
+.input-loading{
+  position:relative;
+}
+
+.input-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,.75);
+  backdrop-filter:blur(2px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  border-radius:18px;
+  z-index:5;
+  pointer-events:none;
+}
+
+.spinner{
+  width:22px;
+  height:22px;
+  border:3px solid #cbd5e1;
+  border-top-color:#2563eb;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
 </style>
 </head>
 
@@ -175,8 +206,17 @@ button{
 </div>
 
 <label>Produto (prato)</label>
-<input id="buscaProduto" placeholder="Digite o nome do produto">
+
+<div class="input-loading">
+  <input id="buscaProduto" placeholder="Digite o nome do produto">
+
+  <div class="input-overlay" id="loadingProduto">
+    <div class="spinner"></div>
+  </div>
+</div>
+
 <div id="listaProduto" class="lista"></div>
+
 <div id="produtoBadge" class="badge" style="display:none"></div>
 
 <label>Foto do prato</label>
@@ -230,6 +270,16 @@ const sb = supabase.createClient(
 const overlay = document.getElementById("overlay");
 const show = () => overlay.style.display = "flex";
 const hide = () => overlay.style.display = "none";
+// 🔵 OVERLAY DO INPUT DE PRODUTO
+const loadingProduto = document.getElementById("loadingProduto");
+
+const showProdutoLoading = () => {
+  loadingProduto.style.display = "flex";
+};
+
+const hideProdutoLoading = () => {
+  loadingProduto.style.display = "none";
+};
 
 /* ================= AUTH ================= */
 let isSignup=false;
@@ -350,20 +400,26 @@ if (cachedKey) {
 
     controllerProduto = new AbortController();
 
-    try {
-      const r = await fetch(
-        `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
-        { signal: controllerProduto.signal }
-      );
+  try {
+  showProdutoLoading(); // ✅ AQUI: LIGA O SPINNER
 
-      const j = await r.json();
-      cacheProduto[termo] = j.items || [];
-      renderListaProduto(j.items || []);
-    } catch (e) {
-      if (e.name !== "AbortError") {
-        console.error(e);
-      }
-    }
+  const r = await fetch(
+    `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
+    { signal: controllerProduto.signal }
+  );
+
+  const j = await r.json();
+  cacheProduto[termo] = j.items || [];
+  renderListaProduto(j.items || []);
+
+} catch (e) {
+  if (e.name !== "AbortError") {
+    console.error(e);
+  }
+} finally {
+  hideProdutoLoading(); // ✅ AQUI: DESLIGA O SPINNER
+}
+
 
   }, 280);
 };
@@ -476,6 +532,7 @@ const cachedKeyIng = Object.keys(cacheIngrediente)
   .find(k => termo.startsWith(k));
 
 if (cachedKeyIng) {
+
   const filtrados = cacheIngrediente[cachedKeyIng]
     .filter(p =>
       p.descricao.toLowerCase().includes(termo)
@@ -484,6 +541,7 @@ if (cachedKeyIng) {
   renderListaIngrediente(filtrados);
   return;
 }
+
 
 
     if (controllerIngrediente) {
