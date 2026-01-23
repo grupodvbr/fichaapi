@@ -13,8 +13,10 @@
   --primary-dark:#00a6a0;
   --primary-soft:#dff6f5;
   --bg:#ecf7f7;
+  --white:#ffffff;
 }
 
+/* RESET */
 *{margin:0;padding:0;box-sizing:border-box}
 
 html,body{
@@ -25,14 +27,14 @@ html,body{
   overflow:hidden;
 }
 
-/* ===== APP ===== */
+/* APP */
 .app{
   display:grid;
   grid-template-columns:88px 1fr;
   height:100vh;
 }
 
-/* ===== SIDEBAR PRINCIPAL ===== */
+/* SIDEBAR */
 .sidebar{
   background:linear-gradient(180deg,var(--primary),var(--primary-dark));
   display:flex;
@@ -42,39 +44,88 @@ html,body{
   gap:18px;
 }
 
+/* MENU CARD */
 .icon{
-  width:44px;
-  height:44px;
-  border-radius:14px;
+  width:48px;
+  height:48px;
+  border-radius:16px;
   background:rgba(255,255,255,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
   cursor:pointer;
   transition:.2s;
 }
+
 .icon:hover{transform:scale(1.08)}
+
 .icon.active{
   background:#fff;
-  box-shadow:0 0 0 4px rgba(255,255,255,.5);
+  box-shadow:0 0 0 4px rgba(255,255,255,.55);
 }
 
-/* ===== SUB NAVBAR ===== */
-.subnav{
+/* GLYPH BASE */
+.glyph{
+  width:22px;
+  height:22px;
+  position:relative;
+}
+
+/* HOME */
+.glyph.home::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:#00a6a0;
+  clip-path:polygon(50% 0, 100% 40%, 100% 100%, 0 100%, 0 40%);
+  border-radius:4px;
+}
+
+/* FICHA */
+.glyph.doc::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:4px;
+  background:#00a6a0;
+}
+.glyph.doc::after{
+  content:"";
+  position:absolute;
+  top:4px;
+  left:4px;
+  right:4px;
+  height:3px;
   background:#e6f7f7;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:22px 0;
-  gap:16px;
-  border-right:1px solid rgba(0,0,0,.05);
+  box-shadow:0 6px 0 #e6f7f7, 0 12px 0 #e6f7f7;
 }
 
-.subicon{
-  width:36px;
-  height:36px;
-  border-radius:12px;
-  background:#b2ebe7;
+/* ANALISE */
+.glyph.chart::before{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:5px;
+  height:14px;
+  background:#00a6a0;
+  box-shadow:8px -6px 0 #00a6a0, 16px -2px 0 #00a6a0;
 }
 
-/* ===== MAIN ===== */
+/* CONFIG */
+.glyph.settings{
+  border:3px solid #00a6a0;
+  border-radius:50%;
+}
+.glyph.settings::after{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border:2px solid #00a6a0;
+  border-radius:50%;
+}
+
+/* MAIN */
 .main{
   display:flex;
   flex-direction:column;
@@ -107,12 +158,24 @@ iframe{
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="icon active" onclick="openPage('home.html', this)" title="Home"></div>
-    <div class="icon" onclick="openPage('fichatecnicahtml', this)" title="Card 1"></div>
-    <div class="icon" onclick="openPage('analiseficha.html', this)" title="Card 2"></div>
-    <div class="icon" onclick="openPage('cards/card3.html', this)" title="Card 3"></div>
-  </aside>
 
+    <div class="icon active" onclick="openPage('home.html',this)">
+      <span class="glyph home"></span>
+    </div>
+
+    <div class="icon" onclick="openPage('fichatecnica.html',this)">
+      <span class="glyph doc"></span>
+    </div>
+
+    <div class="icon" onclick="openPage('analiseficha.html',this)">
+      <span class="glyph chart"></span>
+    </div>
+
+    <div class="icon" onclick="openPage('cards/card3.html',this)">
+      <span class="glyph settings"></span>
+    </div>
+
+  </aside>
 
   <!-- MAIN -->
   <div class="main">
