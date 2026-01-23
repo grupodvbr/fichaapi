@@ -2,250 +2,215 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Análise de Fichas Técnicas • CLENA</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Análise & Edição • Ficha Técnica</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-:root{
-  --bg:#f4f6f8;
-  --card:#ffffff;
-  --primary:#2563eb;
-  --success:#16a34a;
-  --danger:#dc2626;
-  --text:#0f172a;
-  --muted:#64748b;
-}
-
 *{box-sizing:border-box}
-
 body{
   margin:0;
-  padding:18px;
-  background:var(--bg);
+  padding:24px;
   font-family:Inter,Arial,sans-serif;
-  color:var(--text);
+  background:#f1f5f9;
 }
-
-h1{
-  margin:0 0 18px;
-  font-size:24px;
-  font-weight:800;
-}
-
 .container{
   max-width:1200px;
   margin:auto;
+  background:#fff;
+  padding:30px;
+  border-radius:24px;
+  box-shadow:0 30px 70px rgba(0,0,0,.12);
 }
-
-/* ================= GRID ================= */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:18px;
-}
-
-.card{
-  background:var(--card);
-  border-radius:22px;
-  padding:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.1);
-  cursor:pointer;
-  transition:.2s;
-}
-
-.card:hover{
-  transform:translateY(-4px);
-}
-
-.card img{
+h1{margin:0 0 20px;font-weight:800}
+table{
   width:100%;
-  height:160px;
-  object-fit:cover;
-  border-radius:16px;
+  border-collapse:collapse;
 }
-
-.card h3{
-  margin:12px 0 6px;
-  font-size:16px;
-  font-weight:800;
+th,td{
+  padding:14px;
+  border-bottom:1px solid #e5e7eb;
+  text-align:left;
 }
-
-.card .info{
-  font-size:13px;
-  color:var(--muted);
-  margin-bottom:6px;
+th{font-size:13px;color:#64748b}
+tr:hover{background:#f8fafc;cursor:pointer}
+.badge{
+  padding:6px 12px;
+  border-radius:999px;
+  background:#e0f2fe;
+  font-weight:700;
+  font-size:12px;
 }
-
-.kpis{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
-  margin-top:10px;
-}
-
-.kpi{
-  background:#f8fafc;
+button{
+  padding:10px 16px;
   border-radius:14px;
-  padding:10px;
-  text-align:center;
-  font-weight:800;
-  font-size:13px;
+  border:none;
+  font-weight:700;
+  cursor:pointer;
 }
-
-.kpi.success{color:var(--success)}
-.kpi.danger{color:var(--danger)}
-
-/* ================= MODAL ================= */
+.primary{background:#2563eb;color:#fff}
+.danger{background:#ef4444;color:#fff}
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(15,23,42,.6);
+  background:rgba(0,0,0,.45);
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:1000;
 }
-
 .modal-box{
   background:#fff;
-  max-width:560px;
-  width:92%;
-  border-radius:26px;
-  padding:22px;
-  max-height:90vh;
-  overflow:auto;
-}
-
-.modal img{
   width:100%;
-  border-radius:18px;
-  margin-bottom:14px;
+  max-width:900px;
+  padding:26px;
+  border-radius:22px;
 }
-
-.modal h2{
-  margin:0 0 10px;
-  font-size:20px;
-  font-weight:800;
-}
-
-.modal .kpis{
+.modal-box h2{margin-top:0}
+.grid{
+  display:grid;
   grid-template-columns:repeat(3,1fr);
+  gap:12px;
 }
-
-.modal ul{
-  padding-left:18px;
-  margin-top:10px;
+.ing{
+  background:#f8fafc;
+  padding:12px;
+  border-radius:14px;
+  display:flex;
+  justify-content:space-between;
 }
-
-.btn-close{
-  margin-top:14px;
-  width:100%;
-  padding:14px;
-  border-radius:16px;
-  border:none;
-  background:var(--primary);
-  color:#fff;
-  font-weight:800;
-  cursor:pointer;
+.footer{
+  margin-top:20px;
+  display:flex;
+  justify-content:space-between;
 }
+.hidden{display:none}
 </style>
 </head>
 
 <body>
 <div class="container">
-
 <h1>📊 Análise de Fichas Técnicas</h1>
 
-<div id="grid" class="grid"></div>
-
+<table>
+<thead>
+<tr>
+  <th>Produto</th>
+  <th>Preço Venda</th>
+  <th>CMV Unit</th>
+  <th>Margem</th>
+  <th>Criado</th>
+</tr>
+</thead>
+<tbody id="lista"></tbody>
+</table>
 </div>
 
 <!-- MODAL -->
-<div id="modal" class="modal" onclick="fecharModal(event)">
-  <div class="modal-box">
-    <img id="mFoto">
-    <h2 id="mNome"></h2>
+<div id="modal" class="modal">
+<div class="modal-box">
+  <h2 id="modalTitulo"></h2>
 
-    <div class="kpis">
-      <div class="kpi">Venda<br>R$ <span id="mVenda"></span></div>
-      <div class="kpi">CMV<br>R$ <span id="mCmv"></span></div>
-      <div class="kpi success">Lucro<br>R$ <span id="mLucro"></span></div>
-    </div>
-
-    <div class="kpis">
-      <div class="kpi">Rendimento<br><span id="mRend"></span></div>
-      <div class="kpi">Lucro %<br><span id="mLucroPerc"></span>%</div>
-      <div class="kpi">CMV %<br><span id="mCmvPerc"></span>%</div>
-    </div>
-
-    <h3>Ingredientes</h3>
-    <ul id="mIng"></ul>
-
-    <button class="btn-close" onclick="modal.style.display='none'">Fechar</button>
+  <div class="grid">
+    <input id="editPreco" type="number" step="0.01" placeholder="Preço Venda">
+    <input id="editRendimento" type="number" placeholder="Rendimento">
   </div>
+
+  <h3>Ingredientes</h3>
+  <div id="listaItens"></div>
+
+  <div class="footer">
+    <button class="danger" onclick="fechar()">Fechar</button>
+    <button class="primary" onclick="salvarEdicao()">Salvar Alterações</button>
+  </div>
+</div>
 </div>
 
 <script>
+/* ================= SUPABASE ================= */
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
+let fichaAtual=null;
+let itensAtuais=[];
+
+/* ================= LOAD ================= */
 async function carregar(){
-  const {data}=await sb.from("ficha_tecnica").select("*").order("produto_nome");
-  grid.innerHTML="";
+  const { data: session } = await sb.auth.getSession();
+  if(!session.session){
+    alert("Faça login primeiro");
+    location.href="index.html";
+    return;
+  }
 
-  data.forEach(f=>{
-    const venda = Number(f.preco_venda||0);
-    const cmv = Number(f.custo_unitario||0);
-    const lucro = venda - cmv;
-    const lucroPerc = venda ? (lucro/venda*100) : 0;
+  const { data } = await sb
+    .from("buffet")
+    .select("*")
+    .order("created_at",{ascending:false});
 
-    grid.insertAdjacentHTML("beforeend",`
-      <div class="card" onclick='abrir(${JSON.stringify(f)})'>
-        <img src="${f.foto_url || "https://via.placeholder.com/400x250?text=Sem+Imagem"}">
-        <h3>${f.produto_nome}</h3>
-        <div class="info">Venda: R$ ${venda.toFixed(2)}</div>
-        <div class="info">Custo: R$ ${cmv.toFixed(2)}</div>
-
-        <div class="kpis">
-          <div class="kpi success">R$ ${lucro.toFixed(2)}</div>
-          <div class="kpi ${lucro>=0?'success':'danger'}">${lucroPerc.toFixed(1)}%</div>
-        </div>
-      </div>
-    `);
-  });
+  lista.innerHTML = data.map(f=>`
+    <tr onclick="abrir('${f.id}')">
+      <td>${f.nome}</td>
+      <td>R$ ${f.preco_venda?.toFixed(2)}</td>
+      <td>R$ ${f.custo_unitario?.toFixed(2)}</td>
+      <td>${f.margem_percentual?.toFixed(1)}%</td>
+      <td>${new Date(f.created_at).toLocaleDateString()}</td>
+    </tr>
+  `).join("");
 }
+carregar();
 
-function abrir(f){
-  const venda=Number(f.preco_venda||0);
-  const cmv=Number(f.custo_unitario||0);
-  const lucro=venda-cmv;
+/* ================= ABRIR ================= */
+async function abrir(id){
+  const { data } = await sb.from("buffet").select("*").eq("id",id).single();
+  const itens = await sb.from("buffet_itens").select("*").eq("buffet_id",id);
 
-  mFoto.src=f.foto_url||"https://via.placeholder.com/400x250?text=Sem+Imagem";
-  mNome.innerText=f.produto_nome;
-  mVenda.innerText=venda.toFixed(2);
-  mCmv.innerText=cmv.toFixed(2);
-  mLucro.innerText=lucro.toFixed(2);
-  mLucroPerc.innerText=(venda?lucro/venda*100:0).toFixed(1);
-  mCmvPerc.innerText=(venda?cmv/venda*100:0).toFixed(1);
-  mRend.innerText=f.rendimento;
+  fichaAtual=data;
+  itensAtuais=itens.data;
 
-  mIng.innerHTML=(f.receita||[]).map(i=>`
-    <li>${i.nome} — R$ ${Number(i.custo_total||0).toFixed(2)}</li>
+  modalTitulo.textContent=data.nome;
+  editPreco.value=data.preco_venda;
+  editRendimento.value=data.rendimento;
+
+  listaItens.innerHTML = itensAtuais.map(i=>`
+    <div class="ing">
+      <span>${i.nome} (${i.quantidade} ${i.unidade_uso})</span>
+      <strong>R$ ${i.custo_calculado.toFixed(2)}</strong>
+    </div>
   `).join("");
 
   modal.style.display="flex";
 }
 
-function fecharModal(e){
-  if(e.target.id==="modal") modal.style.display="none";
+function fechar(){
+  modal.style.display="none";
 }
 
-carregar();
+/* ================= SALVAR ================= */
+async function salvarEdicao(){
+  const novoPreco=Number(editPreco.value);
+  const novoRendimento=Number(editRendimento.value);
+
+  const cmvTotal = itensAtuais.reduce((s,i)=>s+i.custo_calculado,0);
+  const cmvUnit = cmvTotal / novoRendimento;
+  const margem = ((novoPreco - cmvUnit) / novoPreco) * 100;
+
+  await sb.from("buffet")
+    .update({
+      preco_venda: novoPreco,
+      rendimento: novoRendimento,
+      custo_unitario: cmvUnit,
+      margem_percentual: margem
+    })
+    .eq("id", fichaAtual.id);
+
+  alert("Ficha atualizada");
+  fechar();
+  carregar();
+}
 </script>
 </body>
 </html>
