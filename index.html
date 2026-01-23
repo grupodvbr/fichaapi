@@ -15,7 +15,6 @@
   --bg:#ecf7f7;
   --card:#ffffff;
   --text:#0f172a;
-  --muted:#94a3b8;
   --shadow:0 22px 60px rgba(0,0,0,.08);
 }
 
@@ -44,18 +43,11 @@ body{
   padding:20px 0;
   gap:22px;
 }
-
 .sidebar .icon{
   width:44px;
   height:44px;
   border-radius:14px;
   background:rgba(255,255,255,.35);
-  cursor:pointer;
-  transition:.2s;
-}
-.sidebar .icon:hover{
-  transform:scale(1.08);
-  background:rgba(255,255,255,.55);
 }
 
 /* HEADER */
@@ -68,29 +60,9 @@ body{
   padding:0 30px;
 }
 
-.header .left{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
-.header .avatar{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  background:#cbd5e1;
-}
-
 .header .title{
   font-size:18px;
   font-weight:800;
-}
-
-.header .search{
-  width:320px;
-  height:36px;
-  border-radius:999px;
-  background:#fff;
 }
 
 /* CONTENT */
@@ -106,7 +78,6 @@ body{
   gap:24px;
 }
 
-/* CARD */
 .card{
   background:var(--card);
   border-radius:26px;
@@ -115,7 +86,6 @@ body{
   min-height:220px;
 }
 
-/* GRID */
 .c1{grid-column:span 3}
 .c2{grid-column:span 3}
 .c3{grid-column:span 3}
@@ -125,7 +95,7 @@ body{
 .c7{grid-column:span 8}
 .c8{grid-column:span 4}
 
-.card iframe{
+iframe{
   width:100%;
   height:100%;
   border:0;
@@ -137,91 +107,34 @@ body{
 
 <div class="app">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="icon"></div>
     <div class="icon"></div>
     <div class="icon"></div>
     <div class="icon"></div>
     <div class="icon"></div>
   </aside>
 
-  <!-- MAIN -->
   <main>
-
-    <!-- HEADER -->
     <div class="header">
-      <div class="left">
-        <div class="avatar"></div>
-        <div class="title">Dashboard</div>
-      </div>
-      <div class="search"></div>
+      <div class="title">Dashboard</div>
     </div>
 
-    <!-- CONTENT -->
     <div class="content">
-
       <div class="grid">
 
-        <!-- CARD 1 -->
-        <div class="card c1">
-          <iframe srcdoc="
-            <html>
-            <body style='font-family:Inter;padding:20px'>
-              <h2>📋 Ficha Técnica</h2>
-              <p>Conteúdo funcionando</p>
-            </body>
-            </html>
-          "></iframe>
-        </div>
+        <div class="card c1"><iframe src="fichatecnica.html"></iframe></div>
+        <div class="card c2"><iframe src="analiseficha.html"></iframe></div>
+        <div class="card c3"><iframe src="home.html"></iframe></div>
+        <div class="card c4"><iframe src="home.html"></iframe></div>
 
-        <!-- CARD 2 -->
-        <div class="card c2">
-          <iframe srcdoc="
-            <html>
-            <body style='font-family:Inter;padding:20px'>
-              <h2>📊 Análise</h2>
-              <p>Dados aqui</p>
-            </body>
-            </html>
-          "></iframe>
-        </div>
+        <div class="card c5"><iframe src="grafico.html"></iframe></div>
+        <div class="card c6"><iframe src="lateral.html"></iframe></div>
 
-        <!-- CARD 3 -->
-        <div class="card c3">
-          <iframe srcdoc="
-            <html>
-            <body style='font-family:Inter;padding:20px'>
-              <h2>🏠 Home</h2>
-            </body>
-            </html>
-          "></iframe>
-        </div>
-
-        <div class="card c4">
-          <iframe srcdoc="<html><body style='padding:20px'>Outro card</body></html>"></iframe>
-        </div>
-
-        <div class="card c5">
-          <iframe srcdoc="<html><body style='padding:20px'>Card grande</body></html>"></iframe>
-        </div>
-
-        <div class="card c6">
-          <iframe srcdoc="<html><body style='padding:20px'>Lateral</body></html>"></iframe>
-        </div>
-
-        <div class="card c7">
-          <iframe srcdoc="<html><body style='padding:20px'>Inferior</body></html>"></iframe>
-        </div>
-
-        <div class="card c8">
-          <iframe srcdoc="<html><body style='padding:20px'>Inferior direita</body></html>"></iframe>
-        </div>
+        <div class="card c7"><iframe src="home.html"></iframe></div>
+        <div class="card c8"><iframe src="home.html"></iframe></div>
 
       </div>
-
     </div>
-
   </main>
 
 </div>
