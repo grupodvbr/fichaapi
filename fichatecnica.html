@@ -76,14 +76,19 @@ input,select,button{
   font-family:inherit;
 }
 
-/* BOTÃO PRINCIPAL */
+/* BOTÃO PRINCIPAL – PADRÃO DASHBOARD */
 button{
-  background:linear-gradient(180deg,#2563eb,#1e40af);
+  background:linear-gradient(
+    180deg,
+    var(--primary),
+    var(--primary-dark)
+  );
   color:#fff;
   font-weight:800;
   border:none;
   cursor:pointer;
 }
+
 
 /* BOTÃO SECUNDÁRIO */
 .secondary{
