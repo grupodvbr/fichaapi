@@ -226,8 +226,16 @@ button{
 <h3>🍳 Ingredientes</h3>
 
 <label>Buscar ingrediente</label>
-<input id="buscaIngrediente" placeholder="Digite o nome do ingrediente">
+<div class="input-loading">
+  <input id="buscaIngrediente" placeholder="Digite o nome do ingrediente">
+
+  <div class="input-overlay" id="loadingIngrediente">
+    <div class="spinner"></div>
+  </div>
+</div>
+
 <div id="listaIngrediente" class="lista"></div>
+
 <div id="ingredienteBadge" class="badge" style="display:none"></div>
 
 <div class="grid">
@@ -279,6 +287,16 @@ const showProdutoLoading = () => {
 
 const hideProdutoLoading = () => {
   loadingProduto.style.display = "none";
+};
+// 🔵 OVERLAY DO INPUT DE INGREDIENTE
+const loadingIngrediente = document.getElementById("loadingIngrediente");
+
+const showIngredienteLoading = () => {
+  loadingIngrediente.style.display = "flex";
+};
+
+const hideIngredienteLoading = () => {
+  loadingIngrediente.style.display = "none";
 };
 
 /* ================= AUTH ================= */
@@ -533,6 +551,8 @@ const cachedKeyIng = Object.keys(cacheIngrediente)
 
 if (cachedKeyIng) {
 
+  hideIngredienteLoading(); // ✅ AQUI
+
   const filtrados = cacheIngrediente[cachedKeyIng]
     .filter(p =>
       p.descricao.toLowerCase().includes(termo)
@@ -550,20 +570,26 @@ if (cachedKeyIng) {
 
     controllerIngrediente = new AbortController();
 
-    try {
-      const r = await fetch(
-        `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
-        { signal: controllerIngrediente.signal }
-      );
+try {
+  showIngredienteLoading(); // ✅ LIGA
 
-      const j = await r.json();
-      cacheIngrediente[termo] = j.items || [];
-      renderListaIngrediente(j.items || []);
-    } catch (e) {
-      if (e.name !== "AbortError") {
-        console.error(e);
-      }
-    }
+  const r = await fetch(
+    `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
+    { signal: controllerIngrediente.signal }
+  );
+
+  const j = await r.json();
+  cacheIngrediente[termo] = j.items || [];
+  renderListaIngrediente(j.items || []);
+
+} catch (e) {
+  if (e.name !== "AbortError") {
+    console.error(e);
+  }
+} finally {
+  hideIngredienteLoading(); // ✅ DESLIGA SEMPRE
+}
+
 
   }, 280);
 };
