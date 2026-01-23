@@ -521,25 +521,7 @@ fotoProduto.onchange=()=>{
 };
 
 /* BUSCA PRODUTO */
-buscaProduto.oninput = () => {
-buscaProduto.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-
-    clearTimeout(debounceProduto);
-
-    const termo = buscaProduto.value.trim().toLowerCase();
-    if (termo.length < 2) return;
-
-    // dispara busca imediata
-    debounceProduto = setTimeout(() => {
-      buscaProduto.oninput();
-    }, 0);
-  }
-});
-
-
-  
+function buscarProduto(imediato = false) {
   clearTimeout(debounceProduto);
 
   const termo = buscaProduto.value.trim().toLowerCase();
@@ -549,51 +531,53 @@ buscaProduto.addEventListener("keydown", (e) => {
     return;
   }
 
+  const delay = imediato ? 0 : 280;
+
   debounceProduto = setTimeout(async () => {
 
-const cachedKey = Object.keys(cacheProduto)
-  .find(k => termo.startsWith(k));
+    const cachedKey = Object.keys(cacheProduto)
+      .find(k => termo.startsWith(k));
 
-if (cachedKey) {
-  const filtrados = cacheProduto[cachedKey]
-    .filter(p =>
-      p.descricao.toLowerCase().includes(termo)
-    );
+    if (cachedKey) {
+      const filtrados = cacheProduto[cachedKey]
+        .filter(p => p.descricao.toLowerCase().includes(termo));
 
-  renderListaProduto(filtrados);
-  return;
-}
-
-
-    if (controllerProduto) {
-      controllerProduto.abort();
+      renderListaProduto(filtrados);
+      return;
     }
 
+    if (controllerProduto) controllerProduto.abort();
     controllerProduto = new AbortController();
 
-  try {
-  showProdutoLoading(); // ✅ AQUI: LIGA O SPINNER
+    try {
+      showProdutoLoading();
 
-  const r = await fetch(
-    `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
-    { signal: controllerProduto.signal }
-  );
+      const r = await fetch(
+        `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
+        { signal: controllerProduto.signal }
+      );
 
-  const j = await r.json();
-  cacheProduto[termo] = j.items || [];
-  renderListaProduto(j.items || []);
+      const j = await r.json();
+      cacheProduto[termo] = j.items || [];
+      renderListaProduto(j.items || []);
 
-} catch (e) {
-  if (e.name !== "AbortError") {
-    console.error(e);
-  }
-} finally {
-  hideProdutoLoading(); // ✅ AQUI: DESLIGA O SPINNER
+    } catch (e) {
+      if (e.name !== "AbortError") console.error(e);
+    } finally {
+      hideProdutoLoading();
+    }
+
+  }, delay);
 }
 
+buscaProduto.addEventListener("input", () => buscarProduto(false));
 
-  }, 280);
-};
+buscaProduto.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    buscarProduto(true);
+  }
+});
 
 function renderListaProduto(items) {
   listaProduto.innerHTML = items
@@ -685,24 +669,8 @@ document.getElementById("custo").value = custoUnitario.toFixed(4);
 
 
 
-
 /* INGREDIENTE */
-buscaIngrediente.oninput = () => {
-  buscaIngrediente.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-
-    clearTimeout(debounceIngrediente);
-
-    const termo = buscaIngrediente.value.trim().toLowerCase();
-    if (termo.length < 2) return;
-
-    debounceIngrediente = setTimeout(() => {
-      buscaIngrediente.oninput();
-    }, 0);
-  }
-});
-
+function buscarIngrediente(imediato = false) {
   clearTimeout(debounceIngrediente);
 
   const termo = buscaIngrediente.value.trim().toLowerCase();
@@ -712,55 +680,54 @@ buscaIngrediente.oninput = () => {
     return;
   }
 
+  const delay = imediato ? 0 : 280;
+
   debounceIngrediente = setTimeout(async () => {
 
-const cachedKeyIng = Object.keys(cacheIngrediente)
-  .find(k => termo.startsWith(k));
+    const cachedKey = Object.keys(cacheIngrediente)
+      .find(k => termo.startsWith(k));
 
-if (cachedKeyIng) {
+    if (cachedKey) {
+      const filtrados = cacheIngrediente[cachedKey]
+        .filter(p => p.descricao.toLowerCase().includes(termo));
 
-  hideIngredienteLoading(); // ✅ AQUI
-
-  const filtrados = cacheIngrediente[cachedKeyIng]
-    .filter(p =>
-      p.descricao.toLowerCase().includes(termo)
-    );
-
-  renderListaIngrediente(filtrados);
-  return;
-}
-
-
-
-    if (controllerIngrediente) {
-      controllerIngrediente.abort();
+      renderListaIngrediente(filtrados);
+      return;
     }
 
+    if (controllerIngrediente) controllerIngrediente.abort();
     controllerIngrediente = new AbortController();
 
-try {
-  showIngredienteLoading(); // ✅ LIGA
+    try {
+      showIngredienteLoading();
 
-  const r = await fetch(
-    `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
-    { signal: controllerIngrediente.signal }
-  );
+      const r = await fetch(
+        `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
+        { signal: controllerIngrediente.signal }
+      );
 
-  const j = await r.json();
-  cacheIngrediente[termo] = j.items || [];
-  renderListaIngrediente(j.items || []);
+      const j = await r.json();
+      cacheIngrediente[termo] = j.items || [];
+      renderListaIngrediente(j.items || []);
 
-} catch (e) {
-  if (e.name !== "AbortError") {
-    console.error(e);
-  }
-} finally {
-  hideIngredienteLoading(); // ✅ DESLIGA SEMPRE
+    } catch (e) {
+      if (e.name !== "AbortError") console.error(e);
+    } finally {
+      hideIngredienteLoading();
+    }
+
+  }, delay);
 }
 
+buscaIngrediente.addEventListener("input", () => buscarIngrediente(false));
 
-  }, 280);
-};
+buscaIngrediente.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    buscarIngrediente(true);
+  }
+});
+
 
 function renderListaIngrediente(items) {
   listaIngrediente.innerHTML = items
