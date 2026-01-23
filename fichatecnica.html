@@ -331,16 +331,17 @@ async function selectProduto(id,nome){
   const r=await fetch(`/api/produto-preco/${id}`);
   const j=await r.json();
   const p=j.items?.[0]||{};
-produto={
+produto = {
   id,
   nome,
   preco: Number(
-    p.precoPromocional ||
-    p.precoVenda1 ||
-    p.precoVenda2 ||
+    p.precoVenda ??
+    p.preco ??
+    p.valor ??
     0
   )
 };
+
   produtoBadge.style.display="inline-block";
   produtoBadge.textContent=`${nome} • ${moeda(produto.preco)}`;
   precoVenda.textContent=moeda(produto.preco);
