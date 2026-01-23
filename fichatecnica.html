@@ -286,6 +286,16 @@ button{
 <div id="listaProduto" class="lista"></div>
 
 <div id="produtoBadge" class="badge" style="display:none"></div>
+<label>Tipo do prato</label>
+<select id="tipoPrato">
+  <option value="">Selecione o tipo</option>
+  <option value="Prato Principal">Prato Principal</option>
+  <option value="Entrada">Entrada</option>
+  <option value="Sobremesa">Sobremesa</option>
+  <option value="Drink">Drink</option>
+  <option value="Acompanhamento">Acompanhamento</option>
+</select>
+
 
 <label>Foto do prato</label>
 <input type="file" id="fotoProduto" accept="image/*">
@@ -781,6 +791,7 @@ const { data, error } = await sb
     user_id: userId,
     produto_id: produto.id,
     nome: produto.nome,
+    tipo: tipoPrato.value || null, // 👈 AQUI
     preco_venda: produto.preco,
     custo_total: cmv,
     custo_unitario: cmv / porcoes,
@@ -797,6 +808,10 @@ if(error){
   console.error(error);
   hide();
   alert(error.message);
+  return;
+}
+if(!tipoPrato.value){
+  alert("Selecione o tipo do prato");
   return;
 }
 
