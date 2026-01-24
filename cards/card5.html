@@ -285,7 +285,7 @@ async function consultar(){
     console.group(`📄 Página ${pagina}`);
     console.log("➡️ URL:", url);
 
-    const r = await fetch(url);
+const r = await fetch(url, { cache: "no-store" });
     const j = await r.json();
 
     console.log("📦 Resposta:", j);
