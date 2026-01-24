@@ -32,19 +32,20 @@ export default async function handler(req, res) {
       }
     );
 
-    const authRaw = await authResp.text();
+    const authText = await authResp.text();
 
     if (!authResp.ok) {
       return res.status(500).json({
         error: "Erro ao autenticar no Varejo Fácil",
-        raw: authRaw
+        raw: authText
       });
     }
 
-    const { accessToken } = JSON.parse(authRaw);
+    const { accessToken } = JSON.parse(authText);
 
     /* =========================
        2️⃣ BUSCA CUPONS FISCAIS
+       (PAGINADO, COM FILTRO DE DATA)
     ========================= */
     const url =
       `https://mercatto.varejofacil.com/api/v1/venda/cupons-fiscais` +
@@ -63,20 +64,21 @@ export default async function handler(req, res) {
     if (!vendaResp.ok) {
       const t = await vendaResp.text();
       return res.status(500).json({
-        error: "Erro ao consultar vendas",
+        error: "Erro ao consultar cupons fiscais",
         detalhe: t
       });
     }
 
     const vendaJson = await vendaResp.json();
+    const items = vendaJson.items || [];
 
     /* =========================
        3️⃣ SOMA CORRETA DO PRODUTO
-       (OBEDECE FILTRO)
+       (FILTRO REAL AQUI)
     ========================= */
     let somaPagina = 0;
 
-    for (const cupom of vendaJson.items || []) {
+    for (const cupom of items) {
       for (const item of cupom.itensVenda || []) {
         if (Number(item.produtoId) === Number(produtoId)) {
 
@@ -93,26 +95,23 @@ export default async function handler(req, res) {
     }
 
     /* =========================
-       4️⃣ CONTROLE DE PROGRESSO
+       4️⃣ CONTROLE DE LOOP (CORRETO)
+       ⚠️ NÃO USA vendaJson.total
     ========================= */
-    const totalRegistros = vendaJson.total || 0;
-    const proximoStart = START + COUNT;
-    const terminou = proximoStart >= totalRegistros;
+    const terminou = items.length < COUNT;
 
-    const progresso = totalRegistros
-      ? Math.min(100, Math.round((proximoStart / totalRegistros) * 100))
-      : 100;
+    const proximoStart = terminou
+      ? START
+      : START + COUNT;
 
     /* =========================
-       5️⃣ RETORNO
+       5️⃣ RETORNO FINAL
     ========================= */
     return res.status(200).json({
-      somaPagina,
+      somaPagina,          // soma apenas desta página
       startAtual: START,
       proximoStart,
-      totalRegistros,
-      progresso,
-      terminou
+      terminou             // true quando acabou
     });
 
   } catch (err) {
