@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     }
 
     const START = Number(start || 0);
-    const COUNT = 50;
+    const COUNT = 100;
 
     /* =========================
        1️⃣ AUTENTICAÇÃO VF
