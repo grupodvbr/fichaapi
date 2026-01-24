@@ -41,8 +41,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const authJson = JSON.parse(authRaw);
-    const token = authJson.accessToken;
+    const { accessToken } = JSON.parse(authRaw);
 
     /* =========================
        2️⃣ BUSCA CUPONS FISCAIS
@@ -56,7 +55,7 @@ export default async function handler(req, res) {
 
     const vendaResp = await fetch(url, {
       headers: {
-        Authorization: `${token}`,
+        Authorization: accessToken,
         Accept: "application/json"
       }
     });
@@ -72,14 +71,23 @@ export default async function handler(req, res) {
     const vendaJson = await vendaResp.json();
 
     /* =========================
-       3️⃣ SOMA EXATA DO PRODUTO
+       3️⃣ SOMA CORRETA DO PRODUTO
+       (OBEDECE FILTRO)
     ========================= */
     let somaPagina = 0;
 
     for (const cupom of vendaJson.items || []) {
       for (const item of cupom.itensVenda || []) {
         if (Number(item.produtoId) === Number(produtoId)) {
-          somaPagina += Number(item.quantidadeVenda || 0);
+
+          const qtd =
+            Number(item.quantidade) ||
+            Number(item.qtd) ||
+            Number(item.qtdItem) ||
+            Number(item.quantidadeItem) ||
+            0;
+
+          somaPagina += qtd;
         }
       }
     }
@@ -96,14 +104,14 @@ export default async function handler(req, res) {
       : 100;
 
     /* =========================
-       5️⃣ RETORNO PADRONIZADO
+       5️⃣ RETORNO
     ========================= */
     return res.status(200).json({
-      somaPagina,          // soma dessa página
+      somaPagina,
       startAtual: START,
       proximoStart,
       totalRegistros,
-      progresso,           // % concluído
+      progresso,
       terminou
     });
 
