@@ -197,34 +197,37 @@ const loading = document.getElementById("loadingProduto");
 const qtd = document.getElementById("qtd");
 const progressBar = document.getElementById("progressBar");
 const progressText = document.getElementById("progressText");
+const de = document.getElementById("de");
+const ate = document.getElementById("ate");
 
 const showLoading = () => loading.style.display = "flex";
 const hideLoading = () => loading.style.display = "none";
 
-/* DATAS PADRÃO: início do mês → hoje */
+/* DATAS PADRÃO */
 (function(){
   const hoje = new Date();
   de.value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
   ate.value = hoje.toISOString().slice(0,10);
 })();
 
-/* BUSCA PRODUTO (VF) */
+/* BUSCA PRODUTO */
 buscaProduto.oninput = () => {
   clearTimeout(debounce);
   cancelado = true;
   produtoSelecionado = null;
+
   badge.classList.add("hidden");
+  listaProduto.innerHTML = "";
+  qtd.textContent = "—";
   progressBar.style.width = "0%";
   progressText.textContent = "0%";
 
   const termo = buscaProduto.value.trim().toLowerCase();
-  if (termo.length < 2) {
-    listaProduto.innerHTML = "";
-    return;
-  }
+  if (termo.length < 2) return;
 
   debounce = setTimeout(async () => {
     if (cache[termo]) {
+      console.log("🧠 Cache hit:", termo);
       renderLista(cache[termo]);
       return;
     }
@@ -234,18 +237,23 @@ buscaProduto.oninput = () => {
 
     try {
       showLoading();
+      console.log("🔍 Buscando produto:", termo);
+
       const r = await fetch(`/api/produtos-busca?q=${encodeURIComponent(termo)}`, {
         signal: controller.signal
       });
+
       const j = await r.json();
+      console.log("📦 Resposta produtos:", j);
+
       cache[termo] = j.items || [];
       renderLista(j.items || []);
     } catch (e) {
-      if (e.name !== "AbortError") console.error(e);
+      if (e.name !== "AbortError") console.error("❌ Erro busca produto:", e);
     } finally {
       hideLoading();
     }
-  }, 280);
+  }, 300);
 };
 
 function renderLista(items){
@@ -262,10 +270,12 @@ window.selecionarProduto = (id, nome) => {
   badge.textContent = `${nome} • ID ${id}`;
   badge.classList.remove("hidden");
   listaProduto.innerHTML = "";
+
+  console.log("✅ Produto selecionado:", produtoSelecionado);
   consultar();
 };
 
-/* CONSULTA PAGINADA COM % CONCLUÍDO */
+/* CONSULTA PAGINADA COM LOG TOTAL */
 async function consultar(){
   if (!produtoSelecionado) return;
 
@@ -273,29 +283,51 @@ async function consultar(){
   let start = 0;
   let totalQtd = 0;
   let totalRegistros = 0;
+  let pagina = 1;
 
   qtd.textContent = "0";
   progressBar.style.width = "0%";
   progressText.textContent = "0%";
 
-  while (true) {
-    if (cancelado) return;
+  console.group("📊 INÍCIO CONSULTA VENDAS");
+  console.log("Produto:", produtoSelecionado);
+  console.log("Período:", de.value, "→", ate.value);
 
-    const r = await fetch(
+  while (true) {
+    if (cancelado) {
+      console.warn("⛔ Consulta cancelada");
+      console.groupEnd();
+      return;
+    }
+
+    const url =
       `/api/vendas-produto` +
       `?produtoId=${produtoSelecionado.id}` +
       `&de=${de.value}` +
       `&ate=${ate.value}` +
-      `&start=${start}`
-    );
+      `&start=${start}`;
 
+    console.group(`📄 Página ${pagina}`);
+    console.log("➡️ URL:", url);
+
+    const r = await fetch(url);
     const j = await r.json();
 
-    totalQtd += Number(j.somaPagina || 0);
+    console.log("📦 Resposta API:", j);
+
+    const soma = Number(j.somaPagina || 0);
+    totalQtd += soma;
+
+    console.log("➕ Soma página:", soma);
+    console.log("🔢 Total acumulado:", totalQtd);
+
     qtd.textContent = totalQtd.toFixed(3);
 
-    totalRegistros = j.totalRegistros || 0;
+    totalRegistros = j.totalRegistros ?? totalRegistros;
     start = j.proximoStart;
+
+    console.log("📍 Total registros:", totalRegistros);
+    console.log("📍 Próximo start:", start);
 
     const pct = totalRegistros
       ? Math.min(100, (start / totalRegistros) * 100)
@@ -304,15 +336,32 @@ async function consultar(){
     progressBar.style.width = pct.toFixed(1) + "%";
     progressText.textContent = pct.toFixed(1) + "%";
 
-    if (j.terminou) break;
+    console.groupEnd();
+
+    if (j.terminou) {
+      console.log("🏁 Consulta finalizada pela API");
+      break;
+    }
+
+    if (!start && start !== 0) {
+      console.error("❌ proximoStart inválido — loop abortado");
+      break;
+    }
+
+    pagina++;
   }
 
   progressBar.style.width = "100%";
   progressText.textContent = "100% concluído";
+  console.groupEnd();
 }
 
+/* ATUALIZA AO MUDAR DATA */
 ["de","ate"].forEach(id => {
-  document.getElementById(id).addEventListener("change", consultar);
+  document.getElementById(id).addEventListener("change", () => {
+    console.log("📅 Período alterado");
+    consultar();
+  });
 });
 </script>
 
