@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel de Ingredientes • CMV</title>
+<title>PAINEL DE INGREDIENTES • CMV</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -49,6 +49,7 @@ body{
   padding:12px;
   border-radius:14px;
   border:1px solid #cbd5e1;
+  text-transform:uppercase;
 }
 
 .lista{
@@ -62,7 +63,8 @@ body{
   border-radius:12px;
   margin-bottom:6px;
   cursor:pointer;
-  font-weight:700;
+  font-weight:800;
+  text-transform:uppercase;
 }
 
 .item:hover{background:#f1f5f9}
@@ -104,6 +106,7 @@ input,select,button{
   border-radius:16px;
   border:1px solid #cbd5e1;
   margin-top:6px;
+  text-transform:uppercase;
 }
 
 button{
@@ -128,7 +131,29 @@ button{
   margin-top:8px;
   display:flex;
   justify-content:space-between;
-  font-weight:700;
+  font-weight:800;
+  text-transform:uppercase;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#22c55e;
+  color:#fff;
+  padding:14px 20px;
+  border-radius:14px;
+  font-weight:800;
+  opacity:0;
+  transform:translateY(10px);
+  transition:.3s;
+  pointer-events:none;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateY(0);
 }
 </style>
 </head>
@@ -139,39 +164,39 @@ button{
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <h2>Ingredientes</h2>
-  <input id="busca" placeholder="Buscar...">
+  <h2>INGREDIENTES</h2>
+  <input id="busca" placeholder="BUSCAR...">
   <div id="lista" class="lista"></div>
-  <button class="new" onclick="novo()">+ Novo Ingrediente</button>
+  <button class="new" onclick="novo()">+ NOVO INGREDIENTE</button>
 </div>
 
 <!-- MAIN -->
 <div class="main">
   <div class="card">
-    <h1 id="titulo">Novo Ingrediente</h1>
+    <h1 id="titulo">NOVO INGREDIENTE</h1>
 
-    <label>Nome</label>
+    <label>NOME</label>
     <input id="nome">
 
-    <label>Descrição</label>
+    <label>DESCRIÇÃO</label>
     <input id="descricao">
 
-    <label>Unidade</label>
+    <label>UNIDADE</label>
     <select id="unidade">
       <option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option>
     </select>
 
-    <label>Valor</label>
+    <label>VALOR</label>
     <input id="valor">
 
-    <label>Rendimento (%)</label>
+    <label>RENDIMENTO (%)</label>
     <input id="rendimento" value="100">
 
-    <button onclick="salvar()">Salvar Ingrediente</button>
+    <button onclick="salvar()">SALVAR INGREDIENTE</button>
 
     <hr style="margin:30px 0">
 
-    <h3>Variações</h3>
+    <h3>VARIAÇÕES</h3>
 
     <div class="grid">
       <select id="vUn">
@@ -188,6 +213,8 @@ button{
 
 </div>
 
+<div id="toast" class="toast">SALVO COM SUCESSO</div>
+
 <script>
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
@@ -196,9 +223,25 @@ const sb = supabase.createClient(
 
 let atual=null;
 
+/* TOAST */
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2500);
+}
+
+/* FORÇA MAIÚSCULA */
+document.addEventListener("input",e=>{
+  if(e.target.tagName==="INPUT") e.target.value=e.target.value.toUpperCase();
+});
+
 /* MÁSCARAS */
 function moeda(el){
-  el.oninput=()=>{let v=el.value.replace(/\D/g,"");el.value="R$ "+(v/100).toFixed(2).replace(".",",")}
+  el.oninput=()=>{
+    let v=el.value.replace(/\D/g,"");
+    el.value="R$ "+(v/100).toFixed(2).replace(".",",");
+  }
 }
 function numero(el){el.oninput=()=>el.value=el.value.replace(/\D/g,"")}
 
@@ -230,7 +273,7 @@ busca.oninput=async()=>{
 async function editar(id){
   const {data}=await sb.from("produtos").select("*").eq("id",id).single();
   atual=data;
-  titulo.textContent="Editar Ingrediente";
+  titulo.textContent="EDITAR INGREDIENTE";
   nome.value=data.nome;
   descricao.value=data.descricao||"";
   unidade.value=data.unidade_medida;
@@ -244,7 +287,7 @@ async function editar(id){
 /* NOVO */
 function novo(){
   atual=null;
-  titulo.textContent="Novo Ingrediente";
+  titulo.textContent="NOVO INGREDIENTE";
   nome.value=descricao.value=valor.value="";
   rendimento.value=100;
   vars.innerHTML="";
@@ -266,13 +309,14 @@ async function salvar(){
     const {data}=await sb.from("produtos").insert(payload).select().single();
     atual=data;
   }
-  alert("Salvo com sucesso");
+
+  toast("SALVO COM SUCESSO");
   carregar();
 }
 
 /* VARIAÇÕES */
 async function addVariacao(){
-  if(!atual){alert("Salve o ingrediente primeiro");return;}
+  if(!atual) return toast("SALVE O INGREDIENTE PRIMEIRO");
 
   const payload={
     produto_id:atual.id,
@@ -283,6 +327,7 @@ async function addVariacao(){
 
   await sb.from("produto_variacoes").insert(payload);
   editar(atual.id);
+  toast("VARIAÇÃO SALVA");
 }
 
 function renderVars(vs){
