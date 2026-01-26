@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Ficha Técnica • CMV Profissional</title>
+<title>FICHA TÉCNICA • CMV PROFISSIONAL</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -10,64 +10,76 @@
 
 <style>
 :root{
-  --primary:#14b8a6;        /* verde dashboard */
-  --primary-dark:#0f766e;   /* verde mais escuro */
-  --bg:transparent;
+  --primary:#14b8a6;
+  --primary-dark:#0f766e;
+  --bg:#f1f5f9;
   --card:#ffffff;
   --text:#0f172a;
 }
 
-/* RESET TOTAL PARA IFRAME */
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 html,body{
-  width:100%;
-  height:100%;
   margin:0;
   padding:0;
-  background:transparent;
-  font-family:Inter,Arial,sans-serif;
-  overflow:auto;
+  background:var(--bg);
+  font-family:Inter,sans-serif;
   color:var(--text);
 }
 
-/* CONTAINER = CARD PRINCIPAL */
+.hidden{display:none}
+
+/* CONTAINER */
 .container{
-  width:100%;
-  max-width:none;              /* 🔥 remove centralização */
-  margin:0;                    /* 🔥 remove margin auto */
   padding:28px;
+  max-width:1100px;
+  margin:auto;
+}
+
+/* CARD */
+.card{
   background:var(--card);
   border-radius:24px;
-  box-shadow:0 18px 40px rgba(0,0,0,.08);
+  padding:28px;
+  box-shadow:0 20px 40px rgba(0,0,0,.08);
   position:relative;
 }
 
-/* TÍTULOS */
-h1,h3{
-  margin:0;
-  font-weight:800;
+/* OVERLAY */
+.overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,.8);
+  backdrop-filter:blur(3px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+  border-radius:24px;
 }
 
-h1{
-  margin-bottom:18px;
+.spinner{
+  width:26px;
+  height:26px;
+  border:4px solid #cbd5e1;
+  border-top-color:var(--primary);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
 }
 
-h3{
-  margin:26px 0 12px;
-}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* LABELS */
-label{
-  font-size:13px;
-  font-weight:800;
-  margin-top:16px;
-  display:block;
-}
+/* TEXTOS */
+h1,h3{margin:0 0 18px;font-weight:800}
 
 /* INPUTS */
+label{
+  display:block;
+  margin-top:16px;
+  font-weight:800;
+  font-size:13px;
+}
+
 input,select,button{
   width:100%;
   padding:14px 16px;
@@ -75,51 +87,28 @@ input,select,button{
   border:1px solid #cbd5e1;
   margin-top:6px;
   font-family:inherit;
+  text-transform:uppercase;
 }
 
-/* BOTÃO PRINCIPAL – PADRÃO DASHBOARD */
+/* BOTÕES */
 button{
-  background:linear-gradient(
-    180deg,
-    var(--primary),
-    var(--primary-dark)
-  );
+  background:linear-gradient(180deg,var(--primary),var(--primary-dark));
   color:#fff;
   font-weight:800;
   border:none;
   cursor:pointer;
 }
 
-
-/* BOTÃO SECUNDÁRIO */
-.secondary{
-  background:#e5e7eb;
-  color:#111827;
-}
-
-/* LISTAS DE BUSCA */
+/* LISTAS */
 .lista .item{
   background:#f1f5f9;
   padding:14px;
   border-radius:14px;
   margin-top:6px;
   cursor:pointer;
-}
-
-.lista .item:hover{
-  background:#e2e8f0;
-}
-
-/* BADGES */
-.badge{
-  display:inline-block;
-  margin-top:10px;
-  padding:8px 16px;
-  border-radius:999px;
-  background:#e0f2fe;
   font-weight:800;
-  font-size:12px;
 }
+.lista .item:hover{background:#e2e8f0}
 
 /* GRID INGREDIENTES */
 .grid{
@@ -128,7 +117,7 @@ button{
   gap:8px;
 }
 
-/* ITEM INGREDIENTE */
+/* ITEM ING */
 .ing{
   background:#f8fafc;
   border-radius:14px;
@@ -136,16 +125,16 @@ button{
   margin-top:6px;
   display:flex;
   justify-content:space-between;
+  font-weight:800;
 }
 
-/* KPIs */
+/* KPIS */
 .kpis{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(3,1fr);
   gap:14px;
   margin-top:26px;
 }
-
 .kpi{
   background:#f8fafc;
   border-radius:18px;
@@ -153,14 +142,13 @@ button{
   text-align:center;
   font-weight:800;
 }
-
 .kpi span{
   display:block;
   margin-top:6px;
   font-size:18px;
 }
 
-/* IMAGEM */
+/* FOTO */
 .preview{
   width:100%;
   max-height:220px;
@@ -169,239 +157,102 @@ button{
   margin-top:12px;
 }
 
-/* OVERLAY */
-.overlay{
-  position:absolute;
-  inset:0;
-  background:rgba(255,255,255,.85);
-  backdrop-filter:blur(3px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:30;
-  border-radius:24px;
-}
-
-.overlay span{
-  font-size:18px;
-  font-weight:800;
-  color:#2563eb;
-}
-
-.hidden{
-  display:none;
-}
-
-/* TOPBAR */
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-/* LOGOUT */
-.logout{
-  background:#ef4444;
-  padding:8px 14px;
-  font-size:12px;
-  border-radius:12px;
-  width:auto;
-  margin-top:0;
-}
-
-/* AUTH */
-.auth-box{
-  max-width:420px;
-  margin:40px auto;
-}
-
-/* LOADING INPUT */
-.input-loading{
-  position:relative;
-}
-
-.input-overlay{
-  position:absolute;
-  inset:0;
-  background:rgba(255,255,255,.75);
-  backdrop-filter:blur(2px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  border-radius:16px;
-  z-index:5;
-  pointer-events:none;
-}
-
-/* SPINNER */
-.spinner{
-  width:22px;
-  height:22px;
-  border:3px solid #cbd5e1;
-  border-top-color:#2563eb;
-  border-radius:50%;
-  animation:spin .8s linear infinite;
-}
-
-@keyframes spin{
-  to{transform:rotate(360deg)}
-}
-/* BOTÃO + INGREDIENTE */
-.grid button{
-  width:48px;
-  height:48px;
-  padding:0;
-  font-size:22px;
-  font-weight:900;
-  border-radius:14px;
-  background:var(--primary);
+/* TOAST */
+.toast{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#22c55e;
   color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-/* BOTÃO SALVAR – PADRÃO DASHBOARD */
-button[onclick="salvar()"]{
-  margin-top:28px;
-  background:linear-gradient(
-    180deg,
-    var(--primary),
-    var(--primary-dark)
-  );
-  color:#ffffff;
-  font-size:15px;
+  padding:14px 20px;
+  border-radius:14px;
   font-weight:800;
-  padding:14px;
-  border-radius:16px;
-  border:none;
-  box-shadow:0 6px 14px rgba(20,184,166,.35);
+  opacity:0;
+  transform:translateY(10px);
+  transition:.3s;
+  pointer-events:none;
+  z-index:99;
 }
-
-/* hover sutil */
-button[onclick="salvar()"]:hover{
-  filter:brightness(0.95);
+.toast.show{
+  opacity:1;
+  transform:translateY(0);
 }
-
-/* HOVER PREMIUM */
-.save-card button:hover{
-  filter:brightness(0.95);
-  transform:translateY(-1px);
-}
-
-
-
-
-
-
-
-
-  
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
-<div id="overlay" class="overlay"><span>Carregando…</span></div>
+  <!-- AUTH -->
+  <div id="authBox" class="card">
+    <h1>ENTRAR</h1>
 
-<!-- AUTH -->
-<div id="authBox" class="auth-box">
-  <h1 id="authTitle">🔐 Entrar</h1>
+    <label>EMAIL</label>
+    <input id="authEmail" type="email">
 
-  <label>Email</label>
-  <input id="authEmail" type="email" placeholder="email@empresa.com">
+    <label>SENHA</label>
+    <input id="authSenha" type="password">
 
-  <label>Senha</label>
-  <input id="authSenha" type="password" placeholder="••••••••">
-
-  <button id="authBtn" onclick="login()">Entrar</button>
-
-  <div class="toggle" onclick="toggleAuth()">
-    Criar nova conta
+    <button onclick="login()">ENTRAR</button>
   </div>
-</div>
 
-<!-- APP -->
-<div id="app" class="hidden">
+  <!-- APP -->
+  <div id="app" class="card hidden">
+    <div id="overlay" class="overlay"><div class="spinner"></div></div>
 
-<div class="topbar">
-  <h1>CADASTRO DE FICHAS VIA API - VAREJO FÁCIL</h1>
-</div>
+    <h1>FICHA TÉCNICA • CMV</h1>
 
-<label>Produto (prato)</label>
+    <!-- PRATO -->
+    <label>NOME DO PRATO</label>
+    <input id="nomePrato">
 
-<div class="input-loading">
-  <input id="buscaProduto" placeholder="Digite o nome do produto">
+    <label>TIPO DO PRATO</label>
+    <select id="tipoPrato">
+      <option value="">SELECIONE</option>
+      <option>PRATO PRINCIPAL</option>
+      <option>ENTRADA</option>
+      <option>SOBREMESA</option>
+      <option>DRINK</option>
+      <option>SUSHI</option>
+      <option>ACOMPANHAMENTO</option>
+    </select>
 
-  <div class="input-overlay" id="loadingProduto">
-    <div class="spinner"></div>
+    <label>FOTO DO PRATO</label>
+    <input type="file" id="fotoProduto" accept="image/*">
+    <img id="previewFoto" class="preview hidden">
+
+    <label>RENDIMENTO FINAL (PORÇÕES)</label>
+    <input id="rendimentoFinal" type="number" value="1" min="1">
+
+    <h3>INGREDIENTES</h3>
+
+    <label>BUSCAR INGREDIENTE</label>
+    <input id="buscaIngrediente">
+    <div id="listaIngrediente" class="lista"></div>
+
+    <div class="grid">
+      <input id="qtd" type="number" step="0.001" placeholder="QTD">
+      <input id="unUso" readonly placeholder="UN">
+      <input id="custo" readonly placeholder="CUSTO">
+      <input id="rend" readonly placeholder="REND %">
+      <button onclick="addIngrediente()">+</button>
+    </div>
+
+    <div id="listaIng"></div>
+
+    <div class="kpis">
+      <div class="kpi">CMV TOTAL<span id="cmvTotal">R$ 0,00</span></div>
+      <div class="kpi">CMV UNIT<span id="cmvUnit">R$ 0,00</span></div>
+      <div class="kpi">MARGEM<span id="margem">—</span></div>
+    </div>
+
+    <button onclick="salvar()">SALVAR FICHA TÉCNICA</button>
   </div>
-</div>
-
-<div id="listaProduto" class="lista"></div>
-
-<div id="produtoBadge" class="badge" style="display:none"></div>
-<label>Tipo do prato</label>
-<select id="tipoPrato">
-  <option value="">Selecione o tipo</option>
-  <option value="Prato Principal">Prato Principal</option>
-  <option value="Entrada">Entrada</option>
-  <option value="Sobremesa">Sobremesa</option>
-  <option value="Drink">Drink</option>
-    <option value="Sushi">Sushi</option>
-  <option value="Acompanhamento">Acompanhamento</option>
-</select>
-
-
-<label>Foto do prato</label>
-<input type="file" id="fotoProduto" accept="image/*">
-<img id="previewFoto" class="preview" style="display:none">
-
-<h3>🍳 Ingredientes</h3>
-
-<label>Buscar ingrediente</label>
-<div class="input-loading">
-  <input id="buscaIngrediente" placeholder="Digite o nome do ingrediente">
-
-  <div class="input-overlay" id="loadingIngrediente">
-    <div class="spinner"></div>
-  </div>
-</div>
-
-<div id="listaIngrediente" class="lista"></div>
-
-<div id="ingredienteBadge" class="badge" style="display:none"></div>
-
-<div class="grid">
-  <input id="qtd" type="number" step="0.001" placeholder="Qtd usada">
-  <select id="unUso">
-    <option>UN</option><option>KG</option><option>G</option>
-    <option>L</option><option>ML</option>
-  </select>
-  <input id="custo" readonly placeholder="Custo unit">
-  <input id="rend" type="number" placeholder="Rend %">
-  <button onclick="addIngrediente()">+</button>
-</div>
-
-<div id="listaIng"></div>
-
-<label>Rendimento final (porções)</label>
-<input id="rendimentoFinal" type="number" value="1" min="1" oninput="render()">
-
-<div class="kpis">
-  <div class="kpi">CMV Total<span id="cmvTotal">R$ 0,00</span></div>
-  <div class="kpi">CMV Unit<span id="cmvUnit">R$ 0,00</span></div>
-  <div class="kpi">Preço Venda<span id="precoVenda">—</span></div>
-  <div class="kpi">Margem<span id="margem">—</span></div>
-</div>
-
-<button onclick="salvar()">Salvar Ficha Técnica</button>
-
-
 
 </div>
-</div>
+
+<div id="toast" class="toast">SALVO COM SUCESSO</div>
 
 <script>
 /* ================= SUPABASE ================= */
@@ -410,467 +261,127 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-const overlay = document.getElementById("overlay");
-const show = () => overlay.style.display = "flex";
-const hide = () => overlay.style.display = "none";
-// 🔵 OVERLAY DO INPUT DE PRODUTO
-const loadingProduto = document.getElementById("loadingProduto");
-
-const showProdutoLoading = () => {
-  loadingProduto.style.display = "flex";
+/* ================= UTIL ================= */
+const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+const toast=(msg)=>{
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2500);
 };
-
-const hideProdutoLoading = () => {
-  loadingProduto.style.display = "none";
-};
-// 🔵 OVERLAY DO INPUT DE INGREDIENTE
-const loadingIngrediente = document.getElementById("loadingIngrediente");
-
-const showIngredienteLoading = () => {
-  loadingIngrediente.style.display = "flex";
-};
-
-const hideIngredienteLoading = () => {
-  loadingIngrediente.style.display = "none";
-};
+const overlay=document.getElementById("overlay");
+const show=()=>overlay.style.display="flex";
+const hide=()=>overlay.style.display="none";
 
 /* ================= AUTH ================= */
-let isSignup=false;
-
-function toggleAuth(){
-  isSignup=!isSignup;
-  authTitle.textContent=isSignup?"🆕 Criar Conta":"🔐 Entrar";
-  authBtn.textContent=isSignup?"Criar Conta":"Entrar";
-}
-
 async function login(){
   show();
-  let res;
-  if(isSignup){
-    res = await sb.auth.signUp({
-      email: authEmail.value,
-      password: authSenha.value
-    });
-  }else{
-    res = await sb.auth.signInWithPassword({
-      email: authEmail.value,
-      password: authSenha.value
-    });
-  }
+  const {error}=await sb.auth.signInWithPassword({
+    email:authEmail.value,
+    password:authSenha.value
+  });
   hide();
-
-  if(res.error){
-    alert(res.error.message);
-    return;
-  }
-
-  if(isSignup){
-    alert("Conta criada com sucesso! Você já pode entrar.");
-    toggleAuth();
-    return;
-  }
-
-  init();
+  if(error){toast(error.message);return;}
+  authBox.classList.add("hidden");
+  app.classList.remove("hidden");
 }
 
-async function logout(){
-  await sb.auth.signOut();
-  location.reload();
-}
-
-async function init(){
-  const { data } = await sb.auth.getSession();
-  if(data.session){
-    authBox.classList.add("hidden");
-    app.classList.remove("hidden");
-  }else{
-    authBox.classList.remove("hidden");
-    app.classList.add("hidden");
-  }
-}
-init();
-
-async function getUserId(){
-  const { data } = await sb.auth.getSession();
-  return data.session.user.id;
-}
-
-/* ================= LÓGICA FICHA ================= */
-let produto=null;
-
-let ingrediente=null;
-let ingredientes=[];
-let debounceProduto = null;
-let debounceIngrediente = null;
-
-let controllerProduto = null;
-let controllerIngrediente = null;
-
-const cacheProduto = {};
-const cacheIngrediente = {};
-
-
-const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-
-/* FOTO */
+/* ================= FOTO ================= */
 fotoProduto.onchange=()=>{
   const f=fotoProduto.files[0];
   if(!f)return;
   previewFoto.src=URL.createObjectURL(f);
-  previewFoto.style.display="block";
+  previewFoto.classList.remove("hidden");
 };
 
-/* BUSCA PRODUTO */
-buscaProduto.oninput = () => {
-buscaProduto.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
+/* ================= INGREDIENTES ================= */
+let ingrediente=null;
+let ingredientes=[];
 
-    clearTimeout(debounceProduto);
+buscaIngrediente.oninput=async()=>{
+  const q=buscaIngrediente.value.trim().toUpperCase();
+  if(q.length<2){listaIngrediente.innerHTML="";return;}
 
-    const termo = buscaProduto.value.trim().toLowerCase();
-    if (termo.length < 2) return;
+  const {data}=await sb.from("produtos")
+    .select("*")
+    .ilike("nome",`%${q}%`)
+    .limit(10);
 
-    // dispara busca imediata
-    debounceProduto = setTimeout(() => {
-      buscaProduto.oninput();
-    }, 0);
-  }
-});
-
-
-  
-  clearTimeout(debounceProduto);
-
-  const termo = buscaProduto.value.trim().toLowerCase();
-
-  if (termo.length < 2) {
-    listaProduto.innerHTML = "";
-    return;
-  }
-
-  debounceProduto = setTimeout(async () => {
-
-const cachedKey = Object.keys(cacheProduto)
-  .find(k => termo.startsWith(k));
-
-if (cachedKey) {
-  const filtrados = cacheProduto[cachedKey]
-    .filter(p =>
-      p.descricao.toLowerCase().includes(termo)
-    );
-
-  renderListaProduto(filtrados);
-  return;
-}
-
-
-    if (controllerProduto) {
-      controllerProduto.abort();
-    }
-
-    controllerProduto = new AbortController();
-
-  try {
-  showProdutoLoading(); // ✅ AQUI: LIGA O SPINNER
-
-  const r = await fetch(
-    `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
-    { signal: controllerProduto.signal }
-  );
-
-  const j = await r.json();
-  cacheProduto[termo] = j.items || [];
-  renderListaProduto(j.items || []);
-
-} catch (e) {
-  if (e.name !== "AbortError") {
-    console.error(e);
-  }
-} finally {
-  hideProdutoLoading(); // ✅ AQUI: DESLIGA O SPINNER
-}
-
-
-  }, 280);
+  listaIngrediente.innerHTML=(data||[]).map(i=>`
+    <div class="item" onclick="selectIngrediente(${i.id})">${i.nome}</div>
+  `).join("");
 };
 
-function renderListaProduto(items) {
-  listaProduto.innerHTML = items
-    .slice(0, 10)
-    .map(p => `
-      <div class="item"
-        onclick="selectProduto(${p.id},'${p.descricao.replace(/'/g,"")}')">
-        ${p.descricao}
-      </div>
-    `).join("");
-}
-
-
-
-async function selectProduto(id, nome){
-  show();
-
-  const r = await fetch(`/api/produto-preco/${id}`);
-  const json = await r.json();
-
-  const p = Array.isArray(json)
-    ? json[0]
-    : json?.items?.[0];
-
-  if(!p){
-    alert("Preço não encontrado para este produto");
-    hide();
-    return;
-  }
-
-  const preco =
-    (Number(p.precoOferta1) > 0 && Number(p.precoOferta1)) ||
-    Number(p.precoVenda1) ||
-    Number(p.precoVenda2) ||
-    Number(p.precoVenda3) ||
-    0;
-
-  produto = {
-    id,
-    nome,
-    preco
+async function selectIngrediente(id){
+  const {data}=await sb.from("produtos").select("*").eq("id",id).single();
+  ingrediente={
+    nome:data.nome,
+    unidade:data.unidade_medida,
+    custo:data.valor,
+    rendimento:data.rendimento_percentual
   };
-
-  produtoBadge.style.display = "inline-block";
-  produtoBadge.textContent = `${nome} • ${moeda(preco)}`;
-  precoVenda.textContent = moeda(preco);
-
-  listaProduto.innerHTML = "";
-  hide();
-  render();
+  unUso.value=data.unidade_medida;
+  custo.value=data.valor.toFixed(4);
+  rend.value=data.rendimento_percentual;
+  listaIngrediente.innerHTML="";
 }
-
-async function selectIng(id, nome){
-  show();
-
-  const r = await fetch(`/api/produto-preco/${id}`);
-  const json = await r.json();
-
-  const p = Array.isArray(json)
-    ? json[0]
-    : json?.items?.[0];
-
-  if(!p){
-    alert("Custo não encontrado para este ingrediente");
-    hide();
-    return;
-  }
-
-const custoUnitario =
-  Number(p.precoMedioDeReposicao) ||
-  Number(p.precoFiscalDeReposicao) ||
-  0;
-
-ingrediente = {
-  id,
-  nome,
-  custo: custoUnitario
-};
-
-ingredienteBadge.style.display = "inline-block";
-ingredienteBadge.textContent = nome;
-
-// input DOM
-document.getElementById("custo").value = custoUnitario.toFixed(4);
-
-  listaIngrediente.innerHTML = "";
-  hide();
-}
-
-
-
-
-/* INGREDIENTE */
-buscaIngrediente.oninput = () => {
-  buscaIngrediente.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-
-    clearTimeout(debounceIngrediente);
-
-    const termo = buscaIngrediente.value.trim().toLowerCase();
-    if (termo.length < 2) return;
-
-    debounceIngrediente = setTimeout(() => {
-      buscaIngrediente.oninput();
-    }, 0);
-  }
-});
-
-  clearTimeout(debounceIngrediente);
-
-  const termo = buscaIngrediente.value.trim().toLowerCase();
-
-  if (termo.length < 2) {
-    listaIngrediente.innerHTML = "";
-    return;
-  }
-
-  debounceIngrediente = setTimeout(async () => {
-
-const cachedKeyIng = Object.keys(cacheIngrediente)
-  .find(k => termo.startsWith(k));
-
-if (cachedKeyIng) {
-
-  hideIngredienteLoading(); // ✅ AQUI
-
-  const filtrados = cacheIngrediente[cachedKeyIng]
-    .filter(p =>
-      p.descricao.toLowerCase().includes(termo)
-    );
-
-  renderListaIngrediente(filtrados);
-  return;
-}
-
-
-
-    if (controllerIngrediente) {
-      controllerIngrediente.abort();
-    }
-
-    controllerIngrediente = new AbortController();
-
-try {
-  showIngredienteLoading(); // ✅ LIGA
-
-  const r = await fetch(
-    `/api/produtos-busca?q=${encodeURIComponent(termo)}`,
-    { signal: controllerIngrediente.signal }
-  );
-
-  const j = await r.json();
-  cacheIngrediente[termo] = j.items || [];
-  renderListaIngrediente(j.items || []);
-
-} catch (e) {
-  if (e.name !== "AbortError") {
-    console.error(e);
-  }
-} finally {
-  hideIngredienteLoading(); // ✅ DESLIGA SEMPRE
-}
-
-
-  }, 280);
-};
-
-function renderListaIngrediente(items) {
-  listaIngrediente.innerHTML = items
-    .slice(0, 10)
-    .map(p => `
-      <div class="item"
-        onclick="selectIng(${p.id},'${p.descricao.replace(/'/g,"")}')">
-        ${p.descricao}
-      </div>
-    `).join("");
-}
-
-
-
 
 function addIngrediente(){
   if(!ingrediente||!qtd.value)return;
-  const rendimento=(rend.value||100)/100;
-const total=(qtd.value*ingrediente.custo)/rendimento;
+  const fator=(ingrediente.rendimento||100)/100;
+  const total=(qtd.value*ingrediente.custo)/fator;
   ingredientes.push({
-    nome:ingrediente.nome,
+    ...ingrediente,
     quantidade:Number(qtd.value),
-    unidade:unUso.value,
-    custo_unitario:ingrediente.custo,
-    custo_total:total,
-    rendimento_percentual:rend.value||100
+    custo_total:total
   });
-
-  qtd.value=""; rend.value="";
+  qtd.value="";
   ingrediente=null;
-  ingredienteBadge.style.display="none";
   render();
 }
 
 function render(){
   const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
+  const por=rendimentoFinal.value||1;
   listaIng.innerHTML=ingredientes.map(i=>`
     <div class="ing">
       <span>${i.nome} (${i.quantidade} ${i.unidade})</span>
       <strong>${moeda(i.custo_total)}</strong>
     </div>`).join("");
-
-  const porcoes=rendimentoFinal.value||1;
   cmvTotal.textContent=moeda(cmv);
-  cmvUnit.textContent=moeda(cmv/porcoes);
-  margem.textContent=produto?.preco
-    ?(((produto.preco-(cmv/porcoes))/produto.preco)*100).toFixed(1)+"%"
-    :"—";
+  cmvUnit.textContent=moeda(cmv/por);
 }
 
+/* ================= SALVAR ================= */
 async function salvar(){
-  if(!produto||!ingredientes.length){
-    alert("Produto e ingredientes são obrigatórios");
+  if(!nomePrato.value||!ingredientes.length){
+    toast("PREENCHA PRATO E INGREDIENTES");
     return;
   }
-
   show();
 
   let fotoUrl=null;
   if(fotoProduto.files[0]){
-    const file=fotoProduto.files[0];
-    const safeName=file.name
-      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-      .replace(/[^a-zA-Z0-9._-]/g,"_");
-
-    const path=`fichas/${Date.now()}-${safeName}`;
-
-    const up=await sb.storage.from("buffet")
-      .upload(path,file,{contentType:file.type});
-
-    if(up.error){ hide(); alert("Erro imagem"); return; }
-
-    fotoUrl=sb.storage.from("buffet")
-      .getPublicUrl(path).data.publicUrl;
+    const f=fotoProduto.files[0];
+    const path=`fichas/${Date.now()}-${f.name}`;
+    const up=await sb.storage.from("buffet").upload(path,f);
+    if(up.error){hide();toast("ERRO NA FOTO");return;}
+    fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
   }
 
   const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
-  const porcoes=rendimentoFinal.value||1;
+  const por=rendimentoFinal.value||1;
 
- const userId = await getUserId();
+  const {data,error}=await sb.from("buffet").insert({
+    nome:nomePrato.value,
+    tipo:tipoPrato.value,
+    custo_total:cmv,
+    custo_unitario:cmv/por,
+    rendimento:por,
+    foto_url:fotoUrl
+  }).select().single();
 
-const { data, error } = await sb
-  .from("buffet")
-  .insert({
-    user_id: userId,
-    produto_id: produto.id,
-    nome: produto.nome,
-    tipo: tipoPrato.value || null, // 👈 AQUI
-    preco_venda: produto.preco,
-    custo_total: cmv,
-    custo_unitario: cmv / porcoes,
-    margem_percentual: produto.preco
-      ? ((produto.preco - (cmv / porcoes)) / produto.preco) * 100
-      : null,
-    rendimento: porcoes,
-    foto_url: fotoUrl
-  })
-  .select()
-  .single();
-
-if(error){
-  console.error(error);
-  hide();
-  alert(error.message);
-  return;
-}
-if(!tipoPrato.value){
-  alert("Selecione o tipo do prato");
-  return;
-}
+  if(error){hide();toast(error.message);return;}
 
   for(const i of ingredientes){
     await sb.from("buffet_itens").insert({
@@ -878,16 +389,17 @@ if(!tipoPrato.value){
       nome:i.nome,
       unidade_uso:i.unidade,
       quantidade:i.quantidade,
-      custo_unitario:i.custo_unitario,
+      custo_unitario:i.custo,
       custo_calculado:i.custo_total,
-      rendimento_percentual:i.rendimento_percentual
+      rendimento_percentual:i.rendimento
     });
   }
 
   hide();
-  alert("Ficha técnica salva com sucesso!");
-  location.reload();
+  toast("SALVO COM SUCESSO");
+  setTimeout(()=>location.reload(),1200);
 }
 </script>
+
 </body>
 </html>
