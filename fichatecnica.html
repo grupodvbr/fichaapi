@@ -16,9 +16,7 @@
   --card:#ffffff;
   --text:#0f172a;
 }
-
 *{box-sizing:border-box}
-
 html,body{
   margin:0;
   padding:0;
@@ -26,17 +24,10 @@ html,body{
   font-family:Inter,sans-serif;
   color:var(--text);
 }
-
 .hidden{display:none}
 
-/* CONTAINER */
-.container{
-  padding:28px;
-  max-width:1100px;
-  margin:auto;
-}
-
-/* CARD */
+/* LAYOUT */
+.container{padding:28px;max-width:1100px;margin:auto}
 .card{
   background:var(--card);
   border-radius:24px;
@@ -47,8 +38,7 @@ html,body{
 
 /* OVERLAY */
 .overlay{
-  position:absolute;
-  inset:0;
+  position:absolute;inset:0;
   background:rgba(255,255,255,.8);
   backdrop-filter:blur(3px);
   display:none;
@@ -57,29 +47,20 @@ html,body{
   z-index:20;
   border-radius:24px;
 }
-
 .spinner{
-  width:26px;
-  height:26px;
+  width:26px;height:26px;
   border:4px solid #cbd5e1;
   border-top-color:var(--primary);
   border-radius:50%;
   animation:spin .8s linear infinite;
 }
-
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* TEXTOS */
 h1,h3{margin:0 0 18px;font-weight:800}
 
-/* INPUTS */
-label{
-  display:block;
-  margin-top:16px;
-  font-weight:800;
-  font-size:13px;
-}
-
+/* FORM */
+label{display:block;margin-top:16px;font-weight:800;font-size:13px}
 input,select,button{
   width:100%;
   padding:14px 16px;
@@ -89,17 +70,12 @@ input,select,button{
   font-family:inherit;
   text-transform:uppercase;
 }
-
-/* BOTÕES */
 button{
   background:linear-gradient(180deg,var(--primary),var(--primary-dark));
-  color:#fff;
-  font-weight:800;
-  border:none;
-  cursor:pointer;
+  color:#fff;font-weight:800;border:none;cursor:pointer;
 }
 
-/* LISTAS */
+/* LISTA */
 .lista .item{
   background:#f1f5f9;
   padding:14px;
@@ -110,14 +86,12 @@ button{
 }
 .lista .item:hover{background:#e2e8f0}
 
-/* GRID INGREDIENTES */
+/* INGREDIENTES */
 .grid{
   display:grid;
   grid-template-columns:2fr 1fr 1fr 1fr auto;
   gap:8px;
 }
-
-/* ITEM ING */
 .ing{
   background:#f8fafc;
   border-radius:14px;
@@ -142,11 +116,7 @@ button{
   text-align:center;
   font-weight:800;
 }
-.kpi span{
-  display:block;
-  margin-top:6px;
-  font-size:18px;
-}
+.kpi span{display:block;margin-top:6px;font-size:18px}
 
 /* FOTO */
 .preview{
@@ -159,24 +129,14 @@ button{
 
 /* TOAST */
 .toast{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  background:#22c55e;
-  color:#fff;
-  padding:14px 20px;
-  border-radius:14px;
+  position:fixed;bottom:20px;right:20px;
+  background:#22c55e;color:#fff;
+  padding:14px 20px;border-radius:14px;
   font-weight:800;
-  opacity:0;
-  transform:translateY(10px);
-  transition:.3s;
-  pointer-events:none;
-  z-index:99;
+  opacity:0;transform:translateY(10px);
+  transition:.3s;pointer-events:none;z-index:99;
 }
-.toast.show{
-  opacity:1;
-  transform:translateY(0);
-}
+.toast.show{opacity:1;transform:translateY(0)}
 </style>
 </head>
 
@@ -184,96 +144,86 @@ button{
 
 <div class="container">
 
-  <!-- AUTH -->
-  <div id="authBox" class="card">
-    <h1>ENTRAR</h1>
+<!-- AUTH -->
+<div id="authBox" class="card">
+  <h1>ENTRAR</h1>
+  <label>EMAIL</label>
+  <input id="authEmail" type="email">
+  <label>SENHA</label>
+  <input id="authSenha" type="password">
+  <button onclick="login()">ENTRAR</button>
+</div>
 
-    <label>EMAIL</label>
-    <input id="authEmail" type="email">
+<!-- APP -->
+<div id="app" class="card hidden">
+  <div id="overlay" class="overlay"><div class="spinner"></div></div>
 
-    <label>SENHA</label>
-    <input id="authSenha" type="password">
+  <h1>FICHA TÉCNICA • CMV</h1>
 
-    <button onclick="login()">ENTRAR</button>
+  <label>NOME DO PRATO</label>
+  <input id="nomePrato">
+
+  <label>TIPO DO PRATO</label>
+  <select id="tipoPrato">
+    <option value="">SELECIONE</option>
+    <option>PRATO PRINCIPAL</option>
+    <option>ENTRADA</option>
+    <option>SOBREMESA</option>
+    <option>DRINK</option>
+    <option>SUSHI</option>
+    <option>ACOMPANHAMENTO</option>
+  </select>
+
+  <label>FOTO DO PRATO</label>
+  <input type="file" id="fotoProduto" accept="image/*">
+  <img id="previewFoto" class="preview hidden">
+
+  <label>RENDIMENTO FINAL (PORÇÕES)</label>
+  <input id="rendimentoFinal" type="number" value="1" min="1">
+
+  <h3>INGREDIENTES</h3>
+
+  <label>BUSCAR INGREDIENTE</label>
+  <input id="buscaIngrediente">
+  <div id="listaIngrediente" class="lista"></div>
+
+  <div class="grid">
+    <input id="qtd" type="number" step="0.001" placeholder="QTD">
+    <input id="unUso" readonly placeholder="UN">
+    <input id="custo" readonly placeholder="CUSTO">
+    <input id="rend" readonly placeholder="REND %">
+    <button onclick="addIngrediente()">+</button>
   </div>
 
-  <!-- APP -->
-  <div id="app" class="card hidden">
-    <div id="overlay" class="overlay"><div class="spinner"></div></div>
+  <div id="listaIng"></div>
 
-    <h1>FICHA TÉCNICA • CMV</h1>
-
-    <!-- PRATO -->
-    <label>NOME DO PRATO</label>
-    <input id="nomePrato">
-
-    <label>TIPO DO PRATO</label>
-    <select id="tipoPrato">
-      <option value="">SELECIONE</option>
-      <option>PRATO PRINCIPAL</option>
-      <option>ENTRADA</option>
-      <option>SOBREMESA</option>
-      <option>DRINK</option>
-      <option>SUSHI</option>
-      <option>ACOMPANHAMENTO</option>
-    </select>
-
-    <label>FOTO DO PRATO</label>
-    <input type="file" id="fotoProduto" accept="image/*">
-    <img id="previewFoto" class="preview hidden">
-
-    <label>RENDIMENTO FINAL (PORÇÕES)</label>
-    <input id="rendimentoFinal" type="number" value="1" min="1">
-
-    <h3>INGREDIENTES</h3>
-
-    <label>BUSCAR INGREDIENTE</label>
-    <input id="buscaIngrediente">
-    <div id="listaIngrediente" class="lista"></div>
-
-    <div class="grid">
-      <input id="qtd" type="number" step="0.001" placeholder="QTD">
-      <input id="unUso" readonly placeholder="UN">
-      <input id="custo" readonly placeholder="CUSTO">
-      <input id="rend" readonly placeholder="REND %">
-      <button onclick="addIngrediente()">+</button>
-    </div>
-
-    <div id="listaIng"></div>
-
-    <div class="kpis">
-      <div class="kpi">CMV TOTAL<span id="cmvTotal">R$ 0,00</span></div>
-      <div class="kpi">CMV UNIT<span id="cmvUnit">R$ 0,00</span></div>
-      <div class="kpi">MARGEM<span id="margem">—</span></div>
-    </div>
-
-    <button onclick="salvar()">SALVAR FICHA TÉCNICA</button>
+  <div class="kpis">
+    <div class="kpi">CMV TOTAL<span id="cmvTotal">R$ 0,00</span></div>
+    <div class="kpi">CMV UNIT<span id="cmvUnit">R$ 0,00</span></div>
+    <div class="kpi">MARGEM<span id="margem">—</span></div>
   </div>
 
+  <button onclick="salvar()">SALVAR FICHA TÉCNICA</button>
+</div>
 </div>
 
 <div id="toast" class="toast">SALVO COM SUCESSO</div>
 
 <script>
-/* ================= SUPABASE ================= */
+/* SUPABASE */
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-/* ================= UTIL ================= */
+/* UTIL */
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-const toast=(msg)=>{
-  const t=document.getElementById("toast");
-  t.textContent=msg;
-  t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"),2500);
-};
+const toast=(m)=>{const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)};
 const overlay=document.getElementById("overlay");
 const show=()=>overlay.style.display="flex";
 const hide=()=>overlay.style.display="none";
 
-/* ================= AUTH ================= */
+/* AUTH */
 async function login(){
   show();
   const {error}=await sb.auth.signInWithPassword({
@@ -286,15 +236,14 @@ async function login(){
   app.classList.remove("hidden");
 }
 
-/* ================= FOTO ================= */
+/* FOTO */
 fotoProduto.onchange=()=>{
-  const f=fotoProduto.files[0];
-  if(!f)return;
-  previewFoto.src=URL.createObjectURL(f);
+  if(!fotoProduto.files[0])return;
+  previewFoto.src=URL.createObjectURL(fotoProduto.files[0]);
   previewFoto.classList.remove("hidden");
 };
 
-/* ================= INGREDIENTES ================= */
+/* INGREDIENTES */
 let ingrediente=null;
 let ingredientes=[];
 
@@ -303,7 +252,7 @@ buscaIngrediente.oninput=async()=>{
   if(q.length<2){listaIngrediente.innerHTML="";return;}
 
   const {data}=await sb.from("produtos")
-    .select("*")
+    .select("id,nome,unidade_medida,valor,rendimento_percentual")
     .ilike("nome",`%${q}%`)
     .limit(10);
 
@@ -313,16 +262,20 @@ buscaIngrediente.oninput=async()=>{
 };
 
 async function selectIngrediente(id){
-  const {data}=await sb.from("produtos").select("*").eq("id",id).single();
+  const {data,error}=await sb.from("produtos")
+    .select("nome,unidade_medida,valor,rendimento_percentual")
+    .eq("id",id).single();
+  if(error||!data){toast("ERRO AO CARREGAR INGREDIENTE");return;}
+
   ingrediente={
     nome:data.nome,
     unidade:data.unidade_medida,
-    custo:data.valor,
-    rendimento:data.rendimento_percentual
+    custo:Number(data.valor),
+    rendimento:Number(data.rendimento_percentual||100)
   };
-  unUso.value=data.unidade_medida;
-  custo.value=data.valor.toFixed(4);
-  rend.value=data.rendimento_percentual;
+  unUso.value=ingrediente.unidade;
+  custo.value=ingrediente.custo.toFixed(4);
+  rend.value=ingrediente.rendimento;
   listaIngrediente.innerHTML="";
 }
 
@@ -347,12 +300,13 @@ function render(){
     <div class="ing">
       <span>${i.nome} (${i.quantidade} ${i.unidade})</span>
       <strong>${moeda(i.custo_total)}</strong>
-    </div>`).join("");
+    </div>
+  `).join("");
   cmvTotal.textContent=moeda(cmv);
   cmvUnit.textContent=moeda(cmv/por);
 }
 
-/* ================= SALVAR ================= */
+/* SALVAR */
 async function salvar(){
   if(!nomePrato.value||!ingredientes.length){
     toast("PREENCHA PRATO E INGREDIENTES");
@@ -364,7 +318,7 @@ async function salvar(){
   if(fotoProduto.files[0]){
     const f=fotoProduto.files[0];
     const path=`fichas/${Date.now()}-${f.name}`;
-    const up=await sb.storage.from("buffet").upload(path,f);
+    const up=await sb.storage.from("buffet").upload(path,f,{upsert:true});
     if(up.error){hide();toast("ERRO NA FOTO");return;}
     fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
   }
