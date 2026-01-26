@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Cadastro de Ingredientes • CMV</title>
+<title>Painel de Ingredientes • CMV</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -14,32 +14,87 @@
   --primary-dark:#0f766e;
   --bg:#f1f5f9;
   --card:#ffffff;
+  --muted:#64748b;
 }
 
 *{box-sizing:border-box}
 
 body{
   margin:0;
-  padding:24px;
   background:var(--bg);
   font-family:Inter,sans-serif;
 }
 
-.container{
-  max-width:900px;
-  margin:auto;
+.app{
+  display:grid;
+  grid-template-columns:320px 1fr;
+  height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+  background:#fff;
+  padding:20px;
+  border-right:1px solid #e5e7eb;
+  display:flex;
+  flex-direction:column;
+}
+
+.sidebar h2{
+  font-size:18px;
+  margin-bottom:12px;
+}
+
+.sidebar input{
+  padding:12px;
+  border-radius:14px;
+  border:1px solid #cbd5e1;
+}
+
+.lista{
+  margin-top:12px;
+  overflow:auto;
+  flex:1;
+}
+
+.item{
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:6px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+.item:hover{background:#f1f5f9}
+.item.active{background:#e0f2fe}
+
+.new{
+  margin-top:12px;
+  background:#e5e7eb;
+  border:none;
+  border-radius:14px;
+  padding:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+/* MAIN */
+.main{
+  padding:28px;
+}
+
+.card{
   background:var(--card);
   border-radius:24px;
   padding:28px;
   box-shadow:0 20px 40px rgba(0,0,0,.08);
+  max-width:900px;
 }
 
-h1{margin-bottom:20px}
-
 label{
+  display:block;
   font-size:13px;
   font-weight:800;
-  display:block;
   margin-top:14px;
 }
 
@@ -57,23 +112,22 @@ button{
   font-weight:800;
   border:none;
   cursor:pointer;
-  margin-top:22px;
+  margin-top:20px;
 }
 
 .grid{
   display:grid;
-  grid-template-columns:1fr 1fr 1fr 1fr auto;
+  grid-template-columns:1fr 1fr 1fr auto;
   gap:10px;
-  margin-top:10px;
 }
 
 .var{
   background:#f8fafc;
   padding:14px;
   border-radius:14px;
+  margin-top:8px;
   display:flex;
   justify-content:space-between;
-  margin-top:8px;
   font-weight:700;
 }
 </style>
@@ -81,51 +135,57 @@ button{
 
 <body>
 
-<div class="container">
-<h1>📦 Cadastro de Ingredientes</h1>
+<div class="app">
 
-<label>Nome</label>
-<input id="nome">
-
-<label>Descrição</label>
-<input id="descricao">
-
-<label>Unidade de Medida</label>
-<select id="unidade">
-  <option>UN</option>
-  <option>KG</option>
-  <option>G</option>
-  <option>L</option>
-  <option>ML</option>
-</select>
-
-<label>Valor</label>
-<input id="valor" inputmode="decimal" placeholder="R$ 0,00">
-
-<label>Rendimento (%)</label>
-<input id="rendimento" inputmode="numeric" value="100">
-
-<button onclick="salvarProduto()">Salvar Produto</button>
-
-<hr style="margin:30px 0">
-
-<h2>➕ Variações</h2>
-
-<div class="grid">
-  <select id="vUnidade">
-    <option>UN</option>
-    <option>KG</option>
-    <option>G</option>
-    <option>L</option>
-    <option>ML</option>
-  </select>
-
-  <input id="vValor" inputmode="decimal" placeholder="R$ 0,00">
-  <input id="vRendimento" inputmode="numeric" value="100">
-  <button onclick="addVariacao()">+</button>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>Ingredientes</h2>
+  <input id="busca" placeholder="Buscar...">
+  <div id="lista" class="lista"></div>
+  <button class="new" onclick="novo()">+ Novo Ingrediente</button>
 </div>
 
-<div id="lista"></div>
+<!-- MAIN -->
+<div class="main">
+  <div class="card">
+    <h1 id="titulo">Novo Ingrediente</h1>
+
+    <label>Nome</label>
+    <input id="nome">
+
+    <label>Descrição</label>
+    <input id="descricao">
+
+    <label>Unidade</label>
+    <select id="unidade">
+      <option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option>
+    </select>
+
+    <label>Valor</label>
+    <input id="valor">
+
+    <label>Rendimento (%)</label>
+    <input id="rendimento" value="100">
+
+    <button onclick="salvar()">Salvar Ingrediente</button>
+
+    <hr style="margin:30px 0">
+
+    <h3>Variações</h3>
+
+    <div class="grid">
+      <select id="vUn">
+        <option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option>
+      </select>
+      <input id="vValor" placeholder="R$ 0,00">
+      <input id="vRend" value="100">
+      <button onclick="addVariacao()">+</button>
+    </div>
+
+    <div id="vars"></div>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -134,78 +194,102 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-let produtoId = null;
-let variacoes = [];
+let atual=null;
 
-/* ===== MÁSCARAS ===== */
-function moedaMask(el){
-  el.addEventListener("input",()=>{
-    let v = el.value.replace(/\D/g,"");
-    v = (Number(v)/100).toFixed(2);
-    el.value = "R$ " + v.replace(".",",");
-  });
+/* MÁSCARAS */
+function moeda(el){
+  el.oninput=()=>{let v=el.value.replace(/\D/g,"");el.value="R$ "+(v/100).toFixed(2).replace(".",",")}
+}
+function numero(el){el.oninput=()=>el.value=el.value.replace(/\D/g,"")}
+
+moeda(valor); moeda(vValor);
+numero(rendimento); numero(vRend);
+
+/* LISTAR */
+async function carregar(){
+  const {data}=await sb.from("produtos").select("*").order("nome");
+  renderLista(data||[]);
+}
+carregar();
+
+function renderLista(items){
+  lista.innerHTML=items.map(i=>`
+    <div class="item ${atual?.id===i.id?'active':''}" onclick="editar('${i.id}')">
+      ${i.nome}
+    </div>`).join("");
 }
 
-function numero(el){
-  el.addEventListener("input",()=>{
-    el.value = el.value.replace(/\D/g,"");
-  });
+/* BUSCA */
+busca.oninput=async()=>{
+  const q=busca.value.toLowerCase();
+  const {data}=await sb.from("produtos").select("*");
+  renderLista(data.filter(p=>p.nome.toLowerCase().includes(q)));
+};
+
+/* EDITAR */
+async function editar(id){
+  const {data}=await sb.from("produtos").select("*").eq("id",id).single();
+  atual=data;
+  titulo.textContent="Editar Ingrediente";
+  nome.value=data.nome;
+  descricao.value=data.descricao||"";
+  unidade.value=data.unidade_medida;
+  valor.value="R$ "+Number(data.valor).toFixed(2).replace(".",",");
+  rendimento.value=data.rendimento_percentual;
+
+  const {data:vs}=await sb.from("produto_variacoes").select("*").eq("produto_id",id);
+  renderVars(vs||[]);
 }
 
-moedaMask(valor);
-moedaMask(vValor);
-numero(rendimento);
-numero(vRendimento);
+/* NOVO */
+function novo(){
+  atual=null;
+  titulo.textContent="Novo Ingrediente";
+  nome.value=descricao.value=valor.value="";
+  rendimento.value=100;
+  vars.innerHTML="";
+}
 
-/* ===== SALVAR PRODUTO ===== */
-async function salvarProduto(){
-  const data = {
-    nome: nome.value,
-    descricao: descricao.value,
-    unidade_medida: unidade.value,
-    valor: Number(valor.value.replace(/\D/g,""))/100,
-    rendimento_percentual: Number(rendimento.value)
+/* SALVAR */
+async function salvar(){
+  const payload={
+    nome:nome.value,
+    descricao:descricao.value,
+    unidade_medida:unidade.value,
+    valor:Number(valor.value.replace(/\D/g,""))/100,
+    rendimento_percentual:Number(rendimento.value)
   };
 
-  const { data:res, error } = await sb
-    .from("produtos")
-    .insert(data)
-    .select()
-    .single();
-
-  if(error){ alert(error.message); return; }
-
-  produtoId = res.id;
-  alert("Produto salvo! Agora adicione variações.");
+  if(atual){
+    await sb.from("produtos").update(payload).eq("id",atual.id);
+  }else{
+    const {data}=await sb.from("produtos").insert(payload).select().single();
+    atual=data;
+  }
+  alert("Salvo com sucesso");
+  carregar();
 }
 
-/* ===== VARIAÇÕES ===== */
+/* VARIAÇÕES */
 async function addVariacao(){
-  if(!produtoId){ alert("Salve o produto primeiro"); return; }
+  if(!atual){alert("Salve o ingrediente primeiro");return;}
 
-  const payload = {
-    produto_id: produtoId,
-    unidade_medida: vUnidade.value,
-    valor: Number(vValor.value.replace(/\D/g,""))/100,
-    rendimento_percentual: Number(vRendimento.value)
+  const payload={
+    produto_id:atual.id,
+    unidade_medida:vUn.value,
+    valor:Number(vValor.value.replace(/\D/g,""))/100,
+    rendimento_percentual:Number(vRend.value)
   };
 
-  const { error } = await sb
-    .from("produto_variacoes")
-    .insert(payload);
-
-  if(error){ alert(error.message); return; }
-
-  variacoes.push(payload);
-  render();
+  await sb.from("produto_variacoes").insert(payload);
+  editar(atual.id);
 }
 
-function render(){
-  lista.innerHTML = variacoes.map(v=>`
+function renderVars(vs){
+  vars.innerHTML=vs.map(v=>`
     <div class="var">
-      ${v.unidade_medida} • R$ ${v.valor.toFixed(2)} • ${v.rendimento_percentual}%
-    </div>
-  `).join("");
+      ${v.unidade_medida} • R$ ${Number(v.valor).toFixed(2)} • ${v.rendimento_percentual}%
+    </div>`).join("");
 }
 </script>
 
