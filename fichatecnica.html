@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>FICHA TÉCNICA • CMV PROFISSIONAL</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FICHA TÉCNICA • CMV</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,27 +16,17 @@
   --card:#ffffff;
   --text:#0f172a;
 }
-
 *{box-sizing:border-box}
-
-html,body{
+body{
   margin:0;
-  padding:0;
   background:var(--bg);
   font-family:Inter,sans-serif;
   color:var(--text);
 }
-
 .hidden{display:none}
 
 /* LAYOUT */
-.container{
-  padding:28px;
-  max-width:1100px;
-  margin:auto;
-}
-
-/* CARD */
+.container{max-width:1100px;margin:auto;padding:28px}
 .card{
   background:var(--card);
   border-radius:24px;
@@ -47,86 +37,53 @@ html,body{
 
 /* OVERLAY */
 .overlay{
-  position:absolute;
-  inset:0;
-  background:rgba(255,255,255,.8);
-  backdrop-filter:blur(3px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:20;
-  border-radius:24px;
+  position:absolute;inset:0;
+  background:rgba(255,255,255,.75);
+  display:none;align-items:center;justify-content:center;
+  border-radius:24px;z-index:10;
 }
-
 .spinner{
-  width:26px;
-  height:26px;
+  width:26px;height:26px;
   border:4px solid #cbd5e1;
   border-top-color:var(--primary);
   border-radius:50%;
   animation:spin .8s linear infinite;
 }
-
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* TEXTOS */
-h1,h3{
-  margin:0 0 18px;
-  font-weight:800;
-}
-
 /* FORM */
-label{
-  display:block;
-  margin-top:16px;
-  font-weight:800;
-  font-size:13px;
-}
-
+h1,h3{margin:0 0 18px;font-weight:800}
+label{display:block;margin-top:16px;font-size:13px;font-weight:800}
 input,select,button{
-  width:100%;
-  padding:14px 16px;
-  border-radius:16px;
-  border:1px solid #cbd5e1;
-  margin-top:6px;
-  font-family:inherit;
-  text-transform:uppercase;
+  width:100%;padding:14px 16px;margin-top:6px;
+  border-radius:16px;border:1px solid #cbd5e1;
+  text-transform:uppercase;font-family:inherit;
 }
-
 button{
   background:linear-gradient(180deg,var(--primary),var(--primary-dark));
-  color:#fff;
-  font-weight:800;
-  border:none;
-  cursor:pointer;
+  color:#fff;font-weight:800;border:none;cursor:pointer;
 }
 
-/* LISTAS */
+/* LISTA */
 .lista .item{
   background:#f1f5f9;
-  padding:14px;
-  border-radius:14px;
-  margin-top:6px;
-  cursor:pointer;
-  font-weight:800;
+  padding:14px;border-radius:14px;
+  margin-top:6px;cursor:pointer;font-weight:800;
 }
 .lista .item:hover{background:#e2e8f0}
 
-/* GRID INGREDIENTES */
+/* INGREDIENTES */
 .grid{
   display:grid;
   grid-template-columns:2fr 1fr 1fr 1fr auto;
   gap:8px;
 }
-
-/* ITEM ING */
 .ing{
   background:#f8fafc;
-  border-radius:14px;
   padding:12px 16px;
+  border-radius:14px;
   margin-top:6px;
-  display:flex;
-  justify-content:space-between;
+  display:flex;justify-content:space-between;
   font-weight:800;
 }
 
@@ -134,51 +91,32 @@ button{
 .kpis{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:14px;
-  margin-top:26px;
+  gap:14px;margin-top:26px;
 }
 .kpi{
   background:#f8fafc;
-  border-radius:18px;
-  padding:18px;
-  text-align:center;
-  font-weight:800;
+  padding:18px;border-radius:18px;
+  text-align:center;font-weight:800;
 }
-.kpi span{
-  display:block;
-  margin-top:6px;
-  font-size:18px;
-}
+.kpi span{display:block;margin-top:6px;font-size:18px}
 
 /* FOTO */
 .preview{
-  width:100%;
-  max-height:220px;
-  object-fit:cover;
-  border-radius:18px;
+  width:100%;max-height:220px;
+  object-fit:cover;border-radius:18px;
   margin-top:12px;
 }
 
 /* TOAST */
 .toast{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  background:#22c55e;
-  color:#fff;
-  padding:14px 20px;
-  border-radius:14px;
-  font-weight:800;
-  opacity:0;
+  position:fixed;bottom:20px;right:20px;
+  background:#22c55e;color:#fff;
+  padding:14px 20px;border-radius:14px;
+  font-weight:800;opacity:0;
   transform:translateY(10px);
-  transition:.3s;
-  pointer-events:none;
-  z-index:99;
+  transition:.3s;pointer-events:none;z-index:99;
 }
-.toast.show{
-  opacity:1;
-  transform:translateY(0);
-}
+.toast.show{opacity:1;transform:translateY(0)}
 </style>
 </head>
 
@@ -186,26 +124,21 @@ button{
 
 <div class="container">
 
-<!-- AUTH -->
+<!-- LOGIN -->
 <div id="authBox" class="card">
   <h1>ENTRAR</h1>
-
   <label>EMAIL</label>
   <input id="authEmail" type="email">
-
   <label>SENHA</label>
   <input id="authSenha" type="password">
-
   <button onclick="login()">ENTRAR</button>
 </div>
 
 <!-- APP -->
 <div id="app" class="card hidden">
-  <div id="overlay" class="overlay">
-    <div class="spinner"></div>
-  </div>
+  <div id="overlay" class="overlay"><div class="spinner"></div></div>
 
-  <h1>FICHA TÉCNICA • CMV</h1>
+  <h1>FICHA TÉCNICA</h1>
 
   <label>NOME DO PRATO</label>
   <input id="nomePrato">
@@ -258,161 +191,151 @@ button{
 <div id="toast" class="toast">SALVO COM SUCESSO</div>
 
 <script>
-/* ================= SUPABASE ================= */
+/* SUPABASE */
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-/* ================= UTIL ================= */
-const moeda = v => "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-const toast = msg => {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
+/* UTIL */
+const moeda = v => "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+const toast = m => {
+  const t=document.getElementById("toast");
+  t.textContent=m;t.classList.add("show");
   setTimeout(()=>t.classList.remove("show"),2500);
 };
-const overlay = document.getElementById("overlay");
-const show = () => overlay.style.display = "flex";
-const hide = () => overlay.style.display = "none";
+const overlay=document.getElementById("overlay");
+const show=()=>overlay.style.display="flex";
+const hide=()=>overlay.style.display="none";
 
-/* ================= AUTH ================= */
+/* LOGIN */
 async function login(){
   show();
-  const { error } = await sb.auth.signInWithPassword({
-    email: authEmail.value,
-    password: authSenha.value
+  const {error}=await sb.auth.signInWithPassword({
+    email:authEmail.value,
+    password:authSenha.value
   });
   hide();
-  if(error){ toast(error.message); return; }
+  if(error){toast(error.message);return;}
   authBox.classList.add("hidden");
   app.classList.remove("hidden");
 }
 
-/* ================= FOTO ================= */
-fotoProduto.onchange = () => {
-  if(!fotoProduto.files[0]) return;
-  previewFoto.src = URL.createObjectURL(fotoProduto.files[0]);
+/* FOTO */
+fotoProduto.onchange=()=>{
+  if(!fotoProduto.files[0])return;
+  previewFoto.src=URL.createObjectURL(fotoProduto.files[0]);
   previewFoto.classList.remove("hidden");
 };
 
-/* ================= INGREDIENTES ================= */
-let ingrediente = null;
-let ingredientes = [];
+/* INGREDIENTES */
+let ingrediente=null;
+let ingredientes=[];
 
-buscaIngrediente.oninput = async () => {
-  const q = buscaIngrediente.value.trim().toUpperCase();
-  if(q.length < 2){ listaIngrediente.innerHTML = ""; return; }
+buscaIngrediente.oninput=async()=>{
+  const q=buscaIngrediente.value.trim().toUpperCase();
+  if(q.length<2){listaIngrediente.innerHTML="";return;}
 
-  const { data } = await sb
-    .from("produtos")
+  const {data}=await sb.from("produtos")
     .select("id,nome,unidade_medida,valor,rendimento_percentual")
-    .ilike("nome", `%${q}%`)
+    .ilike("nome",`%${q}%`)
     .limit(10);
 
-  listaIngrediente.innerHTML = (data || []).map(i => `
+  listaIngrediente.innerHTML=(data||[]).map(i=>`
     <div class="item" onclick="selectIngrediente(${i.id})">${i.nome}</div>
   `).join("");
 };
 
 async function selectIngrediente(id){
-  const { data, error } = await sb
-    .from("produtos")
+  const {data,error}=await sb.from("produtos")
     .select("nome,unidade_medida,valor,rendimento_percentual")
-    .eq("id", id)
-    .single();
+    .eq("id",id).single();
 
-  if(error || !data){
-    toast("ERRO AO CARREGAR INGREDIENTE");
-    return;
-  }
+  if(error||!data){toast("ERRO AO CARREGAR INGREDIENTE");return;}
 
-  ingrediente = {
-    nome: data.nome,
-    unidade: data.unidade_medida,
-    custo: Number(data.valor),
-    rendimento: Number(data.rendimento_percentual || 100)
+  ingrediente={
+    nome:data.nome,
+    unidade:data.unidade_medida,
+    custo:Number(data.valor),
+    rendimento:Number(data.rendimento_percentual||100)
   };
 
-  unUso.value = ingrediente.unidade;
-  custo.value = ingrediente.custo.toFixed(4);
-  rend.value = ingrediente.rendimento;
-  listaIngrediente.innerHTML = "";
+  unUso.value=ingrediente.unidade;
+  custo.value=ingrediente.custo.toFixed(4);
+  rend.value=ingrediente.rendimento;
+  listaIngrediente.innerHTML="";
 }
 
 function addIngrediente(){
-  if(!ingrediente || !qtd.value) return;
-
-  const fator = (ingrediente.rendimento || 100) / 100;
-  const total = (qtd.value * ingrediente.custo) / fator;
-
+  if(!ingrediente||!qtd.value)return;
+  const fator=(ingrediente.rendimento||100)/100;
+  const total=(qtd.value*ingrediente.custo)/fator;
   ingredientes.push({
     ...ingrediente,
-    quantidade: Number(qtd.value),
-    custo_total: total
+    quantidade:Number(qtd.value),
+    custo_total:total
   });
-
-  qtd.value = "";
-  ingrediente = null;
+  qtd.value="";
+  ingrediente=null;
   render();
 }
 
 function render(){
-  const cmv = ingredientes.reduce((s,i)=>s+i.custo_total,0);
-  const por = rendimentoFinal.value || 1;
+  const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
+  const por=rendimentoFinal.value||1;
 
-  listaIng.innerHTML = ingredientes.map(i=>`
+  listaIng.innerHTML=ingredientes.map(i=>`
     <div class="ing">
       <span>${i.nome} (${i.quantidade} ${i.unidade})</span>
       <strong>${moeda(i.custo_total)}</strong>
     </div>
   `).join("");
 
-  cmvTotal.textContent = moeda(cmv);
-  cmvUnit.textContent = moeda(cmv / por);
+  cmvTotal.textContent=moeda(cmv);
+  cmvUnit.textContent=moeda(cmv/por);
 }
 
-/* ================= SALVAR ================= */
+/* SALVAR */
 async function salvar(){
-  if(!nomePrato.value || !ingredientes.length){
+  if(!nomePrato.value||!ingredientes.length){
     toast("PREENCHA PRATO E INGREDIENTES");
     return;
   }
 
   show();
 
-  let fotoUrl = null;
+  let fotoUrl=null;
   if(fotoProduto.files[0]){
-    const f = fotoProduto.files[0];
-    const path = `fichas/${Date.now()}-${f.name}`;
-    const up = await sb.storage.from("buffet").upload(path, f, { upsert:true });
-    if(up.error){ hide(); toast("ERRO NA FOTO"); return; }
-    fotoUrl = sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
+    const f=fotoProduto.files[0];
+    const path=`fichas/${Date.now()}-${f.name}`;
+    const up=await sb.storage.from("buffet").upload(path,f,{upsert:true});
+    if(up.error){hide();toast("ERRO NA FOTO");return;}
+    fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
   }
 
-  const cmv = ingredientes.reduce((s,i)=>s+i.custo_total,0);
-  const por = rendimentoFinal.value || 1;
+  const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
+  const por=rendimentoFinal.value||1;
 
-  const { data, error } = await sb.from("buffet").insert({
-    nome: nomePrato.value,
-    tipo: tipoPrato.value,
-    custo_total: cmv,
-    custo_unitario: cmv / por,
-    rendimento: por,
-    foto_url: fotoUrl
+  const {data,error}=await sb.from("buffet").insert({
+    nome:nomePrato.value,
+    tipo:tipoPrato.value,
+    custo_total:cmv,
+    custo_unitario:cmv/por,
+    rendimento:por,
+    foto_url:fotoUrl
   }).select().single();
 
-  if(error){ hide(); toast(error.message); return; }
+  if(error){hide();toast(error.message);return;}
 
   for(const i of ingredientes){
     await sb.from("buffet_itens").insert({
-      buffet_id: data.id,
-      nome: i.nome,
-      unidade_uso: i.unidade,
-      quantidade: i.quantidade,
-      custo_unitario: i.custo,
-      custo_calculado: i.custo_total,
-      rendimento_percentual: i.rendimento
+      buffet_id:data.id,
+      nome:i.nome,
+      unidade_uso:i.unidade,
+      quantidade:i.quantidade,
+      custo_unitario:i.custo,
+      custo_calculado:i.custo_total,
+      rendimento_percentual:i.rendimento
     });
   }
 
