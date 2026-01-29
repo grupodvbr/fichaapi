@@ -273,6 +273,7 @@ busca.oninput=async()=>{
 async function editar(id){
   const {data}=await sb.from("produtos").select("*").eq("id",id).single();
   atual=data;
+
   titulo.textContent="EDITAR INGREDIENTE";
   nome.value=data.nome;
   descricao.value=data.descricao||"";
@@ -280,9 +281,9 @@ async function editar(id){
   valor.value="R$ "+Number(data.valor).toFixed(2).replace(".",",");
   rendimento.value=data.rendimento_percentual;
 
-  const {data:vs}=await sb.from("produto_variacoes").select("*").eq("produto_id",id);
-  renderVars(vs||[]);
+  await carregarVariacoes(id);
 }
+
 
 /* NOVO */
 function novo(){
@@ -318,24 +319,65 @@ async function salvar(){
 async function addVariacao(){
   if(!atual) return toast("SALVE O INGREDIENTE PRIMEIRO");
 
-  const payload={
-    produto_id:atual.id,
-    unidade_medida:vUn.value,
-    valor:Number(vValor.value.replace(/\D/g,""))/100,
-    rendimento_percentual:Number(vRend.value)
-  };
+  const unidadeMedida = vUn.value;
+  const valorNum = Number(vValor.value.replace(/\D/g,""))/100;
+  const rendNum = Number(vRend.value);
 
-  await sb.from("produto_variacoes").insert(payload);
-  editar(atual.id);
-  toast("VARIAÇÃO SALVA");
+  // 🔎 verifica se já existe
+  const { data:existe } = await sb
+    .from("produto_variacoes")
+    .select("id")
+    .eq("produto_id", atual.id)
+    .eq("unidade_medida", unidadeMedida)
+    .single();
+
+  if(existe){
+    // 🔁 UPDATE
+    await sb
+      .from("produto_variacoes")
+      .update({
+        valor: valorNum,
+        rendimento_percentual: rendNum
+      })
+      .eq("id", existe.id);
+
+    toast("VARIAÇÃO ATUALIZADA");
+  }else{
+    // ➕ INSERT
+    await sb.from("produto_variacoes").insert({
+      produto_id: atual.id,
+      unidade_medida: unidadeMedida,
+      valor: valorNum,
+      rendimento_percentual: rendNum
+    });
+
+    toast("VARIAÇÃO CRIADA");
+  }
+
+  await carregarVariacoes(atual.id);
 }
+
 
 function renderVars(vs){
   vars.innerHTML=vs.map(v=>`
     <div class="var">
       ${v.unidade_medida} • R$ ${Number(v.valor).toFixed(2)} • ${v.rendimento_percentual}%
     </div>`).join("");
+}async function carregarVariacoes(produtoId){
+  const { data, error } = await sb
+    .from("produto_variacoes")
+    .select("*")
+    .eq("produto_id", produtoId)
+    .order("unidade_medida");
+
+  if(error){
+    toast("ERRO AO CARREGAR VARIAÇÕES");
+    return;
+  }
+
+  renderVars(data || []);
 }
+
 </script>
 
 </body>
