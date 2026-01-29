@@ -242,26 +242,43 @@ buscaIngrediente.oninput=async()=>{
 
 async function selectIngrediente(id){
   const {data,error}=await sb.from("produtos")
-    .select("nome,unidade_medida,valor,rendimento_percentual")
-    .eq("id",id).single();
-  if(error||!data){toast("ERRO AO CARREGAR INGREDIENTE");return;}
+    .select("id,nome,unidade_medida,valor,rendimento_percentual")
+    .eq("id",id)
+    .single();
+
+  if(error||!data){
+    toast("ERRO AO CARREGAR INGREDIENTE");
+    return;
+  }
+
   ingrediente={
-    nome:data.nome,
-    unidade:data.unidade_medida,
-    custo:Number(data.valor),
-    rendimento:Number(data.rendimento_percentual||100)
+    produto_id: data.id,               // ✅ ID PRESERVADO
+    nome: data.nome,
+    unidade: data.unidade_medida,
+    custo: Number(data.valor),
+    rendimento: Number(data.rendimento_percentual || 100)
   };
-  unUso.value=ingrediente.unidade;
-  custo.value=ingrediente.custo.toFixed(4);
-  rend.value=ingrediente.rendimento;
+
+  unUso.value = ingrediente.unidade;
+  custo.value = ingrediente.custo.toFixed(4);
+  rend.value  = ingrediente.rendimento;
   listaIngrediente.innerHTML="";
 }
+
 
 function addIngrediente(){
   if(!ingrediente||!qtd.value)return;
   const fator=(ingrediente.rendimento||100)/100;
   const total=(qtd.value*ingrediente.custo)/fator;
-  ingredientes.push({...ingrediente,quantidade:Number(qtd.value),custo_total:total});
+ingredientes.push({
+  produto_id: ingrediente.produto_id,  // ✅ ESSENCIAL
+  nome: ingrediente.nome,
+  unidade: ingrediente.unidade,
+  quantidade: Number(qtd.value),
+  custo_unitario: ingrediente.custo,
+  custo_total: total,
+  rendimento: ingrediente.rendimento
+});
   qtd.value="";ingrediente=null;render();
 }
 
@@ -308,15 +325,17 @@ async function salvar(){
   if(error){hide();toast(error.message);return;}
 
   for(const i of ingredientes){
-    await sb.from("buffet_itens").insert({
-      buffet_id:data.id,
-      nome:i.nome,
-      unidade_uso:i.unidade,
-      quantidade:i.quantidade,
-      custo_unitario:i.custo,
-      custo_calculado:i.custo_total,
-      rendimento_percentual:i.rendimento
-    });
+await sb.from("buffet_itens").insert({
+  buffet_id: data.id,
+  produto_id: i.produto_id,        // ✅ CHAVE REAL
+  nome: i.nome,
+  unidade_uso: i.unidade,
+  quantidade: i.quantidade,
+  custo_unitario: i.custo_unitario,
+  custo_calculado: i.custo_total,
+  rendimento_percentual: i.rendimento
+});
+
   }
 
   hide();toast("SALVO COM SUCESSO");
