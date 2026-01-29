@@ -362,14 +362,35 @@ async function salvar(){
 
   show();
 
-  let fotoUrl=null;
-  if(fotoProduto.files[0]){
-    const f=fotoProduto.files[0];
-    const path=`fichas/${Date.now()}-${f.name}`;
-    const up=await sb.storage.from("buffet").upload(path,f,{upsert:true});
-    if(up.error){hide();toast("ERRO NA FOTO");return;}
-    fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
+ let fotoUrl = null;
+
+if (fotoProduto.files.length > 0) {
+  const file = fotoProduto.files[0];
+  const ext = file.name.split(".").pop();
+  const fileName = `${crypto.randomUUID()}.${ext}`;
+  const filePath = `fichas/${fileName}`;
+
+  const { error: uploadError } = await sb
+    .storage
+    .from("buffet")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false
+    });
+
+  if (uploadError) {
+    hide();
+    toast(uploadError.message); // mostra o erro real
+    return;
   }
+
+  fotoUrl = sb
+    .storage
+    .from("buffet")
+    .getPublicUrl(filePath)
+    .data.publicUrl;
+}
+
 
   const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
   const por=Number(rendimentoFinal.value||1);
