@@ -354,78 +354,92 @@ precoVenda.oninput=render;
 rendimentoFinal.oninput=render;
 
 /* ================= SALVAR ================= */
-async function salvar(){
-  if(!nomePrato.value||!ingredientes.length){
+asyncasync function salvar(){
+  if(!nomePrato.value || ingredientes.length === 0){
     toast("PREENCHA PRATO E INGREDIENTES");
     return;
   }
 
   show();
 
- let fotoUrl = null;
+  try{
+    /* ================= FOTO ================= */
+    let fotoUrl = null;
 
-if (fotoProduto.files.length > 0) {
-  const file = fotoProduto.files[0];
-  const ext = file.name.split(".").pop();
-  const fileName = `${crypto.randomUUID()}.${ext}`;
-  const filePath = `fichas/${fileName}`;
+    if (fotoProduto.files.length > 0) {
+      const file = fotoProduto.files[0];
+      const ext = file.name.split(".").pop();
+      const fileName = `${crypto.randomUUID()}.${ext}`;
+      const filePath = `fichas/${fileName}`;
 
-  const { error: uploadError } = await sb
-    .storage
-    .from("buffet")
-    .upload(filePath, file, {
-      cacheControl: "3600",
-      upsert: false
-    });
+      const { error: uploadError } = await sb
+        .storage
+        .from("buffet")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
 
-  if (uploadError) {
+      if (uploadError) throw uploadError;
+
+      fotoUrl = sb
+        .storage
+        .from("buffet")
+        .getPublicUrl(filePath)
+        .data.publicUrl;
+    }
+
+    /* ================= CMV ================= */
+    const cmv = ingredientes.reduce((s,i)=>s+i.custo_total,0);
+    const por = Number(rendimentoFinal.value || 1);
+    const preco = Number(precoVenda.value || 0);
+    const margemPerc = preco ? ((preco - (cmv/por)) / preco) * 100 : 0;
+
+    /* ================= INSERIR PRATO ================= */
+    const { data: prato, error: pratoError } = await sb
+      .from("buffet")
+      .insert({
+        nome: nomePrato.value,
+        tipo: tipoPrato.value,
+        preco_venda: preco,
+        custo_total: cmv,
+        custo_unitario: cmv / por,
+        margem_percentual: margemPerc,
+        rendimento: por,
+        foto_url: fotoUrl
+      })
+      .select()
+      .single();
+
+    if (pratoError) throw pratoError;
+
+    /* ================= INSERIR INGREDIENTES ================= */
+    for (const i of ingredientes) {
+      const { error: itemError } = await sb
+        .from("buffet_itens")
+        .insert({
+          buffet_id: prato.id,
+          produto_id: i.produto_id,   // UUID
+          nome: i.nome,
+          unidade_uso: i.unidade,
+          quantidade: i.quantidade,
+          custo_unitario: i.custo_unitario,
+          custo_calculado: i.custo_total,
+          rendimento_percentual: i.rendimento
+        });
+
+      if (itemError) throw itemError;
+    }
+
     hide();
-    toast(uploadError.message); // mostra o erro real
-    return;
+    toast("SALVO COM SUCESSO");
+    setTimeout(()=>location.reload(),1200);
+
+  }catch(err){
+    hide();
+    console.error("ERRO AO SALVAR:", err);
+    toast(err.message || "ERRO AO SALVAR");
   }
-
-  fotoUrl = sb
-    .storage
-    .from("buffet")
-    .getPublicUrl(filePath)
-    .data.publicUrl;
-}
-
-
-  const cmv=ingredientes.reduce((s,i)=>s+i.custo_total,0);
-  const por=Number(rendimentoFinal.value||1);
-  const preco=Number(precoVenda.value||0);
-  const margemPerc=preco?((preco-(cmv/por))/preco)*100:0;
-
-  const {data,error}=await sb.from("buffet").insert({
-    nome:nomePrato.value,
-    tipo:tipoPrato.value,
-    preco_venda:preco,
-    custo_total:cmv,
-    custo_unitario:cmv/por,
-    margem_percentual:margemPerc,
-    rendimento:por,
-    foto_url:fotoUrl
-  }).select().single();
-
-  if(error){hide();toast(error.message);return;}
-
-  for(const i of ingredientes){
-    await sb.from("buffet_itens").insert({
-      buffet_id:data.id,
-      produto_id:i.produto_id,
-      nome:i.nome,
-      unidade_uso:i.unidade,
-      quantidade:i.quantidade,
-      custo_unitario:i.custo_unitario,
-      custo_calculado:i.custo_total,
-      rendimento_percentual:i.rendimento
-    });
-  }
-
-  hide();
-  toast("SALVO COM SUCESSO");
-  setTimeout(()=>location.reload(),1200);
 }
 </script>
 
