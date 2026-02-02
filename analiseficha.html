@@ -806,7 +806,7 @@ async function salvarPrecoVenda(buffetId){
     return;
   }
 
-  let cmvBase = itens.reduce(
+  const cmvBase = itens.reduce(
     (s, i) => s + Number(i.custo_calculado || 0),
     0
   );
@@ -828,15 +828,13 @@ async function salvarPrecoVenda(buffetId){
 
   const cmvFinal = cmvBase + totalImpostos;
 
-  /* 3️⃣ PREÇO DE VENDA CORRETO */
+  /* 3️⃣ PREÇO DE VENDA */
   const precoVenda = cmvFinal * (1 + mk / 100);
 
   /* 4️⃣ SALVA NO BANCO */
   const { error } = await sb
     .from("buffet")
-    .update({
-      preco_venda: precoVenda
-    })
+    .update({ preco_venda: precoVenda })
     .eq("id", buffetId);
 
   if(error){
@@ -845,10 +843,12 @@ async function salvarPrecoVenda(buffetId){
     return;
   }
 
-  /* 5️⃣ SINCRONIZA ESTADO + UI */
+  /* 5️⃣ RECARREGA UI */
   await carregarPratos();
   abrir(pratos.find(p => p.id === buffetId));
 }
+
+
 
 /* ================= AUTO UNIDADE ================= */
 document.addEventListener("change", function(e){
