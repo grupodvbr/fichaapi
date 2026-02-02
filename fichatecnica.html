@@ -474,6 +474,25 @@ hide();
 btnSalvar.disabled = false;
 ingredientes = [];
 toast("SALVO COM SUCESSO");
+// limpar campos do formulário
+nomePrato.value = "";
+tipoPrato.value = "";
+precoVenda.value = "";
+rendimentoFinal.value = 1;
+
+fotoProduto.value = "";
+previewFoto.src = "";
+previewFoto.classList.add("hidden");
+
+buscaIngrediente.value = "";
+listaIngrediente.innerHTML = "";
+listaIng.innerHTML = "";
+ingredienteSelecionado.textContent = "";
+
+cmvTotal.textContent = "R$ 0,00";
+cmvUnit.textContent = "R$ 0,00";
+margem.textContent = "—";
+margem.style.color = "";
 
 
   }catch(err){
