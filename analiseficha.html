@@ -556,31 +556,81 @@ async function renderLista(){
     c.className = "card";
     c.onclick = ()=>abrirModal(p);
 
-    c.innerHTML = `
-      ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
-      <div class="card-body">
+// 🔹 BUSCA INGREDIENTES
+const { data: itens } = await sb
+  .from("buffet_itens")
+  .select("custo_calculado")
+  .eq("buffet_id", p.id);
 
-        <h3>
-          ${p.nome}
-          ${cmvPerc !== null ? `
-            <span class="badge"
-              style="
-                background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
-                color:${cmvPerc > 35 ? '#991b1b' : '#166534'};
-                margin-left:6px">
-              CMV ${cmvPerc.toFixed(1)}%
-            </span>
-          ` : ``}
-        </h3>
+const cmvBase = (itens || []).reduce(
+  (s,i)=> s + Number(i.custo_calculado || 0), 0
+);
 
-        <span class="badge">${p.tipo || "-"}</span>
+// 🔹 BUSCA IMPOSTOS / CUSTOS OPERACIONAIS
+const { data: impostos } = await sb
+  .from("impostos")
+  .select("modalidade, valor")
+  .eq("buffet_id", p.id);
 
-        ${p.preco_venda
-          ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>`
-          : ``}
+let totalImpostos = 0;
+(impostos || []).forEach(i=>{
+  if(i.modalidade === "FIXO")
+    totalImpostos += Number(i.valor);
+  if(i.modalidade === "PERCENTUAL")
+    totalImpostos += (cmvBase * Number(i.valor)) / 100;
+});
 
-      </div>
-    `;
+const cmvFinal = cmvBase + totalImpostos;
+const lucro = p.preco_venda ? p.preco_venda - cmvFinal : null;
+
+c.innerHTML = `
+  ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
+  <div class="card-body">
+
+    <h3>
+      ${p.nome}
+
+      ${cmvPerc !== null ? `
+        <span class="badge"
+          style="
+            background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
+            color:${cmvPerc > 35 ? '#991b1b' : '#166534'};
+            margin-left:6px">
+          CMV ${cmvPerc.toFixed(1)}%
+        </span>
+      ` : ``}
+    </h3>
+
+    <span class="badge">${p.tipo || "-"}</span>
+
+    <span class="badge">
+      Custo ${moeda(cmvFinal)}
+    </span>
+
+    ${totalImpostos > 0 ? `
+      <span class="badge">
+        Impostos ${moeda(totalImpostos)}
+      </span>
+    ` : ``}
+
+    ${p.preco_venda ? `
+      <span class="badge">
+        Venda ${moeda(p.preco_venda)}
+      </span>
+    ` : ``}
+
+    ${lucro !== null ? `
+      <span class="badge"
+        style="
+          background:${lucro < 0 ? '#fee2e2' : '#dcfce7'};
+          color:${lucro < 0 ? '#991b1b' : '#166534'}">
+        Lucro ${moeda(lucro)}
+      </span>
+    ` : ``}
+
+  </div>
+`;
+
 
     cards.appendChild(c);
   }
