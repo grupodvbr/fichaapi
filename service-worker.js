@@ -1,42 +1,20 @@
 /* ==============================
    CB SYSTEMS® - SERVICE WORKER
+   VERSÃO ESTÁVEL / PRODUÇÃO
    ============================== */
 
-const CACHE_NAME = "cb-systems-v1";
+const CACHE_NAME = "cb-systems-v2";
 
-/* Arquivos essenciais do app */
+/* APENAS arquivos que EXISTEM fisicamente */
 const CORE_ASSETS = [
   "/",
   "/index.html",
-  "/manifest.json",
-
-  /* Páginas principais */
   "/home.html",
   "/dashboard.html",
   "/fichatecnica.html",
   "/analiseficha.html",
   "/consultaproduto.html",
-
-  /* Cards */
-  "/cards/card1.html",
-  "/cards/card2.html",
-  "/cards/card3.html",
-  "/cards/card4.html",
-  "/cards/card5.html",
-
-  /* APIs internas (cache apenas GET) */
-  "/api/produto-preco/id.js",
-  "/api/produto-preco/produto.js",
-  "/api/produto-preco/produto-detalhe.js",
-  "/api/produto-preco/produto-completo.js",
-  "/api/produto-preco/buscar-id.js",
-  "/api/produto-preco/buscar-barcode.js",
-  "/api/produto-preco/produtos-busca.js",
-  "/api/produto-preco/vendas-produto.js",
-
-  /* Fontes externas */
-  "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap",
-  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  "/manifest.json"
 ];
 
 /* ==============================
@@ -71,26 +49,27 @@ self.addEventListener("activate", event => {
 
 /* ==============================
    FETCH
-   Estratégia:
-   - Cache First (HTML, CSS, JS)
-   - Network First (API Supabase)
+   Estratégia correta:
+   - HTML/JS/CSS → Cache First
+   - Supabase / APIs → Network First
    ============================== */
 self.addEventListener("fetch", event => {
-
   const req = event.request;
 
-  /* Ignora métodos que não sejam GET */
   if (req.method !== "GET") return;
 
-  /* Supabase sempre online */
-  if (req.url.includes("supabase.co")) {
+  /* Supabase e APIs SEMPRE online */
+  if (
+    req.url.includes("supabase.co") ||
+    req.url.includes("/api/")
+  ) {
     event.respondWith(
       fetch(req).catch(() => caches.match(req))
     );
     return;
   }
 
-  /* Estratégia padrão */
+  /* Arquivos estáticos */
   event.respondWith(
     caches.match(req).then(cacheRes => {
       return (
@@ -103,11 +82,9 @@ self.addEventListener("fetch", event => {
         })
       );
     }).catch(() => {
-      /* fallback offline */
       if (req.destination === "document") {
         return caches.match("/index.html");
       }
     })
   );
 });
-
