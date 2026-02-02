@@ -681,6 +681,19 @@ async function abrirModal(p){
 mBody.innerHTML = `
   <h2>${p.nome}</h2>
 
+  <div style="margin:12px 0">
+    <label style="font-weight:800;font-size:13px">
+      FOTO DO PRATO
+    </label>
+
+    <input
+      type="file"
+      id="fotoPrato"
+      accept="image/*"
+      style="margin-top:6px"
+    >
+  </div>
+
   <p><b>CUSTO BASE:</b> ${moeda(cmvBase)}</p>
   <p><b>IMPOSTOS E CUSTOS OPERACIONAIS:</b> ${moeda(totalImpostos)}</p>
   <p><b>CUSTO FINAL:</b> ${moeda(cmvFinal)}</p>
@@ -819,6 +832,43 @@ setTimeout(() => {
       .from("buffet")
       .update({ tipo })
       .eq("id", pratoAtual.id);
+
+    await carregarPratos();
+    renderLista();
+  };
+}, 0);
+setTimeout(() => {
+  const inputFoto = document.getElementById("fotoPrato");
+  if (!inputFoto) return;
+
+  inputFoto.onchange = async () => {
+    const file = inputFoto.files[0];
+    if (!file) return;
+
+    const ext = file.name.split(".").pop();
+    const fileName = `${pratoAtual.id}.${ext}`;
+
+    const { error: uploadError } = await sb.storage
+      .from("buffet")
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      alert("Erro ao enviar imagem");
+      return;
+    }
+
+    const { data } = sb.storage
+      .from("buffet")
+      .getPublicUrl(fileName);
+
+    const fotoUrl = data.publicUrl;
+
+    await sb
+      .from("buffet")
+      .update({ foto_url: fotoUrl })
+      .eq("id", pratoAtual.id);
+
+    mFoto.src = fotoUrl;
 
     await carregarPratos();
     renderLista();
