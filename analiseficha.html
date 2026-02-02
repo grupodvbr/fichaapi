@@ -548,17 +548,29 @@ async function abrirModal(p){
     <hr>
 
     <h3>Ingredientes</h3>
-    ${itens.map(i=>`
-      <div class="ing">
-        <span>
-          <b>${i.nome}</b><br>
-          <small>${i.quantidade} ${i.unidade_uso}</small>
-        </span>
-        <strong>${moeda(i.custo_calculado)}</strong>
-        <button class="btn-icon btn-delete"
-          onclick="excluirIngrediente('${i.id}')">🗑️</button>
-      </div>
-    `).join("")}
+${itens.map(i=>`
+  <div class="ing">
+    <span>
+      <b>${i.nome}</b><br>
+      <small>${i.quantidade} ${i.unidade_uso}</small>
+    </span>
+
+    <strong>${moeda(i.custo_calculado)}</strong>
+
+    <div style="display:flex;gap:6px">
+      <button class="btn-icon btn-edit"
+        onclick="editarIngrediente('${i.id}')">
+        ✏️
+      </button>
+
+      <button class="btn-icon btn-delete"
+        onclick="excluirIngrediente('${i.id}')">
+        🗑️
+      </button>
+    </div>
+  </div>
+`).join("")}
+
 
     <div class="precificacao">
       <h3>Novo ingrediente</h3>
@@ -678,10 +690,17 @@ await sb.from("buffet_itens").insert({
   abrirModal(pratoAtual);
 }
 
-async function excluirIngrediente(id){
-  await sb.from("buffet_itens").delete().eq("id",id);
+async function excluirIngrediente(itemId){
+  if(!confirm("Excluir este ingrediente?")) return;
+
+  await sb
+    .from("buffet_itens")
+    .delete()
+    .eq("id", itemId);
+
   abrirModal(pratoAtual);
 }
+
 
 async function salvarImposto(){
   const desc = impDesc.value.trim();
@@ -730,6 +749,54 @@ function fechar(){
   await carregarIngredientesBase();
   await carregarPratos();
 })();
+
+async function editarIngrediente(itemId){
+  const { data, error } = await sb
+    .from("buffet_itens")
+    .select("*")
+    .eq("id", itemId)
+    .single();
+
+  if(error){
+    alert("Erro ao carregar ingrediente");
+    return;
+  }
+
+  // preenche formulário
+  ingProduto.value = data.produto_id;
+  ingQtd.value = data.quantidade;
+  ingUnidade.value = data.unidade_uso;
+
+  const btn = document.querySelector(".precificacao .btn-add");
+  btn.innerText = "ATUALIZAR INGREDIENTE";
+
+  btn.onclick = async () => {
+    const qtd = Number(ingQtd.value || 0);
+    if(qtd <= 0) return alert("Quantidade inválida");
+
+    const prod = ingredientesBase.find(p => p.id === ingProduto.value);
+    const custoUnit = Number(prod.valor);
+
+    await sb
+      .from("buffet_itens")
+      .update({
+        quantidade: qtd,
+        custo_unitario: custoUnit,
+        custo_calculado: custoUnit * qtd
+      })
+      .eq("id", itemId);
+
+    btn.innerText = "ADICIONAR INGREDIENTE";
+    btn.onclick = salvarIngrediente;
+
+    ingProduto.value = "";
+    ingQtd.value = "";
+    ingUnidade.value = "";
+
+    abrirModal(pratoAtual);
+  };
+}
+
 </script>
 
 
