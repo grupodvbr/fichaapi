@@ -833,6 +833,27 @@ mBody.innerHTML = `
     <button class="btn-add" style="margin-top:10px"
       onclick="salvarImposto()">ADICIONAR</button>
   </div>
+<hr>
+
+<h3>Modo de preparo</h3>
+
+<textarea
+  id="modoPreparo"
+  placeholder="Descreva o modo de preparo do prato..."
+  style="
+    width:100%;
+    min-height:120px;
+    padding:14px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    font-size:14px;
+    font-family:Inter,sans-serif;
+    resize:vertical;
+  "
+>${p.modo_preparo || ""}</textarea>
+
+
+  
 `;
 setTimeout(() => {
   const selectTipo = document.getElementById("tipoPrato");
@@ -915,6 +936,19 @@ setTimeout(() => {
 
     await carregarPratos();
     renderLista();
+  };
+}, 0);
+setTimeout(() => {
+  const mp = document.getElementById("modoPreparo");
+  if (!mp) return;
+
+  mp.onblur = async () => {
+    const texto = mp.value.trim();
+
+    await sb
+      .from("buffet")
+      .update({ modo_preparo: texto })
+      .eq("id", pratoAtual.id);
   };
 }, 0);
 
