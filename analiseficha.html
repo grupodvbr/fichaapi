@@ -162,30 +162,44 @@ async function abrir(f){
   modal.style.display = "flex";
   mFoto.src = f.foto_url || "";
 
-  const { data: itens, error } = await sb
+  // 1️⃣ BUSCA INGREDIENTES
+  const { data: itens, error: errItens } = await sb
     .from("buffet_itens")
-    .select(`
-      id,
-      quantidade,
-      unidade_uso,
-      produtos (
-        nome,
-        valor
-      )
-    `)
+    .select("id, produto_id, quantidade, unidade_uso")
     .eq("buffet_id", f.id);
 
-  if(error){
-    console.error(error);
+  if(errItens){
+    console.error(errItens);
     return;
   }
 
-  const cmvTotal = itens.reduce(
-    (s,i)=> s + custoUsado(i), 0
-  );
+  // 2️⃣ BUSCA PRODUTOS
+  const ids = itens.map(i => i.produto_id);
+
+  const { data: produtos, error: errProd } = await sb
+    .from("produtos")
+    .select("id, nome, valor")
+    .in("id", ids);
+
+  if(errProd){
+    console.error(errProd);
+    return;
+  }
+
+  // 3️⃣ MAPA DE PRODUTOS
+  const mapProdutos = {};
+  produtos.forEach(p => mapProdutos[p.id] = p);
+
+  // 4️⃣ CMV TOTAL
+  const cmvTotal = itens.reduce((s, i) => {
+    const p = mapProdutos[i.produto_id];
+    if(!p) return s;
+    return s + (Number(i.quantidade) * Number(p.valor));
+  }, 0);
 
   const lucro = (f.preco_venda || 0) - cmvTotal;
 
+  // 5️⃣ RENDER MODAL
   mBody.innerHTML = `
     <h2>${f.nome}</h2>
     <p><b>Tipo:</b> ${f.tipo}</p>
@@ -195,31 +209,38 @@ async function abrir(f){
     <hr>
     <h3>Ingredientes</h3>
 
-    ${itens.map(i=>`
-      <div class="ing">
-        <span>
-          <b>${i.produtos.nome}</b><br>
-          <small>
-            <input
-              type="number"
-              step="0.0001"
-              value="${i.quantidade}"
-              onchange="atualizarIngrediente('${i.id}', this.value)"
-              style="width:80px"
-            >
-            ${i.unidade_uso}
-          </small>
-        </span>
+    ${itens.map(i=>{
+      const p = mapProdutos[i.produto_id];
+      if(!p) return "";
 
-        <span>${moeda(i.produtos.valor)}</span>
-        <strong>${moeda(custoUsado(i))}</strong>
+      const custo = Number(i.quantidade) * Number(p.valor);
 
-        <button
-          style="background:none;border:none;color:#dc2626;font-weight:800;cursor:pointer"
-          onclick="removerIngrediente('${i.id}')"
-        >✕</button>
-      </div>
-    `).join("")}
+      return `
+        <div class="ing">
+          <span>
+            <b>${p.nome}</b><br>
+            <small>
+              <input
+                type="number"
+                step="0.0001"
+                value="${i.quantidade}"
+                onchange="atualizarIngrediente('${i.id}', this.value)"
+                style="width:80px"
+              >
+              ${i.unidade_uso}
+            </small>
+          </span>
+
+          <span>${moeda(p.valor)}</span>
+          <strong>${moeda(custo)}</strong>
+
+          <button
+            style="background:none;border:none;color:#dc2626;font-weight:800;cursor:pointer"
+            onclick="removerIngrediente('${i.id}')"
+          >✕</button>
+        </div>
+      `;
+    }).join("")}
 
     <hr>
     <div class="lucro ${lucro >= 0 ? "pos":"neg"}">
