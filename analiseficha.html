@@ -563,14 +563,17 @@ async function abrirModal(p){
     <div class="precificacao">
       <h3>Novo ingrediente</h3>
 
-      <select id="ingProduto">
-        <option value="">Selecione</option>
-        ${ingredientesBase.map(i=>`
-          <option value="${i.id}" data-unidade="${i.unidade_padrao}">
-            ${i.nome}
-          </option>
-        `).join("")}
-      </select>
+<select id="ingProduto">
+  <option value="">Selecione</option>
+  ${ingredientesBase.map(i=>`
+    <option value="${i.id}"
+      data-custo="${i.valor}"
+      data-unidade="${i.unidade_medida}">
+      ${i.nome}
+    </option>
+  `).join("")}
+</select>
+
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <input id="ingQtd" type="number" step="0.001" placeholder="Quantidade">
@@ -658,17 +661,19 @@ async function salvarIngrediente(){
   const qtd = Number(ingQtd.value||0);
   if(!prodId || qtd<=0) return;
 
-  const prod = ingredientesBase.find(p=>p.id===prodId);
+const prod = ingredientesBase.find(p => p.id === prodId);
+const custoUnit = Number(prod.valor);
 
-  await sb.from("buffet_itens").insert({
-    buffet_id: pratoAtual.id,
-    produto_id: prod.id,
-    nome: prod.nome,
-    quantidade: qtd,
-    unidade_uso: prod.unidade_padrao,
-    custo_unitario: prod.custo_unitario,
-    custo_calculado: prod.custo_unitario * qtd
-  });
+await sb.from("buffet_itens").insert({
+  buffet_id: pratoAtual.id,
+  produto_id: prod.id,
+  nome: prod.nome,
+  quantidade: qtd,
+  unidade_uso: prod.unidade_medida,
+  custo_unitario: custoUnit,
+  custo_calculado: custoUnit * qtd
+});
+
 
   abrirModal(pratoAtual);
 }
@@ -705,12 +710,13 @@ async function excluirImposto(id){
 /* =====================================================
    AUTO UNIDADE
 ===================================================== */
-document.addEventListener("change",e=>{
-  if(e.target.id==="ingProduto"){
+document.addEventListener("change", e => {
+  if (e.target.id === "ingProduto") {
     const opt = e.target.selectedOptions[0];
-    ingUnidade.value = opt?.dataset.unidade || "";
+    ingUnidade.value = opt?.dataset?.unidade || "";
   }
 });
+
 
 function fechar(){
   modal.style.display="none";
