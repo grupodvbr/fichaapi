@@ -678,136 +678,152 @@ async function abrirModal(p){
   const lucro = precoVenda ? precoVenda - cmvFinal : 0;
   const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
 
-   mBody.innerHTML = `
-    <h2>${p.nome}</h2>
+mBody.innerHTML = `
+  <h2>${p.nome}</h2>
 
-    <p><b>CUSTO BASE:</b> ${moeda(cmvBase)}</p>
-    <p><b>IMPOSTOS E CUSTOS OPERCIONAIS:</b> ${moeda(totalImpostos)}</p>
-    <p><b>CUSTO FINAL:</b> ${moeda(cmvFinal)}</p>
+  <p><b>CUSTO BASE:</b> ${moeda(cmvBase)}</p>
+  <p><b>IMPOSTOS E CUSTOS OPERACIONAIS:</b> ${moeda(totalImpostos)}</p>
+  <p><b>CUSTO FINAL:</b> ${moeda(cmvFinal)}</p>
 
-    <hr>
-    <h3>Tipo do prato</h3>
+  <hr>
+  <h3>Tipo do prato</h3>
 
-    <select id="tipoPrato">
-      <option value="">SELECIONE</option>
-      <option>PRATO PRINCIPAL</option>
-      <option>ENTRADA</option>
-      <option>SOBREMESA</option>
-      <option>DRINK</option>
-      <option>SUSHI</option>
-      <option>ACOMPANHAMENTO</option>
+  <select id="tipoPrato">
+    <option value="">SELECIONE</option>
+    <option>PRATO PRINCIPAL</option>
+    <option>ENTRADA</option>
+    <option>SOBREMESA</option>
+    <option>DRINK</option>
+    <option>SUSHI</option>
+    <option>ACOMPANHAMENTO</option>
+  </select>
+
+  <hr>
+
+  <h3>Precificação</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <input id="markupPerc" type="number" placeholder="Markup (%)">
+    <input id="precoSugerido" readonly placeholder="Preço sugerido">
+  </div>
+
+  <button class="btn-add" style="margin-top:10px"
+    onclick="salvarPrecoVenda(${cmvFinal})">
+    SALVAR PREÇO DE VENDA
+  </button>
+
+  ${precoVenda ? `
+    <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
+    <p><b>Lucro:</b> ${moeda(lucro)}</p>
+    <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
+  ` : ``}
+
+  <hr>
+
+  <h3>Ingredientes</h3>
+  ${itens.map(i=>`
+    <div class="ing">
+      <span>
+        <b>${i.nome} — ${moeda(i.custo_unitario)}</b><br>
+        <small>${i.quantidade} ${i.unidade_uso}</small>
+      </span>
+
+      <strong>${moeda(i.custo_calculado)}</strong>
+
+      <div style="display:flex;gap:6px">
+        <button class="btn-icon btn-edit"
+          onclick="editarIngrediente('${i.id}')">✏️</button>
+        <button class="btn-icon btn-delete"
+          onclick="excluirIngrediente('${i.id}')">🗑️</button>
+      </div>
+    </div>
+  `).join("")}
+
+  <div class="precificacao">
+    <h3>Novo ingrediente</h3>
+
+    <select id="ingProduto">
+      <option value="">Selecione</option>
+      ${ingredientesBase.map(i=>`
+        <option value="${i.id}"
+          data-custo="${i.valor}"
+          data-unidade="${i.unidade_medida}">
+          ${i.nome}
+        </option>
+      `).join("")}
     </select>
 
-    <button class="btn-add" style="margin-top:10px"
-      onclick="salvarTipoPrato()">
-      SALVAR CATEGORIA
-    </button>
-
-    <hr>
-
-    <h3>Precificação</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <input id="markupPerc" type="number" placeholder="Markup (%)">
-      <input id="precoSugerido" readonly placeholder="Preço sugerido">
+      <input id="ingQtd" type="number" step="0.001" placeholder="Quantidade">
+      <input id="ingUnidade" readonly placeholder="Unidade">
     </div>
 
     <button class="btn-add" style="margin-top:10px"
-      onclick="salvarPrecoVenda(${cmvFinal})">
-      SALVAR PREÇO DE VENDA
-    </button>
+      onclick="salvarIngrediente()">ADICIONAR INGREDIENTE</button>
+  </div>
 
-    ${precoVenda ? `
-      <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
-      <p><b>Lucro:</b> ${moeda(lucro)}</p>
-      <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
-    ` : ``}
+  <hr>
 
-    <hr>
+  <h3>Custos / Impostos</h3>
+  ${impostosCache.map(i=>`
+    <div class="ing">
+      <span>
+        <b>${i.descricao}</b><br>
+        <small>${i.tipo} • ${i.modalidade === "PERCENTUAL" ? i.valor+"%" : moeda(i.valor)}</small>
+      </span>
+      <strong>
+        ${i.modalidade==="PERCENTUAL"
+          ? moeda((cmvBase*i.valor)/100)
+          : moeda(i.valor)}
+      </strong>
+      <button class="btn-icon btn-delete"
+        onclick="excluirImposto('${i.id}')">🗑️</button>
+    </div>
+  `).join("")}
 
-    <h3>Ingredientes</h3>
-    ${itens.map(i=>`
-      <div class="ing">
-        <span>
-          <b>${i.nome} — ${moeda(i.custo_unitario)}</b><br>
-          <small>${i.quantidade} ${i.unidade_uso}</small>
-        </span>
+  <div class="precificacao">
+    <h3>Novo custo / imposto</h3>
 
-        <strong>${moeda(i.custo_calculado)}</strong>
+    <input id="impDesc" placeholder="Descrição">
 
-        <div style="display:flex;gap:6px">
-          <button class="btn-icon btn-edit"
-            onclick="editarIngrediente('${i.id}')">✏️</button>
-          <button class="btn-icon btn-delete"
-            onclick="excluirIngrediente('${i.id}')">🗑️</button>
-        </div>
-      </div>
-    `).join("")}
-
-    <div class="precificacao">
-      <h3>Novo ingrediente</h3>
-
-      <select id="ingProduto">
-        <option value="">Selecione</option>
-        ${ingredientesBase.map(i=>`
-          <option value="${i.id}"
-            data-custo="${i.valor}"
-            data-unidade="${i.unidade_medida}">
-            ${i.nome}
-          </option>
-        `).join("")}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <select id="impTipo">
+        <option value="IMPOSTO">IMPOSTO</option>
+        <option value="CUSTO">CUSTO</option>
       </select>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <input id="ingQtd" type="number" step="0.001" placeholder="Quantidade">
-        <input id="ingUnidade" readonly placeholder="Unidade">
-      </div>
-
-      <button class="btn-add" style="margin-top:10px"
-        onclick="salvarIngrediente()">ADICIONAR INGREDIENTE</button>
+      <select id="impModalidade">
+        <option value="FIXO">VALOR FIXO</option>
+        <option value="PERCENTUAL">PERCENTUAL (%)</option>
+      </select>
     </div>
 
-    <hr>
+    <input id="impValor" type="number" step="0.01" placeholder="Valor">
 
-    <h3>Custos / Impostos</h3>
-    ${impostosCache.map(i=>`
-      <div class="ing">
-        <span>
-          <b>${i.descricao}</b><br>
-          <small>${i.tipo} • ${i.modalidade === "PERCENTUAL" ? i.valor+"%" : moeda(i.valor)}</small>
-        </span>
-        <strong>
-          ${i.modalidade==="PERCENTUAL"
-            ? moeda((cmvBase*i.valor)/100)
-            : moeda(i.valor)}
-        </strong>
-        <button class="btn-icon btn-delete"
-          onclick="excluirImposto('${i.id}')">🗑️</button>
-      </div>
-    `).join("")}
+    <button class="btn-add" style="margin-top:10px"
+      onclick="salvarImposto()">ADICIONAR</button>
+  </div>
+`;
+setTimeout(() => {
+  const selectTipo = document.getElementById("tipoPrato");
+  if (!selectTipo) return;
 
-    <div class="precificacao">
-      <h3>Novo custo / imposto</h3>
+  if (p.tipo) {
+    selectTipo.value = p.tipo;
+  }
 
-      <input id="impDesc" placeholder="Descrição">
+  selectTipo.onchange = async () => {
+    const tipo = selectTipo.value;
+    if (!tipo) return;
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <select id="impTipo">
-          <option value="IMPOSTO">IMPOSTO</option>
-          <option value="CUSTO">CUSTO</option>
-        </select>
+    await sb
+      .from("buffet")
+      .update({ tipo })
+      .eq("id", pratoAtual.id);
 
-        <select id="impModalidade">
-          <option value="FIXO">VALOR FIXO</option>
-          <option value="PERCENTUAL">PERCENTUAL (%)</option>
-        </select>
-      </div>
-
-      <input id="impValor" type="number" step="0.01" placeholder="Valor">
-
-      <button class="btn-add" style="margin-top:10px"
-        onclick="salvarImposto()">ADICIONAR</button>
-    </div>
-  `;
+    await carregarPratos();
+    renderLista();
+  };
+}, 0);
 
   setTimeout(() => {
     const selectTipo = document.getElementById("tipoPrato");
@@ -983,23 +999,7 @@ filtroTipo.addEventListener("change", () => {
 });
 
 
-   async function salvarTipoPrato(){
-  const tipo = tipoPrato.value;
-  if(!tipo) return alert("Selecione um tipo");
-
-  const { error } = await sb
-    .from("buffet")
-    .update({ tipo })
-    .eq("id", pratoAtual.id);
-
-  if(error){
-    alert("Erro ao salvar categoria");
-    return;
-  }
-
-  await carregarPratos();
-  abrirModal(pratos.find(p => p.id === pratoAtual.id));
-}
+ 
 
 </script>
 
