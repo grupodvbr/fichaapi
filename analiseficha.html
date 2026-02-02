@@ -15,84 +15,225 @@
   --danger:#dc2626;
   --bg:#f8fafc;
   --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
 }
-*{box-sizing:border-box}
+
+*{
+  box-sizing:border-box;
+  -webkit-font-smoothing:antialiased;
+}
+
 body{
   margin:0;
   font-family:Inter,sans-serif;
   background:var(--bg);
+  color:var(--text);
 }
+
+/* ================= GRID ================= */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
   gap:22px;
   padding:22px;
 }
+
+/* ================= CARD ================= */
 .card{
   background:var(--card);
   border-radius:24px;
   box-shadow:0 18px 40px rgba(0,0,0,.08);
   overflow:hidden;
   cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
 }
+
+.card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 26px 60px rgba(0,0,0,.12);
+}
+
 .card img{
   width:100%;
   height:180px;
   object-fit:cover;
 }
-.card-body{padding:16px}
+
+.card-body{
+  padding:18px;
+}
+
+.card-body h3{
+  margin:0 0 8px;
+  font-weight:800;
+}
+
+/* ================= BADGES ================= */
 .badge{
   display:inline-block;
   padding:6px 12px;
   border-radius:999px;
   background:#e0f2fe;
+  color:#0369a1;
   font-size:12px;
   font-weight:800;
-  margin-right:6px;
+  margin:4px 6px 0 0;
 }
 
-/* MODAL */
+/* ================= MODAL OVERLAY ================= */
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.55);
+  background:rgba(0,0,0,.6);
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:10;
+  z-index:100;
 }
+
+/* ================= MODAL BOX ================= */
 .modal-box{
   background:#fff;
   width:100%;
-  max-width:780px;
+  max-width:820px;
+  max-height:90vh;
   border-radius:28px;
   overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 30px 80px rgba(0,0,0,.35);
+  animation:modalIn .25s ease;
 }
+
+@keyframes modalIn{
+  from{transform:translateY(20px);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+
+/* ================= MODAL IMAGE ================= */
 .modal-img{
   width:100%;
-  height:260px;
+  height:240px;
   object-fit:cover;
+  flex-shrink:0;
 }
+
+/* ================= MODAL BODY ================= */
 .modal-body{
-  padding:22px;
+  padding:26px;
+  overflow-y:auto;
 }
-.ing{
-  display:grid;
-  grid-template-columns:1fr auto auto;
-  gap:12px;
-  font-size:14px;
-  margin-top:10px;
+
+/* ================= SCROLL BONITO ================= */
+.modal-body::-webkit-scrollbar{
+  width:8px;
 }
-.ing small{opacity:.6}
+
+.modal-body::-webkit-scrollbar-track{
+  background:#f1f5f9;
+}
+
+.modal-body::-webkit-scrollbar-thumb{
+  background:#cbd5e1;
+  border-radius:8px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover{
+  background:#94a3b8;
+}
+
+/* ================= FECHAR ================= */
 .close{
   position:absolute;
   top:14px;
   right:18px;
-  font-size:22px;
+  font-size:24px;
   cursor:pointer;
+  font-weight:900;
+  z-index:10;
+  color:#fff;
+  text-shadow:0 2px 6px rgba(0,0,0,.6);
 }
-.lucro.pos{color:var(--success);font-weight:900}
-.lucro.neg{color:var(--danger);font-weight:900}
+
+/* ================= TEXTOS MODAL ================= */
+.modal-body h2{
+  margin:0 0 10px;
+  font-weight:900;
+}
+
+.modal-body p{
+  margin:6px 0;
+  color:var(--muted);
+  font-size:14px;
+}
+
+.modal-body hr{
+  border:none;
+  height:1px;
+  background:#e5e7eb;
+  margin:18px 0;
+}
+
+/* ================= INGREDIENTES ================= */
+.ing{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:14px;
+  font-size:14px;
+  padding:12px 0;
+  border-bottom:1px solid #e5e7eb;
+}
+
+.ing:last-child{
+  border-bottom:none;
+}
+
+.ing b{
+  font-weight:800;
+}
+
+.ing small{
+  color:var(--muted);
+}
+
+/* ================= LUCRO ================= */
+.lucro{
+  font-size:16px;
+  margin-top:8px;
+}
+
+.lucro.pos{
+  color:var(--success);
+  font-weight:900;
+}
+
+.lucro.neg{
+  color:var(--danger);
+  font-weight:900;
+}
+
+/* ================= RESPONSIVO ================= */
+@media(max-width:600px){
+  .modal-box{
+    max-width:94%;
+    border-radius:22px;
+  }
+
+  .modal-img{
+    height:200px;
+  }
+
+  .ing{
+    grid-template-columns:1fr auto;
+  }
+
+  .ing span:last-child{
+    grid-column:2;
+  }
+}
+
+  
 </style>
 </head>
 
@@ -157,6 +298,7 @@ function renderCard(f){
 async function abrir(f){
   console.log("PRATO ABERTO:", f.nome, f.id);
 
+  document.body.style.overflow = "hidden";
   modal.style.display = "flex";
   mFoto.src = f.foto_url || "";
 
@@ -170,10 +312,6 @@ async function abrir(f){
     return;
   }
 
-  if (!itens.length) {
-    console.warn("⚠️ PRATO SEM INGREDIENTES:", f.nome, f.id);
-  }
-
   const cmvTotal = itens.reduce(
     (s,i)=>s + Number(i.custo_calculado || 0),
     0
@@ -183,7 +321,6 @@ async function abrir(f){
 
   mBody.innerHTML = `
     <h2>${f.nome}</h2>
-    <p><b>ID do prato:</b> ${f.id}</p>
     <p><b>Preço:</b> ${moeda(f.preco_venda)}</p>
     <p><b>CMV:</b> ${moeda(cmvTotal)}</p>
 
@@ -193,7 +330,7 @@ async function abrir(f){
     ${
       itens.length === 0
         ? `<p style="color:#dc2626;font-weight:700">
-             Nenhum ingrediente encontrado para este ID.
+             Nenhum ingrediente encontrado.
            </p>`
         : itens.map(i=>`
             <div class="ing">
@@ -216,7 +353,9 @@ async function abrir(f){
 
 function fechar(){
   modal.style.display = "none";
+  document.body.style.overflow = "";
 }
+
 </script>
 
 </body>
