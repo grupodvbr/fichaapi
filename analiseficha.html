@@ -52,7 +52,7 @@ body{
 /* GRID */
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
   gap:22px;
   padding:0 22px 40px;
 }
@@ -88,11 +88,11 @@ body{
   display:flex;
   justify-content:space-between;
   font-size:13px;
-  margin-top:4px;
+  margin-top:6px;
 }
 
 .lucro{
-  margin-top:12px;
+  margin-top:14px;
   padding:10px;
   border-radius:14px;
   text-align:center;
@@ -102,7 +102,7 @@ body{
 .lucro.neg{background:#fee2e2;color:#991b1b}
 
 .card button{
-  margin-top:14px;
+  margin-top:16px;
   padding:12px;
   border-radius:16px;
   border:none;
@@ -110,71 +110,6 @@ body{
   color:#fff;
   font-weight:800;
   cursor:pointer;
-}
-
-/* MODAL */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(15,23,42,.5);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:99;
-}
-.modal-box{
-  background:#fff;
-  width:100%;
-  max-width:920px;
-  max-height:90vh;
-  overflow:auto;
-  padding:26px;
-  border-radius:28px;
-}
-.close{
-  background:#e5e7eb;
-  border:none;
-  border-radius:50%;
-  width:38px;
-  height:38px;
-  font-weight:900;
-  cursor:pointer;
-}
-
-/* FORM */
-label{
-  font-size:13px;
-  font-weight:800;
-  margin-top:16px;
-  display:block;
-}
-input,select{
-  width:100%;
-  padding:12px 14px;
-  border-radius:14px;
-  border:1px solid #cbd5e1;
-  margin-top:6px;
-}
-
-/* ING EDIT */
-.ing-edit{
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr auto;
-  gap:8px;
-  margin-top:10px;
-}
-.ing-edit button{
-  background:linear-gradient(180deg,#ef4444,#991b1b);
-}
-
-/* ACTIONS */
-.actions{
-  display:flex;
-  gap:12px;
-  margin-top:22px;
-}
-.actions button.danger{
-  background:linear-gradient(180deg,#ef4444,#991b1b);
 }
 </style>
 </head>
@@ -193,211 +128,107 @@ input,select{
     <option>SUSHI</option>
     <option>ACOMPANHAMENTO</option>
   </select>
-  <button onclick="nova()">+ Nova ficha</button>
+  <button onclick="location.href='cadastro.html'">+ Nova ficha</button>
 </div>
 
 <!-- CARDS -->
 <div id="cards" class="grid"></div>
 
-<!-- MODAL -->
-<div id="modal" class="modal">
-  <div class="modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h2 id="mTitulo"></h2>
-      <button class="close" onclick="fechar()">✕</button>
-    </div>
-
-    <label>Nome do prato</label>
-    <input id="mNome">
-
-    <label>Tipo</label>
-    <select id="mTipo">
-      <option>PRATO PRINCIPAL</option>
-      <option>ENTRADA</option>
-      <option>SOBREMESA</option>
-      <option>DRINK</option>
-      <option>SUSHI</option>
-      <option>ACOMPANHAMENTO</option>
-    </select>
-
-    <label>Preço de venda</label>
-    <input id="mPreco" type="number" step="0.01">
-
-    <label>Rendimento (porções)</label>
-    <input id="mRendimento" type="number" min="1">
-
-    <label>Foto do prato</label>
-    <input type="file" id="mFoto" accept="image/*">
-
-    <h3 style="margin-top:18px">Ingredientes</h3>
-    <div id="mLista"></div>
-
-    <div class="actions">
-      <button onclick="salvar()">Salvar alterações</button>
-      <button class="danger" onclick="excluir()">Excluir ficha</button>
-    </div>
-  </div>
-</div>
-
 <script>
+/* ================= SUPABASE ================= */
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-let fichas=[], atual=null, itens=[];
+const moeda = v =>
+  "R$ " + Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
 
-/* LOAD */
-(async()=>{
-  fichas=(await sb.from("buffet").select("*").order("created_at",{ascending:false})).data||[];
+let fichas = [];
+
+/* ================= LOAD ================= */
+(async () => {
+  const { data, error } = await sb
+    .from("buffet")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    alert("Erro ao carregar fichas");
+    console.error(error);
+    return;
+  }
+
+  fichas = data || [];
   filtrar();
 })();
 
-/* RENDER CARD */
-async function renderCard(f){
-  const its=(await sb.from("buffet_itens").select("*").eq("buffet_id",f.id)).data||[];
-  const custoTotal=its.reduce((s,i)=>s+Number(i.custo_calculado||0),0);
-  const custoUnit=custoTotal/(f.rendimento||1);
-  const lucro=(f.preco_venda||0)-custoUnit;
+/* ================= FILTRO ================= */
+async function filtrar() {
+  cards.innerHTML = "";
 
-  const c=document.createElement("div");
-  c.className="card";
-  c.innerHTML=`
-    ${f.foto_url?`<img src="${f.foto_url}">`:``}
-    <div class="card-body">
-      <h3>${f.nome}</h3>
-      <span class="badge">${f.tipo}</span>
-      <span class="badge">Venda ${moeda(f.preco_venda)}</span>
-      <span class="badge">CMV ${moeda(custoUnit)}</span>
-
-      ${its.slice(0,3).map(i=>`
-        <div class="ing">
-          <span>${i.nome}</span>
-          <strong>${moeda(i.custo_calculado)}</strong>
-        </div>
-      `).join("")}
-
-      ${its.length>3?`<small>+${its.length-3} ingredientes</small>`:""}
-
-      <div class="lucro ${lucro>=0?'pos':'neg'}">
-        Lucro ${moeda(lucro)}
-      </div>
-
-      <button onclick="editar('${f.id}')">Editar ficha</button>
-    </div>
-  `;
-  cards.appendChild(c);
-}
-
-/* FILTRO */
-async function filtrar(){
-  cards.innerHTML="";
-  const filtradas=fichas.filter(f=>
-    (!fNome.value||f.nome.toLowerCase().includes(fNome.value.toLowerCase())) &&
-    (!fTipo.value||f.tipo===fTipo.value)
+  const filtradas = fichas.filter(f =>
+    (!fNome.value || f.nome.toLowerCase().includes(fNome.value.toLowerCase())) &&
+    (!fTipo.value || f.tipo === fTipo.value)
   );
-  for(const f of filtradas){
+
+  for (const f of filtradas) {
     await renderCard(f);
   }
 }
 
-/* NOVA */
-function nova(){
-  atual=null;
-  itens=[];
-  mTitulo.textContent="Nova ficha técnica";
-  mNome.value="";
-  mPreco.value=0;
-  mRendimento.value=1;
-  mLista.innerHTML="<em>Ingredientes serão adicionados no cadastro</em>";
-  modal.style.display="flex";
-}
+/* ================= CARD ================= */
+async function renderCard(f) {
+  const { data: itens, error } = await sb
+    .from("buffet_itens")
+    .select("*")
+    .eq("buffet_id", f.id);
 
-/* EDITAR */
-async function editar(id){
-  atual=(await sb.from("buffet").select("*").eq("id",id).single()).data;
-  itens=(await sb.from("buffet_itens").select("*").eq("buffet_id",id)).data||[];
-  mTitulo.textContent=atual.nome;
-  mNome.value=atual.nome;
-  mTipo.value=atual.tipo;
-  mPreco.value=atual.preco_venda;
-  mRendimento.value=atual.rendimento;
-  renderItens();
-  modal.style.display="flex";
-}
+  if (error) {
+    console.error(error);
+    return;
+  }
 
-/* RENDER ING */
-function renderItens(){
-  mLista.innerHTML=itens.map((i,idx)=>`
-    <div class="ing-edit">
-      <input value="${i.nome}" disabled>
-      <input type="number" step="0.001" value="${i.quantidade}"
-        onchange="itens[${idx}].quantidade=this.value;recalc(${idx})">
-      <input value="${moeda(i.custo_calculado)}" disabled>
-      <button onclick="itens.splice(${idx},1);renderItens()">🗑️</button>
+  const rendimento = Number(f.rendimento || 1);
+
+  const custoTotalReceita = itens.reduce(
+    (s, i) => s + Number(i.custo_calculado || 0),
+    0
+  );
+
+  const custoPorPorcao = custoTotalReceita / rendimento;
+  const lucroPorPorcao = (f.preco_venda || 0) - custoPorPorcao;
+
+  const c = document.createElement("div");
+  c.className = "card";
+
+  c.innerHTML = `
+    ${f.foto_url ? `<img src="${f.foto_url}">` : ``}
+    <div class="card-body">
+      <h3>${f.nome}</h3>
+
+      <span class="badge">${f.tipo}</span>
+      <span class="badge">Venda ${moeda(f.preco_venda)}</span>
+      <span class="badge">CMV ${moeda(custoPorPorcao)}</span>
+
+      ${itens.slice(0,3).map(i => `
+        <div class="ing">
+          <span>${i.nome}</span>
+          <strong>${moeda(i.custo_calculado / rendimento)}</strong>
+        </div>
+      `).join("")}
+
+      ${itens.length > 3 ? `<small>+${itens.length - 3} ingredientes</small>` : ``}
+
+      <div class="lucro ${lucroPorPorcao >= 0 ? 'pos' : 'neg'}">
+        Lucro ${moeda(lucroPorPorcao)}
+      </div>
+
+      <button onclick="alert('Edição futura')">Editar ficha</button>
     </div>
-  `).join("");
-}
+  `;
 
-/* RECALC */
-function recalc(i){
-  itens[i].custo_calculado =
-    (itens[i].quantidade * itens[i].custo_unitario) /
-    (itens[i].rendimento_percentual / 100);
-  renderItens();
-}
-
-/* SALVAR */
-async function salvar(){
-  let fotoUrl=atual?.foto_url||null;
-
-  if(mFoto.files.length){
-    const f=mFoto.files[0];
-    const path=`fichas/${crypto.randomUUID()}.${f.name.split(".").pop()}`;
-    await sb.storage.from("buffet").upload(path,f,{upsert:false});
-    fotoUrl=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
-  }
-
-  if(!atual){
-    await sb.from("buffet").insert({
-      nome:mNome.value,
-      tipo:mTipo.value,
-      preco_venda:mPreco.value,
-      rendimento:mRendimento.value,
-      foto_url:fotoUrl
-    });
-  }else{
-    await sb.from("buffet").update({
-      nome:mNome.value,
-      tipo:mTipo.value,
-      preco_venda:mPreco.value,
-      rendimento:mRendimento.value,
-      foto_url:fotoUrl
-    }).eq("id",atual.id);
-
-    for(const i of itens){
-      await sb.from("buffet_itens").update({
-        quantidade:i.quantidade,
-        custo_calculado:i.custo_calculado
-      }).eq("id",i.id);
-    }
-  }
-
-  fechar();
-  location.reload();
-}
-
-/* EXCLUIR */
-async function excluir(){
-  if(!confirm("Excluir ficha definitivamente?"))return;
-  await sb.from("buffet").delete().eq("id",atual.id);
-  fechar();
-  location.reload();
-}
-
-function fechar(){
-  modal.style.display="none";
+  cards.appendChild(c);
 }
 </script>
 
