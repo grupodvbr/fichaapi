@@ -653,26 +653,6 @@ const margem =
 </div>
 
 
-<div style="margin-top:12px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px">
-  <input id="impDesc" placeholder="Descrição">
-
-  <select id="impTipo">
-    <option value="IMPOSTO">IMPOSTO</option>
-    <option value="CUSTO">CUSTO</option>
-  </select>
-
-  <select id="impModalidade">
-    <option value="FIXO">VALOR FIXO</option>
-    <option value="PERCENTUAL">PERCENTUAL (%)</option>
-  </select>
-
-  <input id="impValor" type="number" step="0.01" placeholder="Valor">
-</div>
-
-<button style="margin-top:12px" onclick="salvarImposto('${p.id}')">
-  ADICIONAR
-</button>
-
   `;
 }
 async function salvarImposto(buffetId){
@@ -786,63 +766,6 @@ function fechar(){
   await carregarIngredientesBase();
   await carregarPratos();
 })();
-async function salvarPrecoVenda(buffetId){
-
-  const mk = Number(markupPerc.value || 0);
-  if(mk <= 0){
-    alert("Informe o markup");
-    return;
-  }
-
-  /* 1️⃣ CMV REAL = soma dos ingredientes */
-  const { data: itens, error: errItens } = await sb
-    .from("buffet_itens")
-    .select("custo_calculado")
-    .eq("buffet_id", buffetId);
-
-  if(errItens){
-    console.error(errItens);
-    alert("Erro ao calcular CMV");
-    return;
-  }
-
-  const cmvBase = itens.reduce(
-    (s, i) => s + Number(i.custo_calculado || 0),
-    0
-  );
-
-  /* 2️⃣ IMPOSTOS */
-  let totalImpostos = 0;
-
-  impostosCache.forEach(i => {
-    const valor = Number(i.valor || 0);
-    if(i.modalidade === "FIXO") totalImpostos += valor;
-    if(i.modalidade === "PERCENTUAL") totalImpostos += (cmvBase * valor) / 100;
-  });
-
-  const cmvFinal = cmvBase + totalImpostos;
-
-  /* 3️⃣ PREÇO DE VENDA */
-  const precoVenda = cmvFinal * (1 + mk / 100);
-
-  /* 4️⃣ SALVA */
-  const { error } = await sb
-    .from("buffet")
-    .update({ preco_venda: precoVenda })
-    .eq("id", buffetId);
-
-  if(error){
-    console.error(error);
-    alert("Erro ao salvar preço");
-    return;
-  }
-
-  /* 5️⃣ ATUALIZA UI */
-  await carregarPratos();
-  abrir(pratos.find(p => p.id === buffetId));
-}
-
-
 
 /* ================= AUTO UNIDADE ================= */
 document.addEventListener("change", function(e){
