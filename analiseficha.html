@@ -518,7 +518,7 @@ function renderLista(){
         <div class="card-body">
           <h3>${p.nome}</h3>
           <span class="badge">${p.tipo || "-"}</span>
-          <span class="badge">CMV ${moeda(p.custo_unitario)}</span>
+          <span class="badge">CUSTO ${moeda(p.custo_unitario)}</span>
           ${p.preco_venda ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>` : ``}
         </div>
       `;
