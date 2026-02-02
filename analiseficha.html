@@ -78,7 +78,7 @@ body{
 }
 .ing{
   display:grid;
-  grid-template-columns:1fr auto auto auto;
+  grid-template-columns:1fr auto auto;
   gap:12px;
   font-size:14px;
   margin-top:10px;
@@ -110,22 +110,23 @@ body{
 </div>
 
 <script>
+/* ================= SUPABASE ================= */
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
 const moeda = v =>
-  "R$ " + Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+  "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
-/* LOAD FICHAS */
-(async () => {
+/* ================= LOAD PRATOS ================= */
+(async ()=>{
   const { data, error } = await sb
     .from("buffet")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at",{ascending:false});
 
-  if (error) {
+  if(error){
     console.error(error);
     alert("Erro ao carregar fichas");
     return;
@@ -134,11 +135,11 @@ const moeda = v =>
   data.forEach(renderCard);
 })();
 
-/* CARD */
-function renderCard(f) {
+/* ================= CARD ================= */
+function renderCard(f){
   const c = document.createElement("div");
   c.className = "card";
-  c.onclick = () => abrir(f);
+  c.onclick = ()=>abrir(f);
 
   c.innerHTML = `
     ${f.foto_url ? `<img src="${f.foto_url}">` : ``}
@@ -152,24 +153,23 @@ function renderCard(f) {
   cards.appendChild(c);
 }
 
-/* MODAL */
-async function abrir(f) {
+/* ================= MODAL ================= */
+async function abrir(f){
   modal.style.display = "flex";
   mFoto.src = f.foto_url || "";
 
-  /* 🔥 TABELA REAL QUE EXISTE */
   const { data: itens, error } = await sb
     .from("buffet_itens")
     .select("*")
     .eq("buffet_id", f.id);
 
-  if (error) {
+  if(error){
     console.error(error);
     return;
   }
 
   const cmvTotal = itens.reduce(
-    (s, i) => s + Number(i.custo_calculado || 0),
+    (s,i)=> s + Number(i.custo_calculado || 0),
     0
   );
 
@@ -187,13 +187,12 @@ async function abrir(f) {
     ${
       itens.length === 0
         ? `<p style="opacity:.6">Nenhum ingrediente vinculado.</p>`
-        : itens.map(i => `
+        : itens.map(i=>`
             <div class="ing">
               <span>
                 <b>${i.nome}</b><br>
                 <small>${i.quantidade} ${i.unidade_uso}</small>
               </span>
-
               <span>${moeda(i.custo_unitario)}</span>
               <strong>${moeda(i.custo_calculado)}</strong>
             </div>
@@ -201,19 +200,16 @@ async function abrir(f) {
     }
 
     <hr>
-    <div class="lucro ${lucro >= 0 ? "pos" : "neg"}">
+    <div class="lucro ${lucro >= 0 ? "pos":"neg"}">
       Lucro da receita: ${moeda(lucro)}
     </div>
   `;
 }
 
-function fechar() {
+function fechar(){
   modal.style.display = "none";
 }
 </script>
-
-
-
 
 </body>
 </html>
