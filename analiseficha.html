@@ -484,6 +484,25 @@ impostosCache.forEach(i => {
     totalImpostos += (cmv * valor) / 100;
   }
 });
+
+const cmvFinal = cmv + totalImpostos;
+
+// ativa cálculo automático do markup
+setTimeout(() => {
+  const mkInput = document.getElementById("markupPerc");
+  const precoInput = document.getElementById("precoSugerido");
+
+  if(mkInput && precoInput){
+    mkInput.oninput = () => {
+      const mk = Number(mkInput.value || 0);
+      const precoCalc = cmvFinal * (1 + mk / 100);
+      precoInput.value = moeda(precoCalc);
+    };
+  }
+}, 50);
+
+
+  
   const precoVenda = Number(p.preco_venda||0);
   const lucro = precoVenda > 0 ? precoVenda - (cmv + totalImpostos) : 0;
 const margem =
@@ -497,6 +516,25 @@ const margem =
     ${precoVenda > 0 ? `<p><b>Preço de venda:</b> ${moeda(precoVenda)}</p>` : ``}
     <p><b>CMV:</b> ${moeda(cmv)}</p>
     <p><b>Impostos / Custos:</b> ${moeda(totalImpostos)}</p>
+<hr>
+<h3>Precificação (Markup)</h3>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center">
+  <input id="markupPerc"
+         type="number"
+         step="1"
+         placeholder="Markup (%)">
+
+  <input id="precoSugerido"
+         readonly
+         placeholder="Preço sugerido">
+</div>
+
+<button class="btn-add"
+        style="margin-top:10px"
+        onclick="salvarPrecoVenda('${p.id}')">
+  SALVAR PREÇO DE VENDA
+</button>
 
     ${precoVenda > 0 ? `
       <p><b>Lucro:</b> ${moeda(lucro)}</p>
@@ -695,6 +733,42 @@ function fechar(){
 
 /* ================= INIT ================= */
 carregarPratos();
+async function salvarPrecoVenda(buffetId){
+  const mk = Number(markupPerc.value || 0);
+  if(mk <= 0){
+    alert("Informe o markup");
+    return;
+  }
+
+  const prato = pratos.find(p => p.id === buffetId);
+
+  // CMV FINAL = CMV base + impostos
+  let cmvFinal = prato.custo_unitario;
+
+  impostosCache.forEach(i => {
+    if(i.modalidade === "FIXO"){
+      cmvFinal += Number(i.valor);
+    }
+    if(i.modalidade === "PERCENTUAL"){
+      cmvFinal += (prato.custo_unitario * Number(i.valor)) / 100;
+    }
+  });
+
+  const precoVenda = cmvFinal * (1 + mk / 100);
+
+  const { error } = await sb
+    .from("buffet")
+    .update({ preco_venda: precoVenda })
+    .eq("id", buffetId);
+
+  if(error){
+    console.error(error);
+    alert("Erro ao salvar preço");
+    return;
+  }
+
+  abrir(prato);
+}
 
   
 </script>
