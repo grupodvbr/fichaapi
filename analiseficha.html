@@ -415,6 +415,22 @@ const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
+let ingredientesBase = [];
+
+async function carregarIngredientesBase(){
+  const { data, error } = await sb
+    .from("produtos") // 👈 ajuste se o nome for outro
+    .select("*")
+    .order("nome");
+
+  if(error){
+    console.error(error);
+    alert("Erro ao carregar ingredientes");
+    return;
+  }
+
+  ingredientesBase = data;
+}
 
 const moeda = v =>
   "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
@@ -569,57 +585,61 @@ const margem =
       </p>
     `}
 
-    <hr>
-    <h3>Ingredientes</h3>
-
-    ${itens.map(i=>`
-      <div class="ing">
-        <span>
-          <b>${i.nome}</b><br>
-          <small>${i.quantidade} ${i.unidade_uso}</small>
-        </span>
-        <strong>${moeda(i.custo_calculado)}</strong>
-      </div>
-    `).join("")}
-
 <hr>
-<h3>Impostos / Custos adicionais</h3>
+<h3>Ingredientes</h3>
 
-<div class="lista-impostos">
-  ${
-    impostosCache.length === 0
-      ? `<p style="color:#64748b">Nenhum imposto ou custo adicional.</p>`
-      : impostosCache.map(i => {
-          const valorCalculado =
-            i.modalidade === "PERCENTUAL"
-              ? (cmv * Number(i.valor)) / 100
-              : Number(i.valor);
+<div class="lista-ingredientes">
+  ${itens.map(i=>`
+    <div class="ing">
+      <span>
+        <b>${i.nome}</b><br>
+        <small>${i.quantidade} ${i.unidade_uso}</small>
+      </span>
 
-          const label =
-            i.modalidade === "PERCENTUAL"
-              ? `${i.valor}%`
-              : "Valor fixo";
+      <strong>${moeda(i.custo_calculado)}</strong>
 
-          return `
-            <div class="ing" style="align-items:center">
-              <span>
-                <b>${i.descricao}</b><br>
-                <small>${i.tipo} • ${label}</small>
-              </span>
+      <div style="display:flex;gap:6px">
+        <button class="btn-icon btn-edit"
+                onclick="editarIngrediente('${i.id}','${p.id}')">
+          ✏️
+        </button>
 
-              <strong>${moeda(valorCalculado)}</strong>
+        <button class="btn-icon btn-delete"
+                onclick="excluirIngrediente('${i.id}','${p.id}')">
+          🗑️
+        </button>
+      </div>
+    </div>
+  `).join("")}
+</div>
 
-              <div style="display:flex;gap:6px">
-                <button onclick="editarImposto('${i.id}', '${p.id}')" 
-                        style="background:#e0f2fe;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700">
-                  ✏️
-                </button>
+<div class="precificacao">
+  <h3>Adicionar / Editar ingrediente</h3>
 
-                <button onclick="excluirImposto('${i.id}', '${p.id}')" 
-                        style="background:#fee2e2;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700">
-                  🗑️
-                </button>
-              </div>
+  <select id="ingProduto">
+    <option value="">Selecione o ingrediente</option>
+    ${ingredientesBase.map(p=>`
+      <option value="${p.id}"
+              data-custo="${p.custo_unitario}"
+              data-unidade="${p.unidade_padrao}">
+        ${p.nome}
+      </option>
+    `).join("")}
+  </select>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+    <input id="ingQtd" type="number" step="0.001" placeholder="Quantidade usada">
+    <input id="ingUnidade" placeholder="Unidade" readonly>
+  </div>
+
+  <button id="btnIngrediente"
+          class="btn-add"
+          style="margin-top:12px"
+          onclick="salvarIngrediente('${p.id}')">
+    SALVAR INGREDIENTE
+  </button>
+</div>
+
             </div>
           `;
         }).join("")
@@ -792,6 +812,162 @@ async function salvarPrecoVenda(buffetId){
   }
 
   abrir(prato);
+}
+let ingredientesBase = [];
+
+async function carregarIngredientesBase(){
+  const { data, error } = await sb
+    .from("produtos") // 👈 ajuste se o nome for outro
+    .select("*")
+    .order("nome");
+
+  if(error){
+    console.error(error);
+    alert("Erro ao carregar ingredientes");
+    return;
+  }
+
+  ingredientesBase = data;
+}
+/* ================= INGREDIENTES BASE ================= */
+let ingredientesBase = [];
+
+async function carregarIngredientesBase(){
+  const { data, error } = await sb
+    .from("produtos") // ajuste se necessário
+    .select("*")
+    .order("nome");
+
+  if(error){
+    console.error(error);
+    alert("Erro ao carregar ingredientes");
+    return;
+  }
+
+  ingredientesBase = data;
+}
+
+carregarIngredientesBase();
+
+/* ================= AUTO UNIDADE ================= */
+document.addEventListener("change", e=>{
+  if(e.target.id === "ingProduto"){
+    const opt = e.target.selectedOptions[0];
+    if(!opt) return;
+    ingUnidade.value = opt.dataset.unidade || "";
+  }
+});
+
+/* ================= SALVAR INGREDIENTE ================= */
+async function salvarIngrediente(buffetId){
+  const produtoId = ingProduto.value;
+  const qtd = Number(ingQtd.value || 0);
+
+  if(!produtoId || qtd <= 0){
+    alert("Selecione o ingrediente e informe a quantidade");
+    return;
+  }
+
+  const produto = ingredientesBase.find(p => p.id === produtoId);
+  const custoUnit = Number(produto.custo_unitario);
+  const custoCalc = custoUnit * qtd;
+
+  const { error } = await sb
+    .from("buffet_itens")
+    .insert({
+      buffet_id: buffetId,
+      produto_id: produto.id,
+      nome: produto.nome,
+      quantidade: qtd,
+      unidade_uso: produto.unidade_padrao,
+      custo_unitario: custoUnit,
+      custo_calculado: custoCalc
+    });
+
+  if(error){
+    console.error(error);
+    alert("Erro ao salvar ingrediente");
+    return;
+  }
+
+  ingProduto.value = "";
+  ingQtd.value = "";
+  ingUnidade.value = "";
+
+  abrir(pratos.find(p => p.id === buffetId));
+}
+
+/* ================= EDITAR INGREDIENTE ================= */
+async function editarIngrediente(itemId, buffetId){
+  const { data, error } = await sb
+    .from("buffet_itens")
+    .select("*")
+    .eq("id", itemId)
+    .single();
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
+  ingProduto.value = data.produto_id;
+  ingQtd.value = data.quantidade;
+  ingUnidade.value = data.unidade_uso;
+
+  const btn = document.getElementById("btnIngrediente");
+  btn.innerText = "ATUALIZAR INGREDIENTE";
+
+  btn.onclick = async () => {
+    const qtd = Number(ingQtd.value || 0);
+    if(qtd <= 0){
+      alert("Quantidade inválida");
+      return;
+    }
+
+    const produto = ingredientesBase.find(p => p.id === ingProduto.value);
+    const custoCalc = produto.custo_unitario * qtd;
+
+    const { error } = await sb
+      .from("buffet_itens")
+      .update({
+        quantidade: qtd,
+        custo_calculado: custoCalc
+      })
+      .eq("id", itemId);
+
+    if(error){
+      console.error(error);
+      alert("Erro ao atualizar ingrediente");
+      return;
+    }
+
+    btn.innerText = "SALVAR INGREDIENTE";
+    btn.onclick = () => salvarIngrediente(buffetId);
+
+    ingProduto.value = "";
+    ingQtd.value = "";
+    ingUnidade.value = "";
+
+    abrir(pratos.find(p => p.id === buffetId));
+  };
+}
+
+/* ================= EXCLUIR INGREDIENTE ================= */
+async function excluirIngrediente(itemId, buffetId){
+  if(!confirm("Excluir este ingrediente do prato?")) return;
+
+  const { error } = await sb
+    .from("buffet_itens")
+    .delete()
+    .eq("id", itemId);
+
+  if(error){
+    console.error(error);
+    alert("Erro ao excluir ingrediente");
+    return;
+  }
+
+  abrir(pratos.find(p => p.id === buffetId));
 }
 
   
