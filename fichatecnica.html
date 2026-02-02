@@ -221,7 +221,7 @@ button{
     <div class="kpi">MARGEM<span id="margem">—</span></div>
   </div>
 
-  <button onclick="salvar()">SALVAR FICHA TÉCNICA</button>
+<button id="btnSalvar" onclick="salvar()">SALVAR FICHA TÉCNICA</button>
 </div>
 
 </div>
@@ -234,6 +234,7 @@ const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
+const btnSalvar = document.getElementById("btnSalvar");
 
 /* ================= UTIL ================= */
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
@@ -244,8 +245,9 @@ const toast=m=>{
   setTimeout(()=>t.classList.remove("show"),2500);
 };
 const overlay=document.getElementById("overlay");
-const show=()=>overlay.style.display="flex";
-const hide=()=>overlay.style.display="none";
+const show = () => overlay && (overlay.style.display = "flex");
+const hide = () => overlay && (overlay.style.display = "none");
+
 
 /* ================= AUTH ================= */
 async function restore(){
@@ -314,7 +316,10 @@ async function selectIngrediente(id){
 }
 
 function addIngrediente(){
-  if(!ingrediente||!qtd.value)return;
+if (!ingrediente || qtd.value <= 0) {
+  toast("QUANTIDADE INVÁLIDA");
+  return;
+}
   const fator=ingrediente.rendimento/100;
   const total=(qtd.value*ingrediente.custo)/fator;
 
@@ -328,9 +333,13 @@ function addIngrediente(){
     rendimento:ingrediente.rendimento
   });
 
-  qtd.value="";
-  ingrediente=null;
-  render();
+qtd.value = "";
+unUso.value = "";
+custo.value = "";
+rend.value = "";
+ingrediente = null;
+render();
+
 }
 
 function render(){
@@ -350,7 +359,8 @@ function render(){
 
   if(preco>0){
     const margemPerc=((preco-(cmv/por))/preco)*100;
-    margem.textContent=margemPerc.toFixed(2)+"%";
+margem.textContent = margemPerc.toFixed(2) + "%";
+margem.style.color = margemPerc < 0 ? "#ef4444" : "#16a34a";
   }else margem.textContent="—";
 }
 
@@ -358,20 +368,36 @@ precoVenda.oninput=render;
 rendimentoFinal.oninput=render;
 
 /* ================= SALVAR ================= */
-asyncasync function salvar(){
+async function salvar(){
   if(!nomePrato.value || ingredientes.length === 0){
     toast("PREENCHA PRATO E INGREDIENTES");
     return;
   }
 
-  show();
+show();
+btnSalvar.disabled = true;
 
   try{
     /* ================= FOTO ================= */
     let fotoUrl = null;
 
     if (fotoProduto.files.length > 0) {
-      const file = fotoProduto.files[0];
+const file = fotoProduto.files[0];
+
+if (!file.type.startsWith("image/")) {
+  toast("ARQUIVO INVÁLIDO");
+  hide();
+  btnSalvar.disabled = false;
+  return;
+}
+
+if (file.size > 2 * 1024 * 1024) {
+  toast("IMAGEM MUITO GRANDE (MAX 2MB)");
+  hide();
+  btnSalvar.disabled = false;
+  return;
+}
+
       const ext = file.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${ext}`;
       const filePath = `fichas/${fileName}`;
@@ -435,14 +461,19 @@ asyncasync function salvar(){
       if (itemError) throw itemError;
     }
 
-    hide();
-    toast("SALVO COM SUCESSO");
-    setTimeout(()=>location.reload(),1200);
+hide();
+btnSalvar.disabled = false;
+ingredientes = [];
+toast("SALVO COM SUCESSO");
+setTimeout(()=>location.reload(),1200);
+
 
   }catch(err){
-    hide();
-    console.error("ERRO AO SALVAR:", err);
-    toast(err.message || "ERRO AO SALVAR");
+hide();
+btnSalvar.disabled = false;
+console.error("ERRO AO SALVAR:", err);
+toast(err.message || "ERRO AO SALVAR");
+
   }
 }
 </script>
