@@ -52,7 +52,7 @@ body{
 /* GRID */
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
   gap:22px;
   padding:0 22px 40px;
 }
@@ -146,7 +146,7 @@ const moeda = v =>
 
 let fichas = [];
 
-/* ================= LOAD ================= */
+/* ================= LOAD FICHAS ================= */
 (async () => {
   const { data, error } = await sb
     .from("buffet")
@@ -164,7 +164,7 @@ let fichas = [];
 })();
 
 /* ================= FILTRO ================= */
-async function filtrar() {
+function filtrar() {
   cards.innerHTML = "";
 
   const filtradas = fichas.filter(f =>
@@ -172,16 +172,35 @@ async function filtrar() {
     (!fTipo.value || f.tipo === fTipo.value)
   );
 
-  for (const f of filtradas) {
-    await renderCard(f);
+  filtradas.forEach(renderCard);
+}
+
+/* ================= CÁLCULO CMV ================= */
+function calcularCustoItem(item) {
+  if (!item.produtos || !item.produtos.valor) return 0;
+
+  const qtd = Number(item.quantidade || 0);
+  const precoBase = Number(item.produtos.valor || 0);
+
+  if (item.unidade_medida === "ML" || item.unidade_medida === "G") {
+    return (qtd / 1000) * precoBase;
   }
+
+  return qtd * precoBase;
 }
 
 /* ================= CARD ================= */
 async function renderCard(f) {
   const { data: itens, error } = await sb
     .from("buffet_itens")
-    .select("*")
+    .select(`
+      quantidade,
+      unidade_medida,
+      produtos (
+        nome,
+        valor
+      )
+    `)
     .eq("buffet_id", f.id);
 
   if (error) {
@@ -191,13 +210,11 @@ async function renderCard(f) {
 
   const rendimento = Number(f.rendimento || 1);
 
-  const custoTotalReceita = itens.reduce(
-    (s, i) => s + Number(i.custo_calculado || 0),
-    0
-  );
+  let custoTotal = 0;
+  itens.forEach(i => custoTotal += calcularCustoItem(i));
 
-  const custoPorPorcao = custoTotalReceita / rendimento;
-  const lucroPorPorcao = (f.preco_venda || 0) - custoPorPorcao;
+  const custoPorPorcao = custoTotal / rendimento;
+  const lucro = (f.preco_venda || 0) - custoPorPorcao;
 
   const c = document.createElement("div");
   c.className = "card";
@@ -213,15 +230,15 @@ async function renderCard(f) {
 
       ${itens.slice(0,3).map(i => `
         <div class="ing">
-          <span>${i.nome}</span>
-          <strong>${moeda(i.custo_calculado / rendimento)}</strong>
+          <span>${i.produtos.nome}</span>
+          <strong>${moeda(calcularCustoItem(i) / rendimento)}</strong>
         </div>
       `).join("")}
 
       ${itens.length > 3 ? `<small>+${itens.length - 3} ingredientes</small>` : ``}
 
-      <div class="lucro ${lucroPorPorcao >= 0 ? 'pos' : 'neg'}">
-        Lucro ${moeda(lucroPorPorcao)}
+      <div class="lucro ${lucro >= 0 ? 'pos' : 'neg'}">
+        Lucro ${moeda(lucro)}
       </div>
 
       <button onclick="alert('Edição futura')">Editar ficha</button>
