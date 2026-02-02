@@ -491,9 +491,15 @@ function renderCard(p){
 
 /* ================= MODAL ================= */
 async function abrir(p){
+
+  if(!ingredientesBase || ingredientesBase.length === 0){
+    await carregarIngredientesBase();
+  }
+
   document.body.style.overflow = "hidden";
   modal.style.display = "flex";
   mFoto.src = p.foto_url || "";
+
 
   /* INGREDIENTES */
   const { data: itens } = await sb
@@ -776,33 +782,61 @@ function fechar(){
 }
 
 /* ================= INIT ================= */
-carregarPratos();
+(async () => {
+  await carregarIngredientesBase();
+  await carregarPratos();
+})();
 async function salvarPrecoVenda(buffetId){
+
   const mk = Number(markupPerc.value || 0);
   if(mk <= 0){
     alert("Informe o markup");
     return;
   }
 
-  const prato = pratos.find(p => p.id === buffetId);
+  /* 1️⃣ CMV REAL = soma dos ingredientes */
+  const { data: itens, error: errItens } = await sb
+    .from("buffet_itens")
+    .select("custo_calculado")
+    .eq("buffet_id", buffetId);
 
-  // CMV FINAL = CMV base + impostos
-  let cmvFinal = prato.custo_unitario;
+  if(errItens){
+    console.error(errItens);
+    alert("Erro ao calcular CMV");
+    return;
+  }
+
+  let cmvBase = itens.reduce(
+    (s, i) => s + Number(i.custo_calculado || 0),
+    0
+  );
+
+  /* 2️⃣ IMPOSTOS SOBRE O CMV REAL */
+  let totalImpostos = 0;
 
   impostosCache.forEach(i => {
+    const valor = Number(i.valor || 0);
+
     if(i.modalidade === "FIXO"){
-      cmvFinal += Number(i.valor);
+      totalImpostos += valor;
     }
+
     if(i.modalidade === "PERCENTUAL"){
-      cmvFinal += (prato.custo_unitario * Number(i.valor)) / 100;
+      totalImpostos += (cmvBase * valor) / 100;
     }
   });
 
+  const cmvFinal = cmvBase + totalImpostos;
+
+  /* 3️⃣ PREÇO DE VENDA CORRETO */
   const precoVenda = cmvFinal * (1 + mk / 100);
 
+  /* 4️⃣ SALVA NO BANCO */
   const { error } = await sb
     .from("buffet")
-    .update({ preco_venda: precoVenda })
+    .update({
+      preco_venda: precoVenda
+    })
     .eq("id", buffetId);
 
   if(error){
@@ -811,22 +845,27 @@ async function salvarPrecoVenda(buffetId){
     return;
   }
 
-  abrir(prato);
+  /* 5️⃣ SINCRONIZA ESTADO + UI */
+  await carregarPratos();
+  abrir(pratos.find(p => p.id === buffetId));
 }
 
 /* ================= AUTO UNIDADE ================= */
 document.addEventListener("change", function(e){
   if(e.target && e.target.id === "ingProduto"){
-    const opt = e.target.selectedOptions[0];
+    const opt = e.target.selectedOptions?.[0];
 
-    if(!opt || !opt.dataset.unidade){
-      ingUnidade.value = "";
+    const unidadeInput = document.getElementById("ingUnidade");
+
+    if(!opt || !opt.dataset || !opt.dataset.unidade){
+      unidadeInput.value = "";
       return;
     }
 
-    ingUnidade.value = opt.dataset.unidade;
+    unidadeInput.value = opt.dataset.unidade;
   }
 });
+
 
 
 /* ================= SALVAR INGREDIENTE ================= */
