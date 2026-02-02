@@ -250,9 +250,20 @@ numero(rendimento); numero(vRend);
 
 /* LISTAR */
 async function carregar(){
-  const {data}=await sb.from("produtos").select("*").order("nome");
-  renderLista(data||[]);
+  const { data, error } = await sb
+    .from("produtos")
+    .select("*")
+    .order("nome", { ascending: true })
+    .range(0, 5000); // <<< AQUI está o conserto
+
+  if(error){
+    toast("ERRO AO CARREGAR INGREDIENTES");
+    return;
+  }
+
+  renderLista(data || []);
 }
+
 carregar();
 
 function renderLista(items){
@@ -263,11 +274,27 @@ function renderLista(items){
 }
 
 /* BUSCA */
-busca.oninput=async()=>{
-  const q=busca.value.toLowerCase();
-  const {data}=await sb.from("produtos").select("*");
-  renderLista(data.filter(p=>p.nome.toLowerCase().includes(q)));
+busca.oninput = async () => {
+  const q = busca.value.toLowerCase();
+
+  const { data, error } = await sb
+    .from("produtos")
+    .select("*")
+    .order("nome", { ascending: true })
+    .range(0, 5000); // <<< MESMO AJUSTE AQUI
+
+  if(error){
+    toast("ERRO NA BUSCA");
+    return;
+  }
+
+  renderLista(
+    (data || []).filter(p =>
+      p.nome && p.nome.toLowerCase().includes(q)
+    )
+  );
 };
+
 
 /* EDITAR */
 async function editar(id){
