@@ -187,16 +187,33 @@ async function abrir(f){
     <hr>
     <h3>Ingredientes</h3>
 
-    ${itens.map(i=>`
-      <div class="ing">
-        <span>
-          ${i.nome}<br>
-          <small>${i.quantidade} ${i.unidade_uso}</small>
-        </span>
-        <span>${moeda(i.custo_unitario)}</span>
-        <strong>${moeda(i.custo_calculado)}</strong>
-      </div>
-    `).join("")}
+${itens.map(i=>`
+  <div class="ing">
+    <span>
+      <b>${i.nome}</b><br>
+      <small>
+        <input 
+          type="number" 
+          step="0.0001"
+          value="${i.quantidade}"
+          onchange="atualizarIngrediente('${i.id}', this.value)"
+          style="width:80px"
+        >
+        ${i.unidade_uso}
+      </small>
+    </span>
+
+    <span>${moeda(i.custo_unitario)}</span>
+
+    <strong>${moeda(i.custo_calculado)}</strong>
+
+    <button
+      style="background:none;border:none;color:#dc2626;font-weight:800;cursor:pointer"
+      onclick="removerIngrediente('${i.id}')"
+    >✕</button>
+  </div>
+`).join("")}
+
 
     <hr>
     <div class="lucro ${lucro >= 0 ? "pos":"neg"}">
@@ -208,6 +225,26 @@ async function abrir(f){
 function fechar(){
   modal.style.display = "none";
 }
+async function atualizarIngrediente(id, novaQtd){
+  await sb
+    .from("buffet_itens")
+    .update({ quantidade: novaQtd })
+    .eq("id", id);
+
+  modal.style.display = "none";
+}
+
+async function removerIngrediente(id){
+  if(!confirm("Remover ingrediente?")) return;
+
+  await sb
+    .from("buffet_itens")
+    .delete()
+    .eq("id", id);
+
+  modal.style.display = "none";
+}
+
 </script>
 
 </body>
