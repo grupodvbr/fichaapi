@@ -235,8 +235,9 @@ let fichas=[], atual=null, itens=[];
 
 async function renderCard(f){
   const its=(await sb.from("buffet_itens").select("*").eq("buffet_id",f.id)).data||[];
-  const custo=its.reduce((s,i)=>s+Number(i.custo_calculado||0),0);
-  const lucro=(f.preco_venda||0)-custo;
+  const custoTotal=its.reduce((s,i)=>s+Number(i.custo_calculado||0),0);
+  const custoUnit=custoTotal/(f.rendimento||1);
+  const lucro=(f.preco_venda||0)-custoUnit;
 
   const c=document.createElement("div");
   c.className="card";
@@ -246,24 +247,30 @@ async function renderCard(f){
       <h3>${f.nome}</h3>
       <span class="badge">${f.tipo}</span>
       <span class="badge">Venda ${moeda(f.preco_venda)}</span>
+      <span class="badge">CMV ${moeda(custoUnit)}</span>
       ${its.slice(0,3).map(i=>`
         <div class="ing"><span>${i.nome}</span><strong>${moeda(i.custo_calculado)}</strong></div>
       `).join("")}
+      ${its.length>3?`<small>+${its.length-3} ingredientes</small>`:""}
       <div class="lucro ${lucro>=0?'pos':'neg'}">Lucro ${moeda(lucro)}</div>
       <button onclick="editar('${f.id}')">Editar</button>
     </div>`;
   cards.appendChild(c);
 }
 
-function filtrar(){
+async function filtrar(){
   cards.innerHTML="";
-  fichas
-    .filter(f=>(!fNome.value||f.nome.toLowerCase().includes(fNome.value.toLowerCase()))&&(!fTipo.value||f.tipo===fTipo.value))
-    .forEach(renderCard);
+  const filtradas=fichas.filter(f=>
+    (!fNome.value||f.nome.toLowerCase().includes(fNome.value.toLowerCase())) &&
+    (!fTipo.value||f.tipo===fTipo.value)
+  );
+  for(const f of filtradas){
+    await renderCard(f);
+  }
 }
 
 /* CRUD */
-async function nova(){
+function nova(){
   atual=null;
   itens=[];
   mTitulo.textContent="Nova ficha";
@@ -329,9 +336,17 @@ async function salvar(){
       rendimento:mRendimento.value,
       foto_url:fotoUrl
     }).eq("id",atual.id);
+
+    for(const i of itens){
+      await sb.from("buffet_itens").update({
+        quantidade:i.quantidade,
+        custo_calculado:i.custo_calculado
+      }).eq("id",i.id);
+    }
   }
 
-  fechar();location.reload();
+  fechar();
+  location.reload();
 }
 
 async function excluir(){
