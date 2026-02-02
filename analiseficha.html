@@ -539,17 +539,31 @@ const margem =
               : "Valor fixo";
 
           return `
-            <div class="ing">
+            <div class="ing" style="align-items:center">
               <span>
-                <b>${i.descricao}</b>
+                <b>${i.descricao}</b><br>
                 <small>${i.tipo} • ${label}</small>
               </span>
+
               <strong>${moeda(valorCalculado)}</strong>
+
+              <div style="display:flex;gap:6px">
+                <button onclick="editarImposto('${i.id}', '${p.id}')" 
+                        style="background:#e0f2fe;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700">
+                  ✏️
+                </button>
+
+                <button onclick="excluirImposto('${i.id}', '${p.id}')" 
+                        style="background:#fee2e2;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700">
+                  🗑️
+                </button>
+              </div>
             </div>
           `;
         }).join("")
   }
 </div>
+
 
 <div style="margin-top:12px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px">
   <input id="impDesc" placeholder="Descrição">
@@ -607,6 +621,71 @@ async function salvarImposto(buffetId){
   // recarrega modal
   abrir(pratos.find(p => p.id === buffetId));
 }
+async function excluirImposto(impostoId, buffetId){
+  if(!confirm("Deseja excluir este custo/imposto?")) return;
+
+  const { error } = await sb
+    .from("impostos")
+    .delete()
+    .eq("id", impostoId);
+
+  if(error){
+    console.error(error);
+    alert("Erro ao excluir");
+    return;
+  }
+
+  abrir(pratos.find(p => p.id === buffetId));
+}
+async function editarImposto(impostoId, buffetId){
+  const imposto = impostosCache.find(i => i.id === impostoId);
+  if(!imposto) return;
+
+  impDesc.value = imposto.descricao;
+  impTipo.value = imposto.tipo;
+  impModalidade.value = imposto.modalidade;
+  impValor.value = imposto.valor;
+
+  // muda botão para salvar edição
+  const btn = document.querySelector(".btn-add");
+  btn.innerText = "SALVAR";
+  btn.onclick = async () => {
+    const desc = impDesc.value.trim();
+    const tipo = impTipo.value;
+    const modalidade = impModalidade.value;
+    const valor = Number(impValor.value || 0);
+
+    if(!desc || valor <= 0){
+      alert("Preencha descrição e valor");
+      return;
+    }
+
+    const { error } = await sb
+      .from("impostos")
+      .update({
+        descricao: desc,
+        tipo,
+        modalidade,
+        valor
+      })
+      .eq("id", impostoId);
+
+    if(error){
+      console.error(error);
+      alert("Erro ao atualizar");
+      return;
+    }
+
+    // restaura botão
+    btn.innerText = "ADICIONAR";
+    btn.onclick = () => salvarImposto(buffetId);
+
+    impDesc.value = "";
+    impValor.value = "";
+
+    abrir(pratos.find(p => p.id === buffetId));
+  };
+}
 
 /* ================= FECHAR ================= */
 function fechar(){
@@ -616,6 +695,8 @@ function fechar(){
 
 /* ================= INIT ================= */
 carregarPratos();
+
+  
 </script>
 
 
