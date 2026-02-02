@@ -144,7 +144,7 @@ function renderCard(f) {
     ${f.foto_url ? `<img src="${f.foto_url}">` : ``}
     <div class="card-body">
       <h3>${f.nome}</h3>
-      <span class="badge">${f.tipo}</span>
+      <span class="badge">${f.tipo || "-"}</span>
       <span class="badge">Venda ${moeda(f.preco_venda)}</span>
       <span class="badge">CMV ${moeda(f.custo_unitario)}</span>
     </div>
@@ -157,9 +157,9 @@ async function abrir(f) {
   modal.style.display = "flex";
   mFoto.src = f.foto_url || "";
 
-  // 🔥 AQUI ESTÁ A CORREÇÃO REAL
+  /* 🔥 TABELA REAL QUE EXISTE */
   const { data: itens, error } = await sb
-    .from("buffet_produtos")
+    .from("buffet_itens")
     .select("*")
     .eq("buffet_id", f.id);
 
@@ -211,6 +211,7 @@ function fechar() {
   modal.style.display = "none";
 }
 </script>
+
 
 
 
