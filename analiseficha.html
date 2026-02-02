@@ -116,18 +116,18 @@ const sb = supabase.createClient(
 );
 
 const moeda = v =>
-  "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+  "R$ " + Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
 
 /* LOAD FICHAS */
-(async ()=>{
+(async () => {
   const { data, error } = await sb
     .from("buffet")
     .select("*")
-    .order("created_at",{ascending:false});
+    .order("created_at", { ascending: false });
 
-  if(error){
-    alert("Erro ao carregar fichas");
+  if (error) {
     console.error(error);
+    alert("Erro ao carregar fichas");
     return;
   }
 
@@ -135,10 +135,10 @@ const moeda = v =>
 })();
 
 /* CARD */
-function renderCard(f){
+function renderCard(f) {
   const c = document.createElement("div");
   c.className = "card";
-  c.onclick = ()=>abrir(f);
+  c.onclick = () => abrir(f);
 
   c.innerHTML = `
     ${f.foto_url ? `<img src="${f.foto_url}">` : ``}
@@ -152,61 +152,51 @@ function renderCard(f){
   cards.appendChild(c);
 }
 
-/* CALCULO DO CUSTO USADO */
-function custoUsado(i){
-  return Number(i.quantidade || 0) * Number(i.produtos.valor || 0);
-}
-
 /* MODAL */
-async function abrir(f){
+async function abrir(f) {
   modal.style.display = "flex";
   mFoto.src = f.foto_url || "";
 
-  // 1️⃣ BUSCA INGREDIENTES
+  // 1) BUSCA ITENS DA FICHA
   const { data: itens, error: errItens } = await sb
     .from("buffet_itens")
     .select("id, produto_id, quantidade, unidade_uso")
     .eq("buffet_id", f.id);
 
-  if(errItens){
+  if (errItens) {
     console.error(errItens);
     return;
   }
 
-// 2️⃣ BUSCA PRODUTOS (COM PROTEÇÃO)
-let mapProdutos = {};
+  // 2) BUSCA PRODUTOS (PROTEGIDO)
+  let mapProdutos = {};
+  if (itens.length > 0) {
+    const ids = itens.map(i => i.produto_id).filter(Boolean);
+    if (ids.length > 0) {
+      const { data: produtos, error: errProd } = await sb
+        .from("produtos")
+        .select("id, nome, valor")
+        .in("id", ids);
 
-if (itens.length > 0) {
-  const ids = itens
-    .map(i => i.produto_id)
-    .filter(id => id); // remove null/undefined
+      if (errProd) {
+        console.error(errProd);
+        return;
+      }
 
-  if (ids.length > 0) {
-    const { data: produtos, error: errProd } = await sb
-      .from("produtos")
-      .select("id, nome, valor")
-      .in("id", ids);
-
-    if (errProd) {
-      console.error(errProd);
-      return;
+      produtos.forEach(p => (mapProdutos[p.id] = p));
     }
-
-    produtos.forEach(p => mapProdutos[p.id] = p);
   }
-}
 
-
-  // 4️⃣ CMV TOTAL
+  // 3) CMV TOTAL
   const cmvTotal = itens.reduce((s, i) => {
     const p = mapProdutos[i.produto_id];
-    if(!p) return s;
-    return s + (Number(i.quantidade) * Number(p.valor));
+    if (!p) return s;
+    return s + Number(i.quantidade) * Number(p.valor);
   }, 0);
 
   const lucro = (f.preco_venda || 0) - cmvTotal;
 
-  // 5️⃣ RENDER MODAL
+  // 4) RENDER DO MODAL
   mBody.innerHTML = `
     <h2>${f.nome}</h2>
     <p><b>Tipo:</b> ${f.tipo}</p>
@@ -216,70 +206,68 @@ if (itens.length > 0) {
     <hr>
     <h3>Ingredientes</h3>
 
-    ${itens.map(i=>{
-      const p = mapProdutos[i.produto_id];
-      if(!p) return "";
+    ${
+      itens.filter(i => mapProdutos[i.produto_id]).length === 0
+        ? `<p style="opacity:.6">Nenhum ingrediente vinculado.</p>`
+        : itens
+            .map(i => {
+              const p = mapProdutos[i.produto_id];
+              if (!p) return "";
 
-      const custo = Number(i.quantidade) * Number(p.valor);
+              const custo = Number(i.quantidade) * Number(p.valor);
 
-      return `
-        <div class="ing">
-          <span>
-            <b>${p.nome}</b><br>
-            <small>
-              <input
-                type="number"
-                step="0.0001"
-                value="${i.quantidade}"
-                onchange="atualizarIngrediente('${i.id}', this.value)"
-                style="width:80px"
-              >
-              ${i.unidade_uso}
-            </small>
-          </span>
+              return `
+                <div class="ing">
+                  <span>
+                    <b>${p.nome}</b><br>
+                    <small>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value="${i.quantidade}"
+                        onchange="atualizarIngrediente('${i.id}', this.value)"
+                        style="width:80px"
+                      >
+                      ${i.unidade_uso}
+                    </small>
+                  </span>
 
-          <span>${moeda(p.valor)}</span>
-          <strong>${moeda(custo)}</strong>
+                  <span>${moeda(p.valor)}</span>
+                  <strong>${moeda(custo)}</strong>
 
-          <button
-            style="background:none;border:none;color:#dc2626;font-weight:800;cursor:pointer"
-            onclick="removerIngrediente('${i.id}')"
-          >✕</button>
-        </div>
-      `;
-    }).join("")}
+                  <button
+                    style="background:none;border:none;color:#dc2626;font-weight:800;cursor:pointer"
+                    onclick="removerIngrediente('${i.id}')"
+                  >✕</button>
+                </div>
+              `;
+            })
+            .join("")
+    }
 
     <hr>
-    <div class="lucro ${lucro >= 0 ? "pos":"neg"}">
+    <div class="lucro ${lucro >= 0 ? "pos" : "neg"}">
       Lucro da receita: ${moeda(lucro)}
     </div>
   `;
 }
 
-function fechar(){
+function fechar() {
   modal.style.display = "none";
 }
 
-async function atualizarIngrediente(id, novaQtd){
-  await sb
-    .from("buffet_itens")
-    .update({ quantidade: novaQtd })
-    .eq("id", id);
-
+async function atualizarIngrediente(id, novaQtd) {
+  await sb.from("buffet_itens").update({ quantidade: novaQtd }).eq("id", id);
   modal.style.display = "none";
 }
 
-async function removerIngrediente(id){
-  if(!confirm("Remover ingrediente?")) return;
-
-  await sb
-    .from("buffet_itens")
-    .delete()
-    .eq("id", id);
-
+async function removerIngrediente(id) {
+  if (!confirm("Remover ingrediente?")) return;
+  await sb.from("buffet_itens").delete().eq("id", id);
   modal.style.display = "none";
 }
 </script>
+
 
 </body>
 </html>
