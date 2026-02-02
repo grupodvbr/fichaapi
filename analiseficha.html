@@ -594,11 +594,11 @@ async function abrirModal(p){
 
     <hr>
 
-    <h3>Ingredientes</h3>
+<h3>Ingredientes</h3>
 ${itens.map(i=>`
   <div class="ing">
     <span>
-      <b>${i.nome}</b><br>
+      <b>${i.nome} — ${moeda(i.custo_unitario)}</b><br>
       <small>${i.quantidade} ${i.unidade_uso}</small>
     </span>
 
@@ -617,6 +617,7 @@ ${itens.map(i=>`
     </div>
   </div>
 `).join("")}
+
 
 
     <div class="precificacao">
