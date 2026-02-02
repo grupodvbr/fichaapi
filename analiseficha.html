@@ -457,44 +457,31 @@ async function carregarPratos(){
 }
 
 /* =====================================================
-   FILTROS
+   LISTA
 ===================================================== */
 function renderLista(){
   cards.innerHTML = "";
 
-  const nome = filtroNome.value.toUpperCase();
-  const tipo = filtroTipo.value;
+  pratos.forEach(p=>{
+    const c = document.createElement("div");
+    c.className = "card";
+    c.onclick = ()=>abrirModal(p);
 
-  pratos
-    .filter(p =>
-      (!nome || p.nome.toUpperCase().includes(nome)) &&
-      (!tipo || p.tipo === tipo)
-    )
-    .forEach(renderCard);
+    c.innerHTML = `
+      ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
+      <div class="card-body">
+        <h3>${p.nome}</h3>
+        <span class="badge">${p.tipo || "-"}</span>
+        <span class="badge">CMV ${moeda(p.custo_unitario)}</span>
+        ${p.preco_venda ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>` : ``}
+      </div>
+    `;
+    cards.appendChild(c);
+  });
 }
 
 /* =====================================================
-   CARD
-===================================================== */
-function renderCard(p){
-  const c = document.createElement("div");
-  c.className = "card";
-  c.onclick = () => abrirModal(p);
-
-  c.innerHTML = `
-    ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
-    <div class="card-body">
-      <h3>${p.nome}</h3>
-      <span class="badge">${p.tipo || "-"}</span>
-      <span class="badge">CMV ${moeda(p.custo_unitario)}</span>
-      ${p.preco_venda ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>` : ``}
-    </div>
-  `;
-  cards.appendChild(c);
-}
-
-/* =====================================================
-   MODAL PRINCIPAL
+   MODAL
 ===================================================== */
 async function abrirModal(p){
   pratoAtual = p;
@@ -512,7 +499,7 @@ async function abrirModal(p){
     (s,i)=>s + Number(i.custo_calculado||0),0
   );
 
-  /* IMPOSTOS */
+  /* IMPOSTOS / CUSTOS */
   const { data: impostos } = await sb
     .from("impostos")
     .select("*")
@@ -523,7 +510,8 @@ async function abrirModal(p){
   let totalImpostos = 0;
   impostosCache.forEach(i=>{
     if(i.modalidade==="FIXO") totalImpostos += Number(i.valor);
-    if(i.modalidade==="PERCENTUAL") totalImpostos += (cmvBase * Number(i.valor))/100;
+    if(i.modalidade==="PERCENTUAL")
+      totalImpostos += (cmvBase * Number(i.valor))/100;
   });
 
   const cmvFinal = cmvBase + totalImpostos;
@@ -531,25 +519,22 @@ async function abrirModal(p){
   const lucro = precoVenda ? precoVenda - cmvFinal : 0;
   const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
 
-  /* UI */
   mBody.innerHTML = `
     <h2>${p.nome}</h2>
 
-    <div class="precificacao">
-      <p><b>CMV base:</b> ${moeda(cmvBase)}</p>
-      <p><b>Impostos / Custos:</b> ${moeda(totalImpostos)}</p>
-      <p><b>CMV final:</b> ${moeda(cmvFinal)}</p>
-    </div>
+    <p><b>CMV base:</b> ${moeda(cmvBase)}</p>
+    <p><b>Impostos / Custos:</b> ${moeda(totalImpostos)}</p>
+    <p><b>CMV final:</b> ${moeda(cmvFinal)}</p>
 
     <hr>
 
     <h3>Precificação</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <input id="markupPerc" type="number" placeholder="Markup (%)">
       <input id="precoSugerido" readonly placeholder="Preço sugerido">
     </div>
 
-    <button class="btn-add" style="margin-top:12px"
+    <button class="btn-add" style="margin-top:10px"
       onclick="salvarPrecoVenda(${cmvFinal})">
       SALVAR PREÇO DE VENDA
     </button>
@@ -558,7 +543,7 @@ async function abrirModal(p){
       <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
       <p><b>Lucro:</b> ${moeda(lucro)}</p>
       <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
-    ` : `<p style="color:#dc2626;font-weight:700">Preço não cadastrado</p>`}
+    ` : ``}
 
     <hr>
 
@@ -570,10 +555,8 @@ async function abrirModal(p){
           <small>${i.quantidade} ${i.unidade_uso}</small>
         </span>
         <strong>${moeda(i.custo_calculado)}</strong>
-        <div>
-          <button class="btn-icon btn-delete"
-            onclick="excluirIngrediente('${i.id}')">🗑️</button>
-        </div>
+        <button class="btn-icon btn-delete"
+          onclick="excluirIngrediente('${i.id}')">🗑️</button>
       </div>
     `).join("")}
 
@@ -589,7 +572,7 @@ async function abrirModal(p){
         `).join("")}
       </select>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <input id="ingQtd" type="number" step="0.001" placeholder="Quantidade">
         <input id="ingUnidade" readonly placeholder="Unidade">
       </div>
@@ -599,9 +582,52 @@ async function abrirModal(p){
         ADICIONAR INGREDIENTE
       </button>
     </div>
+
+    <hr>
+
+    <h3>Custos / Impostos</h3>
+    ${impostosCache.map(i=>`
+      <div class="ing">
+        <span>
+          <b>${i.descricao}</b><br>
+          <small>${i.tipo} • ${i.modalidade === "PERCENTUAL" ? i.valor+"%" : moeda(i.valor)}</small>
+        </span>
+        <strong>
+          ${i.modalidade==="PERCENTUAL"
+            ? moeda((cmvBase*i.valor)/100)
+            : moeda(i.valor)}
+        </strong>
+        <button class="btn-icon btn-delete"
+          onclick="excluirImposto('${i.id}')">🗑️</button>
+      </div>
+    `).join("")}
+
+    <div class="precificacao">
+      <h3>Novo custo / imposto</h3>
+
+      <input id="impDesc" placeholder="Descrição">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <select id="impTipo">
+          <option value="IMPOSTO">IMPOSTO</option>
+          <option value="CUSTO">CUSTO</option>
+        </select>
+
+        <select id="impModalidade">
+          <option value="FIXO">VALOR FIXO</option>
+          <option value="PERCENTUAL">PERCENTUAL (%)</option>
+        </select>
+      </div>
+
+      <input id="impValor" type="number" step="0.01" placeholder="Valor">
+
+      <button class="btn-add" style="margin-top:10px"
+        onclick="salvarImposto()">
+        ADICIONAR
+      </button>
+    </div>
   `;
 
-  /* AUTO MARKUP */
   setTimeout(()=>{
     markupPerc.oninput = ()=>{
       const mk = Number(markupPerc.value||0);
@@ -611,7 +637,7 @@ async function abrirModal(p){
 }
 
 /* =====================================================
-   PREÇO DE VENDA
+   AÇÕES
 ===================================================== */
 async function salvarPrecoVenda(cmvFinal){
   const mk = Number(markupPerc.value||0);
@@ -619,8 +645,7 @@ async function salvarPrecoVenda(cmvFinal){
 
   const preco = cmvFinal * (1 + mk/100);
 
-  await sb
-    .from("buffet")
+  await sb.from("buffet")
     .update({ preco_venda: preco })
     .eq("id", pratoAtual.id);
 
@@ -628,9 +653,6 @@ async function salvarPrecoVenda(cmvFinal){
   abrirModal(pratos.find(p=>p.id===pratoAtual.id));
 }
 
-/* =====================================================
-   INGREDIENTES
-===================================================== */
 async function salvarIngrediente(){
   const prodId = ingProduto.value;
   const qtd = Number(ingQtd.value||0);
@@ -656,13 +678,29 @@ async function excluirIngrediente(id){
   abrirModal(pratoAtual);
 }
 
-/* =====================================================
-   INIT
-===================================================== */
-(async ()=>{
-  await carregarIngredientesBase();
-  await carregarPratos();
-})();
+async function salvarImposto(){
+  const desc = impDesc.value.trim();
+  const tipo = impTipo.value;
+  const modalidade = impModalidade.value;
+  const valor = Number(impValor.value||0);
+
+  if(!desc || valor<=0) return;
+
+  await sb.from("impostos").insert({
+    buffet_id: pratoAtual.id,
+    descricao: desc,
+    tipo,
+    modalidade,
+    valor
+  });
+
+  abrirModal(pratoAtual);
+}
+
+async function excluirImposto(id){
+  await sb.from("impostos").delete().eq("id",id);
+  abrirModal(pratoAtual);
+}
 
 /* =====================================================
    AUTO UNIDADE
@@ -678,6 +716,14 @@ function fechar(){
   modal.style.display="none";
   document.body.style.overflow="";
 }
+
+/* =====================================================
+   INIT
+===================================================== */
+(async ()=>{
+  await carregarIngredientesBase();
+  await carregarPratos();
+})();
 </script>
 
 
