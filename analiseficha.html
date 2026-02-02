@@ -12,6 +12,9 @@
 /* =========================================================
    VARIÁVEIS
 ========================================================= */
+/* =========================================================
+   VARIÁVEIS
+========================================================= */
 :root{
   --primary:#2563eb;
   --primary-dark:#1e40af;
@@ -47,6 +50,34 @@ body{
   font-family:Inter,sans-serif;
   background:var(--bg);
   color:var(--text);
+}
+
+/* trava scroll quando modal aberto */
+body.modal-open{
+  overflow:hidden;
+  position:fixed;
+  width:100%;
+}
+
+/* =========================================================
+   FILTROS
+========================================================= */
+.filters{
+  display:flex;
+  gap:14px;
+  padding:22px 22px 0;
+  flex-wrap:wrap;
+}
+
+.filters input,
+.filters select{
+  padding:14px 18px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  font-size:14px;
+  font-weight:600;
+  width:100%;
+  max-width:320px;
 }
 
 /* =========================================================
@@ -89,6 +120,7 @@ body{
 .card-body h3{
   margin:0 0 8px;
   font-weight:800;
+  font-size:16px;
 }
 
 /* =========================================================
@@ -112,6 +144,7 @@ body{
   position:fixed;
   inset:0;
   background:rgba(15,23,42,.65);
+  backdrop-filter:blur(6px);
   display:none;
   align-items:center;
   justify-content:center;
@@ -119,24 +152,31 @@ body{
 }
 
 /* =========================================================
-   MODAL BOX
+   MODAL BOX (SEM BALANÇAR)
 ========================================================= */
 .modal-box{
   background:#fff;
   width:100%;
   max-width:880px;
   max-height:92vh;
-  border-radius:var(--radius-lg);
+  border-radius:26px;
   overflow:hidden;
   display:flex;
   flex-direction:column;
   box-shadow:var(--shadow-lg);
-  animation:modalIn .25s ease;
+  animation:modalIn .2s ease;
 }
 
+/* animação estável (SEM translate) */
 @keyframes modalIn{
-  from{transform:translateY(24px);opacity:0}
-  to{transform:translateY(0);opacity:1}
+  from{
+    opacity:0;
+    transform:scale(0.96);
+  }
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
 }
 
 /* =========================================================
@@ -157,7 +197,10 @@ body{
   overflow-y:auto;
 }
 
-.modal-body::-webkit-scrollbar{width:8px}
+.modal-body::-webkit-scrollbar{
+  width:8px;
+}
+
 .modal-body::-webkit-scrollbar-thumb{
   background:#cbd5e1;
   border-radius:8px;
@@ -224,12 +267,8 @@ body{
 .ing b{font-weight:800}
 .ing small{color:var(--muted)}
 
-.lista-impostos .ing{
-  grid-template-columns:1fr auto auto;
-}
-
 /* =========================================================
-   PRECIFICAÇÃO (MARKUP)
+   PRECIFICAÇÃO / FORMULÁRIOS
 ========================================================= */
 .precificacao{
   background:#f1f5f9;
@@ -239,49 +278,24 @@ body{
   margin:16px 0;
 }
 
-.precificacao input{
-  height:44px;
-  padding:0 14px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  font-size:14px;
-  font-weight:700;
-}
-
-.precificacao input[readonly]{
-  background:#e5e7eb;
-  color:#334155;
-}
-
-/* =========================================================
-   FORMULÁRIOS
-========================================================= */
 input, select{
-  font-family:Inter,sans-serif;
-}
-
-.form-impostos{
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr 1fr;
-  gap:10px;
-  margin-top:12px;
-}
-
-.form-impostos input,
-.form-impostos select{
   height:44px;
   border-radius:12px;
   border:1px solid var(--border);
   padding:0 14px;
   font-size:14px;
   font-weight:600;
+  width:100%;
 }
 
-.form-impostos input:focus,
-.form-impostos select:focus{
+input:focus, select:focus{
   outline:none;
   border-color:var(--primary);
   box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+
+input[readonly]{
+  background:#e5e7eb;
 }
 
 /* =========================================================
@@ -293,7 +307,7 @@ button{
   cursor:pointer;
 }
 
-/* BOTÃO PRINCIPAL */
+/* principal */
 .btn-add{
   height:44px;
   padding:0 22px;
@@ -312,13 +326,12 @@ button{
   box-shadow:0 16px 40px rgba(37,99,235,.45);
 }
 
-/* BOTÕES ÍCONE */
+/* ícones */
 .btn-icon{
   border-radius:10px;
   padding:6px 12px;
   font-size:14px;
   font-weight:800;
-  transition:.12s ease;
 }
 
 .btn-edit{
@@ -326,76 +339,29 @@ button{
   color:#0369a1;
 }
 
-.btn-edit:hover{background:#bae6fd}
-
 .btn-delete{
   background:#fee2e2;
   color:#991b1b;
 }
 
-.btn-delete:hover{background:#fecaca}
-
 /* =========================================================
-   FILTROS
+   MOBILE — 3 CARDS POR LINHA + MODAL APP STYLE
 ========================================================= */
-.filters{
-  display:flex;
-  gap:14px;
-  padding:22px 22px 0;
-  flex-wrap:wrap;
-}
-
-.filters input,
-.filters select{
-  padding:14px 18px;
-  border-radius:999px;
-  border:1px solid var(--border);
-  font-size:14px;
-  font-weight:600;
-}
-
-/* =========================================================
-   RESPONSIVO
-========================================================= */
-@media(max-width:900px){
-  .modal-box{max-width:96%}
-}
-
-@media(max-width:700px){
-  .lista-impostos .ing{
-    grid-template-columns:1fr;
-    gap:8px;
-  }
-
-  .form-impostos{
-    grid-template-columns:1fr;
-  }
-
-  .btn-add{
-    width:100%;
-  }
-}
-
 @media(max-width:520px){
-  .modal-img{height:200px}
-}
 
-/* =========================================================
-   GRID MOBILE — 3 CARDS POR LINHA
-========================================================= */
-@media (max-width: 520px){
+  /* 3 cards por linha */
   .grid{
-    grid-template-columns:repeat(3, 1fr);
+    grid-template-columns:repeat(3,1fr);
     gap:10px;
-    padding:12px;
+    padding:14px;
   }
 
   .card{
-    border-radius:14px;
+    border-radius:16px;
   }
 
   .card img{
-    height:90px;
+    height:110px;
   }
 
   .card-body{
@@ -404,21 +370,49 @@ button{
 
   .card-body h3{
     font-size:13px;
-    line-height:1.2;
-    margin-bottom:6px;
+    line-height:1.1;
   }
 
   .badge{
     font-size:10px;
     padding:4px 8px;
-    margin:2px 4px 0 0;
+  }
+
+  /* modal estilo app */
+  .modal{
+    align-items:flex-end;
+  }
+
+  .modal-box{
+    max-width:100%;
+    height:92vh;
+    border-radius:22px 22px 0 0;
+  }
+
+  .modal-img{
+    height:180px;
+  }
+
+  .modal-body{
+    padding:18px;
+  }
+
+  .close{
+    top:10px;
+    right:14px;
+    font-size:22px;
+  }
+
+  .ing{
+    grid-template-columns:1fr auto;
+    gap:8px;
+  }
+
+  .btn-add{
+    width:100%;
   }
 }
-@media (max-width: 360px){
-  .grid{
-    grid-template-columns:repeat(2, 1fr);
-  }
-}
+
 
 </style>
 </head>
