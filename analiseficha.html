@@ -522,6 +522,31 @@ async function calcularCMVPercentual(prato){
   return (cmvFinal / prato.preco_venda) * 100;
 }
 
+let cacheCMV = {};
+
+async function carregarCMVCache(){
+  cacheCMV = {};
+
+  const { data: itens } = await sb
+    .from("buffet_itens")
+    .select("buffet_id, custo_calculado");
+
+  const { data: impostos } = await sb
+    .from("impostos")
+    .select("buffet_id, modalidade, valor");
+
+  // soma ingredientes
+  (itens || []).forEach(i=>{
+    cacheCMV[i.buffet_id] ??= { cmvBase:0, impostos:[] };
+    cacheCMV[i.buffet_id].cmvBase += Number(i.custo_calculado || 0);
+  });
+
+  // agrupa impostos
+  (impostos || []).forEach(i=>{
+    cacheCMV[i.buffet_id] ??= { cmvBase:0, impostos:[] };
+    cacheCMV[i.buffet_id].impostos.push(i);
+  });
+}
 
 
 
@@ -534,7 +559,7 @@ async function calcularCMVPercentual(prato){
 /* =====================================================
    LISTA
 ===================================================== */
-async function renderLista(){
+function renderLista(){
   cards.innerHTML = "";
 
   const nomeFiltro = (filtroNome.value || "").toUpperCase().trim();
@@ -544,93 +569,71 @@ async function renderLista(){
 
     const nomeOk =
       !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
-
     const tipoOk =
       !tipoFiltro || p.tipo === tipoFiltro;
 
     if(!nomeOk || !tipoOk) continue;
 
-    const cmvPerc = await calcularCMVPercentual(p);
+    const dados = cacheCMV[p.id] || { cmvBase:0, impostos:[] };
+
+    let totalImpostos = 0;
+    dados.impostos.forEach(i=>{
+      if(i.modalidade === "FIXO")
+        totalImpostos += Number(i.valor);
+      if(i.modalidade === "PERCENTUAL")
+        totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
+    });
+
+    const cmvFinal = dados.cmvBase + totalImpostos;
+    const cmvPerc =
+      p.preco_venda ? (cmvFinal / p.preco_venda) * 100 : null;
+    const lucro =
+      p.preco_venda ? p.preco_venda - cmvFinal : null;
 
     const c = document.createElement("div");
     c.className = "card";
     c.onclick = ()=>abrirModal(p);
 
-// 🔹 BUSCA INGREDIENTES
-const { data: itens } = await sb
-  .from("buffet_itens")
-  .select("custo_calculado")
-  .eq("buffet_id", p.id);
+    c.innerHTML = `
+      ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
+      <div class="card-body">
 
-const cmvBase = (itens || []).reduce(
-  (s,i)=> s + Number(i.custo_calculado || 0), 0
-);
+        <h3>
+          ${p.nome}
+          ${cmvPerc !== null ? `
+            <span class="badge"
+              style="
+                background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
+                color:${cmvPerc > 35 ? '#991b1b' : '#166534'};
+                margin-left:6px">
+              CMV ${cmvPerc.toFixed(1)}%
+            </span>
+          ` : ``}
+        </h3>
 
-// 🔹 BUSCA IMPOSTOS / CUSTOS OPERACIONAIS
-const { data: impostos } = await sb
-  .from("impostos")
-  .select("modalidade, valor")
-  .eq("buffet_id", p.id);
+        <span class="badge">${p.tipo || "-"}</span>
 
-let totalImpostos = 0;
-(impostos || []).forEach(i=>{
-  if(i.modalidade === "FIXO")
-    totalImpostos += Number(i.valor);
-  if(i.modalidade === "PERCENTUAL")
-    totalImpostos += (cmvBase * Number(i.valor)) / 100;
-});
+        <span class="badge">Custo ${moeda(cmvFinal)}</span>
 
-const cmvFinal = cmvBase + totalImpostos;
-const lucro = p.preco_venda ? p.preco_venda - cmvFinal : null;
+        ${totalImpostos > 0
+          ? `<span class="badge">Impostos ${moeda(totalImpostos)}</span>`
+          : ``}
 
-c.innerHTML = `
-  ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
-  <div class="card-body">
+        ${p.preco_venda
+          ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>`
+          : ``}
 
-    <h3>
-      ${p.nome}
+        ${lucro !== null ? `
+          <span class="badge"
+            style="
+              background:${lucro < 0 ? '#fee2e2' : '#dcfce7'};
+              color:${lucro < 0 ? '#991b1b' : '#166534'}">
+            Lucro ${moeda(lucro)}
+          </span>
+        ` : ``}
 
-      ${cmvPerc !== null ? `
-        <span class="badge"
-          style="
-            background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
-            color:${cmvPerc > 35 ? '#991b1b' : '#166534'};
-            margin-left:6px">
-          CMV ${cmvPerc.toFixed(1)}%
-        </span>
-      ` : ``}
-    </h3>
-
-    <span class="badge">${p.tipo || "-"}</span>
-
-    <span class="badge">
-      Custo ${moeda(cmvFinal)}
-    </span>
-
-    ${totalImpostos > 0 ? `
-      <span class="badge">
-        Impostos ${moeda(totalImpostos)}
-      </span>
-    ` : ``}
-
-    ${p.preco_venda ? `
-      <span class="badge">
-        Venda ${moeda(p.preco_venda)}
-      </span>
-    ` : ``}
-
-    ${lucro !== null ? `
-      <span class="badge"
-        style="
-          background:${lucro < 0 ? '#fee2e2' : '#dcfce7'};
-          color:${lucro < 0 ? '#991b1b' : '#166534'}">
-        Lucro ${moeda(lucro)}
-      </span>
-    ` : ``}
-
-  </div>
-`;
-
+      </div>
+    `;
 
     cards.appendChild(c);
   }
@@ -920,7 +923,10 @@ function fechar(){
 (async ()=>{
   await carregarIngredientesBase();
   await carregarPratos();
+  await carregarCMVCache();
+  renderLista();
 })();
+
 
 async function editarIngrediente(itemId){
   const { data, error } = await sb
