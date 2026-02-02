@@ -152,6 +152,26 @@ button{
   z-index:99;
 }
 .toast.show{opacity:1;transform:translateY(0)}
+
+textarea{
+  width:100%;
+  padding:16px;
+  margin-top:6px;
+  border-radius:16px;
+  border:1px solid #cbd5e1;
+  font-family:Inter,sans-serif;
+  font-size:14px;
+  font-weight:600;
+  resize:vertical;
+  line-height:1.5;
+}
+
+textarea:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(20,184,166,.2);
+}
+
 </style>
 </head>
 
@@ -198,6 +218,16 @@ button{
   <label>FOTO DO PRATO</label>
   <input type="file" id="fotoProduto" accept="image/*">
   <img id="previewFoto" class="preview hidden">
+<h3>MODO DE PREPARO</h3>
+
+<label>DESCREVA O PASSO A PASSO</label>
+<textarea id="modoPreparo"
+  rows="6"
+  placeholder="Ex: 
+1. Lave os ingredientes
+2. Corte em cubos
+3. Refogue por 10 minutos..."
+></textarea>
 
   <h3>INGREDIENTES</h3>
 
@@ -449,16 +479,18 @@ for (const i of ingredientes) {
     /* ================= INSERIR PRATO ================= */
     const { data: prato, error: pratoError } = await sb
       .from("buffet")
-      .insert({
-        nome: nomePrato.value,
-        tipo: tipoPrato.value,
-        preco_venda: preco,
-        custo_total: cmv,
-        custo_unitario: cmv / por,
-        margem_percentual: margemPerc,
-        rendimento: por,
-        foto_url: fotoUrl
-      })
+.insert({
+  nome: nomePrato.value,
+  tipo: tipoPrato.value,
+  preco_venda: preco,
+  custo_total: cmv,
+  custo_unitario: cmv / por,
+  margem_percentual: margemPerc,
+  rendimento: por,
+  foto_url: fotoUrl,
+  modo_preparo: modoPreparo.value   // 👈 AQUI
+})
+
       .select()
       .single();
 
@@ -490,7 +522,7 @@ hide();
 btnSalvar.disabled = false;
 ingredientes = [];
 toast("SALVO COM SUCESSO");
-// limpar campos do formulário
+modoPreparo.value = ""; // 👈 FALTAVA ISSO
 nomePrato.value = "";
 tipoPrato.value = "";
 precoVenda.value = "";
