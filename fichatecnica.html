@@ -391,12 +391,13 @@ if (!file.type.startsWith("image/")) {
   return;
 }
 
-if (file.size > 2 * 1024 * 1024) {
-  toast("IMAGEM MUITO GRANDE (MAX 2MB)");
+if (file.size > 10 * 1024 * 1024) {
+  toast("IMAGEM MUITO GRANDE (MAX 10MB)");
   hide();
   btnSalvar.disabled = false;
   return;
 }
+
 
       const ext = file.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${ext}`;
