@@ -175,18 +175,19 @@ function filtrar() {
   filtradas.forEach(renderCard);
 }
 
-/* ================= CÁLCULO CMV ================= */
+/* ================= CMV ================= */
 function calcularCustoItem(item) {
   if (!item.produtos || !item.produtos.valor) return 0;
 
   const qtd = Number(item.quantidade || 0);
-  const precoBase = Number(item.produtos.valor || 0);
+  const preco = Number(item.produtos.valor || 0);
+  const unidade = item.produtos.unidade_medida;
 
-  if (item.unidade_medida === "ML" || item.unidade_medida === "G") {
-    return (qtd / 1000) * precoBase;
+  if (unidade === "ML" || unidade === "G") {
+    return (qtd / 1000) * preco;
   }
 
-  return qtd * precoBase;
+  return qtd * preco;
 }
 
 /* ================= CARD ================= */
@@ -195,10 +196,10 @@ async function renderCard(f) {
     .from("buffet_itens")
     .select(`
       quantidade,
-      unidade_medida,
       produtos (
         nome,
-        valor
+        valor,
+        unidade_medida
       )
     `)
     .eq("buffet_id", f.id);
