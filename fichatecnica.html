@@ -433,6 +433,18 @@ if (file.size > 10 * 1024 * 1024) {
     const por = Number(rendimentoFinal.value || 1);
     const preco = Number(precoVenda.value || 0);
     const margemPerc = preco ? ((preco - (cmv/por)) / preco) * 100 : 0;
+// 🔒 validação forte dos ingredientes
+if (!ingredientes.length) {
+  throw new Error("Nenhum ingrediente para salvar");
+}
+
+for (const i of ingredientes) {
+  if (!i.produto_id) {
+    throw new Error(`Ingrediente sem produto_id: ${i.nome}`);
+  }
+}
+
+    
 
     /* ================= INSERIR PRATO ================= */
     const { data: prato, error: pratoError } = await sb
@@ -453,22 +465,26 @@ if (file.size > 10 * 1024 * 1024) {
     if (pratoError) throw pratoError;
 
     /* ================= INSERIR INGREDIENTES ================= */
-    for (const i of ingredientes) {
-      const { error: itemError } = await sb
-        .from("buffet_itens")
-        .insert({
-          buffet_id: prato.id,
-          produto_id: i.produto_id,   // UUID
-          nome: i.nome,
-          unidade_uso: i.unidade,
-          quantidade: i.quantidade,
-          custo_unitario: i.custo_unitario,
-          custo_calculado: i.custo_total,
-          rendimento_percentual: i.rendimento
-        });
+const itensParaSalvar = ingredientes.map(i => ({
+  buffet_id: prato.id,
+  produto_id: i.produto_id,
+  nome: i.nome,
+  unidade_uso: i.unidade,
+  quantidade: i.quantidade,
+  custo_unitario: i.custo_unitario,
+  custo_calculado: i.custo_total,
+  rendimento_percentual: i.rendimento
+}));
 
-      if (itemError) throw itemError;
-    }
+const { error: itensError } = await sb
+  .from("buffet_itens")
+  .insert(itensParaSalvar);
+
+if (itensError) {
+  console.error("ERRO AO SALVAR INGREDIENTES:", itensError);
+  throw itensError;
+}
+
 
 hide();
 btnSalvar.disabled = false;
