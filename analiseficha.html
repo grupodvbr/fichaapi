@@ -565,7 +565,9 @@ function renderLista(){
   const nomeFiltro = (filtroNome.value || "").toUpperCase().trim();
   const tipoFiltro = filtroTipo.value;
 
-  for(const p of pratos){
+for(const p of pratos){
+
+// if (p.ativo === false) continue;
 
     const nomeOk =
       !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
@@ -590,8 +592,13 @@ function renderLista(){
     const lucro =
       p.preco_venda ? p.preco_venda - cmvFinal : null;
 
-    const c = document.createElement("div");
-    c.className = "card";
+const c = document.createElement("div");
+c.className = "card";
+if (p.ativo === false) {
+  c.style.opacity = "0.45";
+  c.style.filter = "grayscale(1)";
+}
+
     c.onclick = ()=>abrirModal(p);
 
     c.innerHTML = `
@@ -679,7 +686,18 @@ async function abrirModal(p){
   const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
 
 mBody.innerHTML = `
-  <h2>${p.nome}</h2>
+<h2>${p.nome}</h2>
+
+<div style="margin:14px 0">
+  <label style="font-weight:800;font-size:13px">
+    STATUS DO PRATO
+  </label>
+
+  <select id="statusPrato" style="margin-top:6px">
+    <option value="true">ATIVO</option>
+    <option value="false">DESATIVADO</option>
+  </select>
+</div>
 
   <div style="margin:12px 0">
     <label style="font-weight:800;font-size:13px">
@@ -881,6 +899,24 @@ setTimeout(() => {
       selectTipo.value = p.tipo;
     }
   }, 0);
+setTimeout(() => {
+  const statusSelect = document.getElementById("statusPrato");
+  if (!statusSelect) return;
+
+  statusSelect.value = p.ativo === false ? "false" : "true";
+
+  statusSelect.onchange = async () => {
+    const ativo = statusSelect.value === "true";
+
+    await sb
+      .from("buffet")
+      .update({ ativo })
+      .eq("id", pratoAtual.id);
+
+    await carregarPratos();
+    renderLista();
+  };
+}, 0);
 
   setTimeout(()=>{
     markupPerc.oninput = ()=>{
