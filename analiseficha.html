@@ -67,11 +67,6 @@ body{
   max-width:780px;
   border-radius:28px;
   overflow:hidden;
-  animation:pop .2s ease;
-}
-@keyframes pop{
-  from{transform:scale(.96);opacity:0}
-  to{transform:scale(1);opacity:1}
 }
 .modal-img{
   width:100%;
@@ -83,7 +78,7 @@ body{
 }
 .ing{
   display:grid;
-  grid-template-columns:1fr auto auto;
+  grid-template-columns:1fr auto auto auto;
   gap:12px;
   font-size:14px;
   margin-top:10px;
@@ -157,6 +152,11 @@ function renderCard(f){
   cards.appendChild(c);
 }
 
+/* CALCULO DO CUSTO USADO */
+function custoUsado(i){
+  return Number(i.quantidade || 0) * Number(i.produtos.valor || 0);
+}
+
 /* MODAL */
 async function abrir(f){
   modal.style.display = "flex";
@@ -164,7 +164,15 @@ async function abrir(f){
 
   const { data: itens, error } = await sb
     .from("buffet_itens")
-    .select("*")
+    .select(`
+      id,
+      quantidade,
+      unidade_uso,
+      produtos (
+        nome,
+        valor
+      )
+    `)
     .eq("buffet_id", f.id);
 
   if(error){
@@ -173,7 +181,7 @@ async function abrir(f){
   }
 
   const cmvTotal = itens.reduce(
-    (s,i)=> s + Number(i.custo_calculado || 0), 0
+    (s,i)=> s + custoUsado(i), 0
   );
 
   const lucro = (f.preco_venda || 0) - cmvTotal;
@@ -187,33 +195,31 @@ async function abrir(f){
     <hr>
     <h3>Ingredientes</h3>
 
-${itens.map(i=>`
-  <div class="ing">
-    <span>
-      <b>${i.nome}</b><br>
-      <small>
-        <input 
-          type="number" 
-          step="0.0001"
-          value="${i.quantidade}"
-          onchange="atualizarIngrediente('${i.id}', this.value)"
-          style="width:80px"
-        >
-        ${i.unidade_uso}
-      </small>
-    </span>
+    ${itens.map(i=>`
+      <div class="ing">
+        <span>
+          <b>${i.produtos.nome}</b><br>
+          <small>
+            <input
+              type="number"
+              step="0.0001"
+              value="${i.quantidade}"
+              onchange="atualizarIngrediente('${i.id}', this.value)"
+              style="width:80px"
+            >
+            ${i.unidade_uso}
+          </small>
+        </span>
 
-    <span>${moeda(i.custo_unitario)}</span>
+        <span>${moeda(i.produtos.valor)}</span>
+        <strong>${moeda(custoUsado(i))}</strong>
 
-    <strong>${moeda(i.custo_calculado)}</strong>
-
-    <button
-      style="background:none;border:none;color:#dc2626;font-weight:800;cursor:pointer"
-      onclick="removerIngrediente('${i.id}')"
-    >✕</button>
-  </div>
-`).join("")}
-
+        <button
+          style="background:none;border:none;color:#dc2626;font-weight:800;cursor:pointer"
+          onclick="removerIngrediente('${i.id}')"
+        >✕</button>
+      </div>
+    `).join("")}
 
     <hr>
     <div class="lucro ${lucro >= 0 ? "pos":"neg"}">
@@ -225,6 +231,7 @@ ${itens.map(i=>`
 function fechar(){
   modal.style.display = "none";
 }
+
 async function atualizarIngrediente(id, novaQtd){
   await sb
     .from("buffet_itens")
@@ -244,7 +251,6 @@ async function removerIngrediente(id){
 
   modal.style.display = "none";
 }
-
 </script>
 
 </body>
