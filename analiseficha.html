@@ -305,10 +305,12 @@ const sb = supabase.createClient(
 const moeda = v =>
   "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
+/* ================= STATE ================= */
 let pratos = [];
+let impostosCache = [];
 
 /* ================= LOAD PRATOS ================= */
-(async ()=>{
+async function carregarPratos(){
   const { data, error } = await sb
     .from("buffet")
     .select("*")
@@ -316,104 +318,165 @@ let pratos = [];
 
   if(error){
     console.error(error);
-    alert("Erro ao carregar fichas");
+    alert("Erro ao carregar pratos");
     return;
   }
 
   pratos = data;
-  aplicarFiltro();
-})();
-
-/* ================= FILTRO ================= */
-filtroNome.oninput = aplicarFiltro;
-filtroTipo.onchange = aplicarFiltro;
-
-function aplicarFiltro(){
-  const nome = filtroNome.value.toLowerCase().trim();
-  const tipo = filtroTipo.value;
-
-  const filtrados = pratos.filter(p=>{
-    const matchNome = p.nome.toLowerCase().includes(nome);
-    const matchTipo = !tipo || p.tipo === tipo;
-    return matchNome && matchTipo;
-  });
-
-  renderLista(filtrados);
+  renderLista();
 }
 
-/* ================= RENDER LISTA ================= */
-function renderLista(lista){
+/* ================= FILTROS ================= */
+function renderLista(){
   cards.innerHTML = "";
-  lista.forEach(renderCard);
+
+  const nomeFiltro = (filtroNome?.value || "").toUpperCase();
+  const tipoFiltro = filtroTipo?.value || "";
+
+  pratos
+    .filter(p =>
+      (!nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro)) &&
+      (!tipoFiltro || p.tipo === tipoFiltro)
+    )
+    .forEach(renderCard);
 }
 
 /* ================= CARD ================= */
-function renderCard(f){
+function renderCard(p){
   const c = document.createElement("div");
   c.className = "card";
-  c.onclick = ()=>abrir(f);
+  c.onclick = ()=>abrir(p);
 
   c.innerHTML = `
-    ${f.foto_url ? `<img src="${f.foto_url}">` : ``}
+    ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
     <div class="card-body">
-      <h3>${f.nome}</h3>
-      <span class="badge">${f.tipo || "-"}</span>
-      <span class="badge">CMV ${moeda(f.custo_unitario)}</span>
+      <h3>${p.nome}</h3>
+      <span class="badge">${p.tipo || "-"}</span>
+      <span class="badge">CMV ${moeda(p.custo_unitario)}</span>
+      ${Number(p.preco_venda) > 0 ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>` : ``}
     </div>
   `;
   cards.appendChild(c);
 }
 
 /* ================= MODAL ================= */
-async function abrir(f){
+async function abrir(p){
   document.body.style.overflow = "hidden";
   modal.style.display = "flex";
-  mFoto.src = f.foto_url || "";
+  mFoto.src = p.foto_url || "";
 
-  const { data: itens, error } = await sb
+  /* INGREDIENTES */
+  const { data: itens } = await sb
     .from("buffet_itens")
     .select("*")
-    .eq("buffet_id", f.id);
+    .eq("buffet_id", p.id);
 
-  if (error) {
-    console.error("ERRO ITENS:", error);
-    return;
-  }
+  const cmv = itens.reduce((s,i)=>s + Number(i.custo_calculado||0),0);
 
-  const cmvTotal = itens.reduce(
-    (s,i)=>s + Number(i.custo_calculado || 0),
-    0
-  );
+  /* IMPOSTOS / CUSTOS */
+  const { data: impostos } = await sb
+    .from("impostos")
+    .select("*")
+    .eq("buffet_id", p.id);
+
+  impostosCache = impostos || [];
+
+  const totalImpostos = impostosCache.reduce((s,i)=>s + Number(i.valor||0),0);
+  const precoVenda = Number(p.preco_venda||0);
+  const lucro = precoVenda > 0 ? precoVenda - (cmv + totalImpostos) : 0;
+  const margem = precoVenda > 0 ? (lucro / precoVenda) * 100 : 0;
 
   mBody.innerHTML = `
-    <h2>${f.nome}</h2>
-    <p><b>CMV total:</b> ${moeda(cmvTotal)}</p>
+    <h2>${p.nome}</h2>
+
+    ${precoVenda > 0 ? `<p><b>Preço de venda:</b> ${moeda(precoVenda)}</p>` : ``}
+    <p><b>CMV:</b> ${moeda(cmv)}</p>
+    <p><b>Impostos / Custos:</b> ${moeda(totalImpostos)}</p>
+
+    ${precoVenda > 0 ? `
+      <p><b>Lucro:</b> ${moeda(lucro)}</p>
+      <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
+    ` : `
+      <p style="color:#dc2626;font-weight:700">
+        ⚠️ Preço de venda não cadastrado
+      </p>
+    `}
 
     <hr>
     <h3>Ingredientes</h3>
 
-    ${
-      itens.length === 0
-        ? `<p style="color:#dc2626;font-weight:700">
-             Nenhum ingrediente encontrado.
-           </p>`
-        : itens.map(i=>`
-            <div class="ing">
-              <span>
-                <b>${i.nome}</b><br>
-                <small>${i.quantidade} ${i.unidade_uso}</small>
-              </span>
-              <strong>${moeda(i.custo_calculado)}</strong>
-            </div>
-          `).join("")
-    }
+    ${itens.map(i=>`
+      <div class="ing">
+        <span>
+          <b>${i.nome}</b><br>
+          <small>${i.quantidade} ${i.unidade_uso}</small>
+        </span>
+        <strong>${moeda(i.custo_calculado)}</strong>
+      </div>
+    `).join("")}
+
+    <hr>
+    <h3>Impostos / Custos adicionais</h3>
+
+    ${impostosCache.map(i=>`
+      <div class="ing">
+        <span><b>${i.descricao}</b> (${i.tipo})</span>
+        <strong>${moeda(i.valor)}</strong>
+      </div>
+    `).join("")}
+
+    <div style="margin-top:12px;display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px">
+      <input id="impDesc" placeholder="Descrição">
+      <select id="impTipo">
+        <option value="IMPOSTO">IMPOSTO</option>
+        <option value="CUSTO">CUSTO</option>
+      </select>
+      <input id="impValor" type="number" step="0.01" placeholder="Valor">
+    </div>
+
+    <button style="margin-top:12px" onclick="salvarImposto('${p.id}')">
+      ADICIONAR
+    </button>
   `;
 }
 
+/* ================= SALVAR IMPOSTO ================= */
+async function salvarImposto(buffetId){
+  const desc = impDesc.value.trim();
+  const tipo = impTipo.value;
+  const valor = Number(impValor.value||0);
+
+  if(!desc || valor <= 0){
+    alert("Preencha descrição e valor");
+    return;
+  }
+
+  const { error } = await sb
+    .from("impostos")
+    .insert({
+      buffet_id: buffetId,
+      descricao: desc,
+      tipo,
+      valor
+    });
+
+  if(error){
+    console.error(error);
+    alert("Erro ao salvar imposto");
+    return;
+  }
+
+  abrir(pratos.find(p=>p.id===buffetId));
+}
+
+/* ================= FECHAR ================= */
 function fechar(){
   modal.style.display = "none";
   document.body.style.overflow = "";
 }
+
+/* ================= INIT ================= */
+carregarPratos();
 </script>
 
 
