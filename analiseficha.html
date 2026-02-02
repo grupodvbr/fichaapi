@@ -942,15 +942,21 @@ setTimeout(() => {
   const mp = document.getElementById("modoPreparo");
   if (!mp) return;
 
+  const valorInicial = (p.modo_preparo || "").trim();
+
   mp.onblur = async () => {
-    const texto = mp.value.trim();
+    const textoAtual = mp.value.trim();
+
+    // ❌ não mudou → não salva
+    if (textoAtual === valorInicial) return;
 
     await sb
       .from("buffet")
-      .update({ modo_preparo: texto })
+      .update({ modo_preparo: textoAtual })
       .eq("id", pratoAtual.id);
   };
 }, 0);
+
 
   setTimeout(()=>{
     markupPerc.oninput = ()=>{
