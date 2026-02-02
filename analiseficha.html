@@ -173,22 +173,29 @@ async function abrir(f){
     return;
   }
 
-  // 2️⃣ BUSCA PRODUTOS
-  const ids = itens.map(i => i.produto_id);
+// 2️⃣ BUSCA PRODUTOS (COM PROTEÇÃO)
+let mapProdutos = {};
 
-  const { data: produtos, error: errProd } = await sb
-    .from("produtos")
-    .select("id, nome, valor")
-    .in("id", ids);
+if (itens.length > 0) {
+  const ids = itens
+    .map(i => i.produto_id)
+    .filter(id => id); // remove null/undefined
 
-  if(errProd){
-    console.error(errProd);
-    return;
+  if (ids.length > 0) {
+    const { data: produtos, error: errProd } = await sb
+      .from("produtos")
+      .select("id, nome, valor")
+      .in("id", ids);
+
+    if (errProd) {
+      console.error(errProd);
+      return;
+    }
+
+    produtos.forEach(p => mapProdutos[p.id] = p);
   }
+}
 
-  // 3️⃣ MAPA DE PRODUTOS
-  const mapProdutos = {};
-  produtos.forEach(p => mapProdutos[p.id] = p);
 
   // 4️⃣ CMV TOTAL
   const cmvTotal = itens.reduce((s, i) => {
