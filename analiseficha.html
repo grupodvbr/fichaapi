@@ -489,43 +489,102 @@ async function carregarPratos(){
   renderLista();
 }
 
+
+async function calcularCMVPercentual(prato){
+  if(!prato.preco_venda || prato.preco_venda <= 0) return null;
+
+  const { data: itens } = await sb
+    .from("buffet_itens")
+    .select("custo_calculado")
+    .eq("buffet_id", prato.id);
+
+  const cmvBase = (itens || []).reduce(
+    (s,i)=> s + Number(i.custo_calculado || 0), 0
+  );
+
+  const { data: impostos } = await sb
+    .from("impostos")
+    .select("modalidade, valor")
+    .eq("buffet_id", prato.id);
+
+  let totalImpostos = 0;
+
+  (impostos || []).forEach(i=>{
+    if(i.modalidade === "FIXO")
+      totalImpostos += Number(i.valor);
+
+    if(i.modalidade === "PERCENTUAL")
+      totalImpostos += (cmvBase * Number(i.valor)) / 100;
+  });
+
+  const cmvFinal = cmvBase + totalImpostos;
+
+  return (cmvFinal / prato.preco_venda) * 100;
+}
+
+
+
+
+
+
+
+
+
+   
 /* =====================================================
    LISTA
 ===================================================== */
-function renderLista(){
+async function renderLista(){
   cards.innerHTML = "";
 
   const nomeFiltro = (filtroNome.value || "").toUpperCase().trim();
   const tipoFiltro = filtroTipo.value;
 
-  pratos
-    .filter(p => {
-      const nomeOk =
-        !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
+  for(const p of pratos){
 
-      const tipoOk =
-        !tipoFiltro || p.tipo === tipoFiltro;
+    const nomeOk =
+      !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
 
-      return nomeOk && tipoOk;
-    })
-    .forEach(p => {
-      const c = document.createElement("div");
-      c.className = "card";
-      c.onclick = ()=>abrirModal(p);
+    const tipoOk =
+      !tipoFiltro || p.tipo === tipoFiltro;
 
-      c.innerHTML = `
-        ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
-        <div class="card-body">
-          <h3>${p.nome}</h3>
-          <span class="badge">${p.tipo || "-"}</span>
-          <span class="badge">CUSTO ${moeda(p.custo_unitario)}</span>
-          ${p.preco_venda ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>` : ``}
-        </div>
-      `;
-      cards.appendChild(c);
-    });
+    if(!nomeOk || !tipoOk) continue;
+
+    const cmvPerc = await calcularCMVPercentual(p);
+
+    const c = document.createElement("div");
+    c.className = "card";
+    c.onclick = ()=>abrirModal(p);
+
+    c.innerHTML = `
+      ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
+      <div class="card-body">
+
+        <h3>
+          ${p.nome}
+          ${cmvPerc !== null ? `
+            <span class="badge"
+              style="
+                background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
+                color:${cmvPerc > 35 ? '#991b1b' : '#166534'};
+                margin-left:6px">
+              CMV ${cmvPerc.toFixed(1)}%
+            </span>
+          ` : ``}
+        </h3>
+
+        <span class="badge">${p.tipo || "-"}</span>
+
+        ${p.preco_venda
+          ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>`
+          : ``}
+
+      </div>
+    `;
+
+    cards.appendChild(c);
+  }
 }
-
 
 /* =====================================================
    MODAL
