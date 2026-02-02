@@ -380,6 +380,45 @@ button{
   .modal-img{height:200px}
 }
 
+/* =========================================================
+   GRID MOBILE — 3 CARDS POR LINHA
+========================================================= */
+@media (max-width: 520px){
+  .grid{
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+    padding:12px;
+  }
+
+  .card{
+    border-radius:14px;
+  }
+
+  .card img{
+    height:90px;
+  }
+
+  .card-body{
+    padding:10px;
+  }
+
+  .card-body h3{
+    font-size:13px;
+    line-height:1.2;
+    margin-bottom:6px;
+  }
+
+  .badge{
+    font-size:10px;
+    padding:4px 8px;
+    margin:2px 4px 0 0;
+  }
+}
+@media (max-width: 360px){
+  .grid{
+    grid-template-columns:repeat(2, 1fr);
+  }
+}
 
 </style>
 </head>
