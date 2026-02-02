@@ -205,13 +205,16 @@ button{
   <input id="buscaIngrediente">
   <div id="listaIngrediente" class="lista"></div>
 
-  <div class="grid">
-    <input id="qtd" type="number" step="0.001" placeholder="QTD">
-    <input id="unUso" readonly placeholder="UN">
-    <input id="custo" readonly placeholder="CUSTO">
-    <input id="rend" readonly placeholder="REND %">
-    <button onclick="addIngrediente()">+</button>
-  </div>
+<div class="grid">
+  <input id="qtd" type="number" step="0.001" placeholder="QTD">
+  <input id="unUso" readonly placeholder="UN">
+  <input id="custo" readonly placeholder="CUSTO">
+  <input id="rend" readonly placeholder="REND %">
+  <button onclick="addIngrediente()">+</button>
+</div>
+
+<div id="ingredienteSelecionado" style="margin-top:8px;font-weight:800;color:#0f766e"></div>
+
 
   <div id="listaIng"></div>
 
@@ -309,10 +312,14 @@ async function selectIngrediente(id){
     rendimento:Number(data.rendimento_percentual||100)
   };
 
-  unUso.value=ingrediente.unidade;
-  custo.value=ingrediente.custo.toFixed(4);
-  rend.value=ingrediente.rendimento;
-  listaIngrediente.innerHTML="";
+unUso.value = ingrediente.unidade;
+custo.value = ingrediente.custo.toFixed(4);
+rend.value = ingrediente.rendimento;
+
+ingredienteSelecionado.textContent = ingrediente.nome;
+
+listaIngrediente.innerHTML = "";
+
 }
 
 function addIngrediente(){
@@ -337,6 +344,7 @@ qtd.value = "";
 unUso.value = "";
 custo.value = "";
 rend.value = "";
+ingredienteSelecionado.textContent = "";
 ingrediente = null;
 render();
 
@@ -466,7 +474,6 @@ hide();
 btnSalvar.disabled = false;
 ingredientes = [];
 toast("SALVO COM SUCESSO");
-setTimeout(()=>location.reload(),1200);
 
 
   }catch(err){
