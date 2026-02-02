@@ -415,43 +415,25 @@ const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
-let ingredientesBase = [];
-
-async function carregarIngredientesBase(){
-  const { data, error } = await sb
-    .from("produtos") // 👈 ajuste se o nome for outro
-    .select("*")
-    .order("nome");
-
-  if(error){
-    console.error(error);
-    alert("Erro ao carregar ingredientes");
-    return;
-  }
-
-  ingredientesBase = data;
-}
 
 const moeda = v =>
   "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
 /* ================= STATE ================= */
 let pratos = [];
+let ingredientesBase = [];
 let impostosCache = [];
 
-/* ================= LOAD PRATOS ================= */
+/* ================= LOAD BASE ================= */
+async function carregarIngredientesBase(){
+  const { data, error } = await sb.from("produtos").select("*").order("nome");
+  if(error) return alert("Erro ingredientes");
+  ingredientesBase = data;
+}
+
 async function carregarPratos(){
-  const { data, error } = await sb
-    .from("buffet")
-    .select("*")
-    .order("created_at",{ascending:false});
-
-  if(error){
-    console.error(error);
-    alert("Erro ao carregar pratos");
-    return;
-  }
-
+  const { data, error } = await sb.from("buffet").select("*").order("created_at",{ascending:false});
+  if(error) return alert("Erro pratos");
   pratos = data;
   renderLista();
 }
@@ -459,14 +441,13 @@ async function carregarPratos(){
 /* ================= FILTROS ================= */
 function renderLista(){
   cards.innerHTML = "";
-
-  const nomeFiltro = (filtroNome?.value || "").toUpperCase();
-  const tipoFiltro = filtroTipo?.value || "";
+  const nome = filtroNome.value.toUpperCase();
+  const tipo = filtroTipo.value;
 
   pratos
     .filter(p =>
-      (!nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro)) &&
-      (!tipoFiltro || p.tipo === tipoFiltro)
+      (!nome || p.nome.toUpperCase().includes(nome)) &&
+      (!tipo || p.tipo === tipo)
     )
     .forEach(renderCard);
 }
@@ -475,7 +456,7 @@ function renderLista(){
 function renderCard(p){
   const c = document.createElement("div");
   c.className = "card";
-  c.onclick = ()=>abrir(p);
+  c.onclick = () => abrir(p);
 
   c.innerHTML = `
     ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
@@ -483,7 +464,7 @@ function renderCard(p){
       <h3>${p.nome}</h3>
       <span class="badge">${p.tipo || "-"}</span>
       <span class="badge">CMV ${moeda(p.custo_unitario)}</span>
-      ${Number(p.preco_venda) > 0 ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>` : ``}
+      ${p.preco_venda ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>` : ``}
     </div>
   `;
   cards.appendChild(c);
@@ -491,414 +472,161 @@ function renderCard(p){
 
 /* ================= MODAL ================= */
 async function abrir(p){
-
-  if(!ingredientesBase || ingredientesBase.length === 0){
-    await carregarIngredientesBase();
-  }
-
-  document.body.style.overflow = "hidden";
   modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
   mFoto.src = p.foto_url || "";
 
-
-  /* INGREDIENTES */
-  const { data: itens } = await sb
-    .from("buffet_itens")
-    .select("*")
-    .eq("buffet_id", p.id);
-
+  const { data: itens } = await sb.from("buffet_itens").select("*").eq("buffet_id", p.id);
   const cmv = itens.reduce((s,i)=>s + Number(i.custo_calculado||0),0);
 
-  /* IMPOSTOS / CUSTOS */
-  const { data: impostos } = await sb
-    .from("impostos")
-    .select("*")
-    .eq("buffet_id", p.id);
-
+  const { data: impostos } = await sb.from("impostos").select("*").eq("buffet_id", p.id);
   impostosCache = impostos || [];
 
-let totalImpostos = 0;
+  let totalImpostos = 0;
+  impostosCache.forEach(i=>{
+    if(i.modalidade==="FIXO") totalImpostos += Number(i.valor);
+    if(i.modalidade==="PERCENTUAL") totalImpostos += (cmv * Number(i.valor))/100;
+  });
 
-impostosCache.forEach(i => {
-  const valor = Number(i.valor || 0);
-
-  if (i.modalidade === "FIXO") {
-    totalImpostos += valor;
-  }
-
-  if (i.modalidade === "PERCENTUAL") {
-    totalImpostos += (cmv * valor) / 100;
-  }
-});
-
-const cmvFinal = cmv + totalImpostos;
-
-// ativa cálculo automático do markup
-setTimeout(() => {
-  const mkInput = document.getElementById("markupPerc");
-  const precoInput = document.getElementById("precoSugerido");
-
-  if(mkInput && precoInput){
-    mkInput.oninput = () => {
-      const mk = Number(mkInput.value || 0);
-      const precoCalc = cmvFinal * (1 + mk / 100);
-      precoInput.value = moeda(precoCalc);
-    };
-  }
-}, 50);
-
-
-  
+  const cmvFinal = cmv + totalImpostos;
   const precoVenda = Number(p.preco_venda||0);
-  const lucro = precoVenda > 0 ? precoVenda - (cmv + totalImpostos) : 0;
-const margem =
-  precoVenda > 0 && lucro !== 0
-    ? (lucro / precoVenda) * 100
-    : 0;
+  const lucro = precoVenda ? precoVenda - cmvFinal : 0;
+  const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
 
   mBody.innerHTML = `
     <h2>${p.nome}</h2>
 
-    ${precoVenda > 0 ? `<p><b>Preço de venda:</b> ${moeda(precoVenda)}</p>` : ``}
+    ${precoVenda ? `<p><b>Preço:</b> ${moeda(precoVenda)}</p>` : ``}
     <p><b>CMV:</b> ${moeda(cmv)}</p>
-    <p><b>Impostos / Custos:</b> ${moeda(totalImpostos)}</p>
-<hr>
-<h3>Precificação (Markup)</h3>
+    <p><b>Impostos:</b> ${moeda(totalImpostos)}</p>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center">
-  <input id="markupPerc"
-         type="number"
-         step="1"
-         placeholder="Markup (%)">
+    <hr>
+    <h3>Precificação</h3>
 
-  <input id="precoSugerido"
-         readonly
-         placeholder="Preço sugerido">
-</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <input id="markupPerc" type="number" placeholder="Markup %">
+      <input id="precoSugerido" readonly placeholder="Preço sugerido">
+    </div>
 
-<button class="btn-add"
-        style="margin-top:10px"
-        onclick="salvarPrecoVenda('${p.id}')">
-  SALVAR PREÇO DE VENDA
-</button>
+    <button class="btn-add" style="margin-top:10px"
+      onclick="salvarPrecoVenda('${p.id}', ${cmvFinal})">
+      SALVAR PREÇO
+    </button>
 
-    ${precoVenda > 0 ? `
+    ${precoVenda ? `
       <p><b>Lucro:</b> ${moeda(lucro)}</p>
       <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
-    ` : `
-      <p style="color:#dc2626;font-weight:700">
-        ⚠️ Preço de venda não cadastrado
-      </p>
-    `}
+    ` : `<p style="color:red">Preço não definido</p>`}
 
-<hr>
-<h3>Ingredientes</h3>
+    <hr>
+    <h3>Ingredientes</h3>
 
-<div class="lista-ingredientes">
-  ${itens.map(i=>`
-    <div class="ing">
-      <span>
-        <b>${i.nome}</b><br>
-        <small>${i.quantidade} ${i.unidade_uso}</small>
-      </span>
-
-      <strong>${moeda(i.custo_calculado)}</strong>
-
-      <div style="display:flex;gap:6px">
-        <button class="btn-icon btn-edit"
-                onclick="editarIngrediente('${i.id}','${p.id}')">
-          ✏️
-        </button>
-
-        <button class="btn-icon btn-delete"
-                onclick="excluirIngrediente('${i.id}','${p.id}')">
-          🗑️
-        </button>
+    ${itens.map(i=>`
+      <div class="ing">
+        <span><b>${i.nome}</b><br><small>${i.quantidade} ${i.unidade_uso}</small></span>
+        <strong>${moeda(i.custo_calculado)}</strong>
+        <div>
+          <button class="btn-icon btn-edit" onclick="editarIngrediente('${i.id}','${p.id}')">✏️</button>
+          <button class="btn-icon btn-delete" onclick="excluirIngrediente('${i.id}','${p.id}')">🗑️</button>
+        </div>
       </div>
-    </div>
-  `).join("")}
-</div>
-
-<div class="precificacao">
-  <h3>Adicionar / Editar ingrediente</h3>
-
-  <select id="ingProduto">
-    <option value="">Selecione o ingrediente</option>
-    ${ingredientesBase.map(p=>`
-      <option value="${p.id}"
-              data-custo="${p.custo_unitario}"
-              data-unidade="${p.unidade_padrao}">
-        ${p.nome}
-      </option>
     `).join("")}
-  </select>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-    <input id="ingQtd" type="number" step="0.001" placeholder="Quantidade usada">
-    <input id="ingUnidade" placeholder="Unidade" readonly>
-  </div>
+    <hr>
+    <h3>Novo Ingrediente</h3>
 
-  <button id="btnIngrediente"
-          class="btn-add"
-          style="margin-top:12px"
-          onclick="salvarIngrediente('${p.id}')">
-    SALVAR INGREDIENTE
-  </button>
-</div>
+    <select id="ingProduto">
+      <option value="">Selecione</option>
+      ${ingredientesBase.map(i=>`
+        <option value="${i.id}" data-unidade="${i.unidade_padrao}">
+          ${i.nome}
+        </option>
+      `).join("")}
+    </select>
 
-            </div>
-          `;
-        }).join("")
-  }
-</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <input id="ingQtd" type="number" step="0.001" placeholder="Qtd">
+      <input id="ingUnidade" readonly>
+    </div>
 
-
+    <button id="btnIngrediente" class="btn-add"
+      onclick="salvarIngrediente('${p.id}')">
+      SALVAR INGREDIENTE
+    </button>
   `;
-}
-async function salvarImposto(buffetId){
-  const desc = impDesc.value.trim();
-  const tipo = impTipo.value;
-  const modalidade = impModalidade.value;
-  const valor = Number(impValor.value || 0);
 
-  if(!desc || valor <= 0){
-    alert("Preencha descrição e valor");
-    return;
-  }
-
-  const { error } = await sb
-    .from("impostos")
-    .insert({
-      buffet_id: buffetId,
-      descricao: desc,
-      tipo,
-      modalidade,
-      valor
-    });
-
-  if(error){
-    console.error("ERRO IMPOSTO:", error);
-    alert(error.message);
-    return;
-  }
-
-  // limpa campos
-  impDesc.value = "";
-  impValor.value = "";
-
-  // recarrega modal
-  abrir(pratos.find(p => p.id === buffetId));
-}
-async function excluirImposto(impostoId, buffetId){
-  if(!confirm("Deseja excluir este custo/imposto?")) return;
-
-  const { error } = await sb
-    .from("impostos")
-    .delete()
-    .eq("id", impostoId);
-
-  if(error){
-    console.error(error);
-    alert("Erro ao excluir");
-    return;
-  }
-
-  abrir(pratos.find(p => p.id === buffetId));
-}
-async function editarImposto(impostoId, buffetId){
-  const imposto = impostosCache.find(i => i.id === impostoId);
-  if(!imposto) return;
-
-  impDesc.value = imposto.descricao;
-  impTipo.value = imposto.tipo;
-  impModalidade.value = imposto.modalidade;
-  impValor.value = imposto.valor;
-
-  // muda botão para salvar edição
-  const btn = document.querySelector(".btn-add");
-  btn.innerText = "SALVAR";
-  btn.onclick = async () => {
-    const desc = impDesc.value.trim();
-    const tipo = impTipo.value;
-    const modalidade = impModalidade.value;
-    const valor = Number(impValor.value || 0);
-
-    if(!desc || valor <= 0){
-      alert("Preencha descrição e valor");
-      return;
-    }
-
-    const { error } = await sb
-      .from("impostos")
-      .update({
-        descricao: desc,
-        tipo,
-        modalidade,
-        valor
-      })
-      .eq("id", impostoId);
-
-    if(error){
-      console.error(error);
-      alert("Erro ao atualizar");
-      return;
-    }
-
-    // restaura botão
-    btn.innerText = "ADICIONAR";
-    btn.onclick = () => salvarImposto(buffetId);
-
-    impDesc.value = "";
-    impValor.value = "";
-
-    abrir(pratos.find(p => p.id === buffetId));
-  };
+  setTimeout(()=>{
+    const mk = document.getElementById("markupPerc");
+    const pr = document.getElementById("precoSugerido");
+    mk.oninput = ()=>{
+      pr.value = moeda(cmvFinal * (1 + Number(mk.value||0)/100));
+    };
+  },50);
 }
 
-/* ================= FECHAR ================= */
-function fechar(){
-  modal.style.display = "none";
-  document.body.style.overflow = "";
+/* ================= PREÇO ================= */
+async function salvarPrecoVenda(buffetId, cmvFinal){
+  const mk = Number(markupPerc.value||0);
+  if(mk<=0) return alert("Markup inválido");
+
+  const preco = cmvFinal * (1 + mk/100);
+
+  await sb.from("buffet").update({preco_venda:preco}).eq("id",buffetId);
+  await carregarPratos();
+  abrir(pratos.find(p=>p.id===buffetId));
+}
+
+/* ================= INGREDIENTES ================= */
+async function salvarIngrediente(buffetId){
+  const prodId = ingProduto.value;
+  const qtd = Number(ingQtd.value||0);
+  if(!prodId||qtd<=0) return;
+
+  const prod = ingredientesBase.find(p=>p.id===prodId);
+  await sb.from("buffet_itens").insert({
+    buffet_id: buffetId,
+    produto_id: prod.id,
+    nome: prod.nome,
+    quantidade: qtd,
+    unidade_uso: prod.unidade_padrao,
+    custo_unitario: prod.custo_unitario,
+    custo_calculado: prod.custo_unitario * qtd
+  });
+
+  abrir(pratos.find(p=>p.id===buffetId));
+}
+
+async function editarIngrediente(id,buffetId){
+  const {data} = await sb.from("buffet_itens").select("*").eq("id",id).single();
+  ingProduto.value = data.produto_id;
+  ingQtd.value = data.quantidade;
+}
+
+async function excluirIngrediente(id,buffetId){
+  await sb.from("buffet_itens").delete().eq("id",id);
+  abrir(pratos.find(p=>p.id===buffetId));
 }
 
 /* ================= INIT ================= */
-(async () => {
+(async ()=>{
   await carregarIngredientesBase();
   await carregarPratos();
 })();
 
-/* ================= AUTO UNIDADE ================= */
-document.addEventListener("change", function(e){
-  if(e.target && e.target.id === "ingProduto"){
-    const opt = e.target.selectedOptions?.[0];
-
-    const unidadeInput = document.getElementById("ingUnidade");
-
-    if(!opt || !opt.dataset || !opt.dataset.unidade){
-      unidadeInput.value = "";
-      return;
-    }
-
-    unidadeInput.value = opt.dataset.unidade;
+/* ================= UNIDADE AUTO ================= */
+document.addEventListener("change",e=>{
+  if(e.target.id==="ingProduto"){
+    const opt = e.target.selectedOptions[0];
+    ingUnidade.value = opt?.dataset.unidade || "";
   }
 });
 
-
-
-/* ================= SALVAR INGREDIENTE ================= */
-async function salvarIngrediente(buffetId){
-  const produtoId = ingProduto.value;
-  const qtd = Number(ingQtd.value || 0);
-
-  if(!produtoId || qtd <= 0){
-    alert("Selecione o ingrediente e informe a quantidade");
-    return;
-  }
-
-  const produto = ingredientesBase.find(p => p.id === produtoId);
-  const custoUnit = Number(produto.custo_unitario);
-  const custoCalc = custoUnit * qtd;
-
-  const { error } = await sb
-    .from("buffet_itens")
-    .insert({
-      buffet_id: buffetId,
-      produto_id: produto.id,
-      nome: produto.nome,
-      quantidade: qtd,
-      unidade_uso: produto.unidade_padrao,
-      custo_unitario: custoUnit,
-      custo_calculado: custoCalc
-    });
-
-  if(error){
-    console.error(error);
-    alert("Erro ao salvar ingrediente");
-    return;
-  }
-
-  ingProduto.value = "";
-  ingQtd.value = "";
-  ingUnidade.value = "";
-
-  abrir(pratos.find(p => p.id === buffetId));
+function fechar(){
+  modal.style.display="none";
+  document.body.style.overflow="";
 }
-
-/* ================= EDITAR INGREDIENTE ================= */
-async function editarIngrediente(itemId, buffetId){
-  const { data, error } = await sb
-    .from("buffet_itens")
-    .select("*")
-    .eq("id", itemId)
-    .single();
-
-  if(error){
-    console.error(error);
-    return;
-  }
-
-  ingProduto.value = data.produto_id;
-  ingQtd.value = data.quantidade;
-  ingUnidade.value = data.unidade_uso;
-
-  const btn = document.getElementById("btnIngrediente");
-  btn.innerText = "ATUALIZAR INGREDIENTE";
-
-  btn.onclick = async () => {
-    const qtd = Number(ingQtd.value || 0);
-    if(qtd <= 0){
-      alert("Quantidade inválida");
-      return;
-    }
-
-    const produto = ingredientesBase.find(p => p.id === ingProduto.value);
-    const custoCalc = produto.custo_unitario * qtd;
-
-    const { error } = await sb
-      .from("buffet_itens")
-      .update({
-        quantidade: qtd,
-        custo_calculado: custoCalc
-      })
-      .eq("id", itemId);
-
-    if(error){
-      console.error(error);
-      alert("Erro ao atualizar ingrediente");
-      return;
-    }
-
-    btn.innerText = "SALVAR INGREDIENTE";
-    btn.onclick = () => salvarIngrediente(buffetId);
-
-    ingProduto.value = "";
-    ingQtd.value = "";
-    ingUnidade.value = "";
-
-    abrir(pratos.find(p => p.id === buffetId));
-  };
-}
-
-/* ================= EXCLUIR INGREDIENTE ================= */
-async function excluirIngrediente(itemId, buffetId){
-  if(!confirm("Excluir este ingrediente do prato?")) return;
-
-  const { error } = await sb
-    .from("buffet_itens")
-    .delete()
-    .eq("id", itemId);
-
-  if(error){
-    console.error(error);
-    alert("Erro ao excluir ingrediente");
-    return;
-  }
-
-  abrir(pratos.find(p => p.id === buffetId));
-}
-
-  
 </script>
+
 
 
 </body>
