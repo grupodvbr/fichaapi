@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Análise de Fichas Técnicas • CMV</title>
+<title>CMV • Fichas Técnicas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -11,77 +11,38 @@
 <style>
 :root{
   --primary:#2563eb;
-  --primary-dark:#1e40af;
-  --success:#16a34a;
   --danger:#dc2626;
+  --success:#16a34a;
   --bg:#f8fafc;
-  --card:#ffffff;
-  --text:#0f172a;
+  --card:#fff;
 }
 *{box-sizing:border-box}
-body{
-  margin:0;
-  background:var(--bg);
-  font-family:Inter,sans-serif;
-  color:var(--text);
-}
+body{margin:0;font-family:Inter;background:var(--bg)}
 
-/* FILTROS */
-.filters{
-  display:grid;
-  grid-template-columns:2fr 1fr auto;
-  gap:14px;
-  padding:22px;
-}
-.filters input,.filters select{
-  padding:14px 16px;
-  border-radius:16px;
-  border:1px solid #cbd5e1;
-  font-weight:600;
-}
-.filters button{
-  background:linear-gradient(180deg,var(--primary),var(--primary-dark));
-  border:none;
-  color:#fff;
-  font-weight:800;
-  border-radius:16px;
-  padding:14px 18px;
-  cursor:pointer;
-}
-
-/* GRID */
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-  gap:22px;
-  padding:0 22px 40px;
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:20px;
+  padding:20px;
 }
 
-/* CARD */
 .card{
   background:var(--card);
-  border-radius:24px;
-  box-shadow:0 20px 45px rgba(0,0,0,.08);
+  border-radius:20px;
+  box-shadow:0 15px 35px rgba(0,0,0,.08);
   overflow:hidden;
-  display:flex;
-  flex-direction:column;
 }
-.card img{
-  width:100%;
-  height:180px;
-  object-fit:cover;
-}
-.card-body{padding:18px}
-.card h3{margin:0;font-size:18px;font-weight:800}
+.card img{width:100%;height:180px;object-fit:cover}
+.body{padding:16px}
 
 .badge{
   display:inline-block;
-  margin:6px 6px 6px 0;
   background:#e0f2fe;
   padding:6px 12px;
   border-radius:999px;
   font-size:12px;
   font-weight:700;
+  margin-right:6px;
 }
 
 .ing{
@@ -91,163 +52,167 @@ body{
   margin-top:6px;
 }
 
-.lucro{
-  margin-top:14px;
-  padding:10px;
-  border-radius:14px;
-  text-align:center;
-  font-weight:900;
-}
-.lucro.pos{background:#dcfce7;color:#166534}
-.lucro.neg{background:#fee2e2;color:#991b1b}
-
-.card button{
-  margin-top:16px;
-  padding:12px;
-  border-radius:16px;
+button{
   border:none;
-  background:linear-gradient(180deg,var(--primary),var(--primary-dark));
-  color:#fff;
+  border-radius:12px;
+  padding:10px 14px;
   font-weight:800;
   cursor:pointer;
+}
+.btn-edit{background:var(--primary);color:#fff}
+.btn-del{background:var(--danger);color:#fff}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.modal-box{
+  background:#fff;
+  width:100%;
+  max-width:520px;
+  border-radius:20px;
+  padding:20px;
+}
+.modal-box h2{margin-top:0}
+.modal-box input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #cbd5e1;
+  margin-bottom:10px;
+}
+.row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  align-items:center;
 }
 </style>
 </head>
 
 <body>
 
-<!-- FILTROS -->
-<div class="filters">
-  <input id="fNome" placeholder="🔍 Buscar prato" oninput="filtrar()">
-  <select id="fTipo" onchange="filtrar()">
-    <option value="">Todos os tipos</option>
-    <option>PRATO PRINCIPAL</option>
-    <option>ENTRADA</option>
-    <option>SOBREMESA</option>
-    <option>DRINK</option>
-    <option>SUSHI</option>
-    <option>ACOMPANHAMENTO</option>
-  </select>
-  <button onclick="location.href='cadastro.html'">+ Nova ficha</button>
-</div>
-
-<!-- CARDS -->
 <div id="cards" class="grid"></div>
 
+<!-- MODAL EDIÇÃO -->
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <h2>Editar ficha</h2>
+
+    <input id="e_nome" placeholder="Nome">
+    <input id="e_preco" placeholder="Preço de venda">
+    <input id="e_tipo" placeholder="Tipo">
+
+    <h3>Ingredientes</h3>
+    <div id="itens"></div>
+
+    <button class="btn-edit" onclick="salvar()">Salvar</button>
+    <button class="btn-del" onclick="fechar()">Cancelar</button>
+  </div>
+</div>
+
 <script>
-/* ================= SUPABASE ================= */
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-const moeda = v =>
-  "R$ " + Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+let fichaAtual = null;
 
-let fichas = [];
-
-/* ================= LOAD FICHAS ================= */
-(async () => {
-  const { data, error } = await sb
-    .from("buffet")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    alert("Erro ao carregar fichas");
-    console.error(error);
-    return;
-  }
-
-  fichas = data || [];
-  filtrar();
-})();
-
-/* ================= FILTRO ================= */
-function filtrar() {
+async function load(){
+  const { data } = await sb.from("buffet").select("*");
   cards.innerHTML = "";
-
-  const filtradas = fichas.filter(f =>
-    (!fNome.value || f.nome.toLowerCase().includes(fNome.value.toLowerCase())) &&
-    (!fTipo.value || f.tipo === fTipo.value)
-  );
-
-  filtradas.forEach(renderCard);
+  data.forEach(render);
 }
 
-/* ================= CMV ================= */
-function calcularCustoItem(item) {
-  if (!item.produtos || !item.produtos.valor) return 0;
-
-  const qtd = Number(item.quantidade || 0);
-  const preco = Number(item.produtos.valor || 0);
-  const unidade = item.produtos.unidade_medida;
-
-  if (unidade === "ML" || unidade === "G") {
-    return (qtd / 1000) * preco;
-  }
-
-  return qtd * preco;
-}
-
-/* ================= CARD ================= */
-async function renderCard(f) {
-  const { data: itens, error } = await sb
+async function render(f){
+  const { data: itens } = await sb
     .from("buffet_itens")
-    .select(`
-      quantidade,
-      produtos (
-        nome,
-        valor,
-        unidade_medida
-      )
-    `)
+    .select("*")
     .eq("buffet_id", f.id);
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  const rendimento = Number(f.rendimento || 1);
-
-  let custoTotal = 0;
-  itens.forEach(i => custoTotal += calcularCustoItem(i));
-
-  const custoPorPorcao = custoTotal / rendimento;
-  const lucro = (f.preco_venda || 0) - custoPorPorcao;
 
   const c = document.createElement("div");
   c.className = "card";
-
   c.innerHTML = `
     ${f.foto_url ? `<img src="${f.foto_url}">` : ``}
-    <div class="card-body">
+    <div class="body">
       <h3>${f.nome}</h3>
-
       <span class="badge">${f.tipo}</span>
-      <span class="badge">Venda ${moeda(f.preco_venda)}</span>
-      <span class="badge">CMV ${moeda(custoPorPorcao)}</span>
+      <span class="badge">Venda R$ ${f.preco_venda}</span>
+      <span class="badge">CMV R$ ${f.custo_unitario}</span>
 
-      ${itens.slice(0,3).map(i => `
+      ${itens.map(i=>`
         <div class="ing">
-          <span>${i.produtos.nome}</span>
-          <strong>${moeda(calcularCustoItem(i) / rendimento)}</strong>
+          <span>${i.nome}</span>
+          <strong>R$ ${i.custo_calculado}</strong>
         </div>
       `).join("")}
 
-      ${itens.length > 3 ? `<small>+${itens.length - 3} ingredientes</small>` : ``}
-
-      <div class="lucro ${lucro >= 0 ? 'pos' : 'neg'}">
-        Lucro ${moeda(lucro)}
-      </div>
-
-      <button onclick="alert('Edição futura')">Editar ficha</button>
+      <br>
+      <button class="btn-edit" onclick='editar(${JSON.stringify(f)})'>Editar</button>
+      <button class="btn-del" onclick="excluir('${f.id}')">Excluir</button>
     </div>
   `;
-
   cards.appendChild(c);
 }
+
+async function editar(f){
+  fichaAtual = f;
+  modal.style.display = "flex";
+
+  e_nome.value = f.nome;
+  e_preco.value = f.preco_venda;
+  e_tipo.value = f.tipo;
+
+  const { data } = await sb
+    .from("buffet_itens")
+    .select("*")
+    .eq("buffet_id", f.id);
+
+  itens.innerHTML = "";
+  data.forEach(i=>{
+    itens.innerHTML += `
+      <div class="row">
+        <input value="${i.nome}">
+        <button class="btn-del" onclick="delItem('${i.id}')">X</button>
+      </div>
+    `;
+  });
+}
+
+async function salvar(){
+  await sb.from("buffet")
+    .update({
+      nome: e_nome.value,
+      preco_venda: e_preco.value,
+      tipo: e_tipo.value
+    })
+    .eq("id", fichaAtual.id);
+
+  fechar();
+  load();
+}
+
+async function excluir(id){
+  if(!confirm("Excluir ficha?")) return;
+  await sb.from("buffet").delete().eq("id", id);
+  load();
+}
+
+async function delItem(id){
+  await sb.from("buffet_itens").delete().eq("id", id);
+  editar(fichaAtual);
+}
+
+function fechar(){
+  modal.style.display = "none";
+}
+
+load();
 </script>
 
 </body>
