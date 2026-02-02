@@ -155,6 +155,8 @@ function renderCard(f){
 
 /* ================= MODAL ================= */
 async function abrir(f){
+  console.log("PRATO ABERTO:", f.nome, f.id);
+
   modal.style.display = "flex";
   mFoto.src = f.foto_url || "";
 
@@ -163,13 +165,17 @@ async function abrir(f){
     .select("*")
     .eq("buffet_id", f.id);
 
-  if(error){
-    console.error(error);
+  if (error) {
+    console.error("ERRO ITENS:", error);
     return;
   }
 
+  if (!itens.length) {
+    console.warn("⚠️ PRATO SEM INGREDIENTES:", f.nome, f.id);
+  }
+
   const cmvTotal = itens.reduce(
-    (s,i)=> s + Number(i.custo_calculado || 0),
+    (s,i)=>s + Number(i.custo_calculado || 0),
     0
   );
 
@@ -177,16 +183,18 @@ async function abrir(f){
 
   mBody.innerHTML = `
     <h2>${f.nome}</h2>
-    <p><b>Tipo:</b> ${f.tipo || "-"}</p>
-    <p><b>Preço de venda:</b> ${moeda(f.preco_venda)}</p>
-    <p><b>CMV total:</b> ${moeda(cmvTotal)}</p>
+    <p><b>ID do prato:</b> ${f.id}</p>
+    <p><b>Preço:</b> ${moeda(f.preco_venda)}</p>
+    <p><b>CMV:</b> ${moeda(cmvTotal)}</p>
 
     <hr>
     <h3>Ingredientes</h3>
 
     ${
       itens.length === 0
-        ? `<p style="opacity:.6">Nenhum ingrediente vinculado.</p>`
+        ? `<p style="color:#dc2626;font-weight:700">
+             Nenhum ingrediente encontrado para este ID.
+           </p>`
         : itens.map(i=>`
             <div class="ing">
               <span>
