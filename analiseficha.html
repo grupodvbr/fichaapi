@@ -813,50 +813,21 @@ async function salvarPrecoVenda(buffetId){
 
   abrir(prato);
 }
-let ingredientesBase = [];
-
-async function carregarIngredientesBase(){
-  const { data, error } = await sb
-    .from("produtos") // 👈 ajuste se o nome for outro
-    .select("*")
-    .order("nome");
-
-  if(error){
-    console.error(error);
-    alert("Erro ao carregar ingredientes");
-    return;
-  }
-
-  ingredientesBase = data;
-}
-/* ================= INGREDIENTES BASE ================= */
-let ingredientesBase = [];
-
-async function carregarIngredientesBase(){
-  const { data, error } = await sb
-    .from("produtos") // ajuste se necessário
-    .select("*")
-    .order("nome");
-
-  if(error){
-    console.error(error);
-    alert("Erro ao carregar ingredientes");
-    return;
-  }
-
-  ingredientesBase = data;
-}
-
-carregarIngredientesBase();
 
 /* ================= AUTO UNIDADE ================= */
-document.addEventListener("change", e=>{
-  if(e.target.id === "ingProduto"){
+document.addEventListener("change", function(e){
+  if(e.target && e.target.id === "ingProduto"){
     const opt = e.target.selectedOptions[0];
-    if(!opt) return;
-    ingUnidade.value = opt.dataset.unidade || "";
+
+    if(!opt || !opt.dataset.unidade){
+      ingUnidade.value = "";
+      return;
+    }
+
+    ingUnidade.value = opt.dataset.unidade;
   }
 });
+
 
 /* ================= SALVAR INGREDIENTE ================= */
 async function salvarIngrediente(buffetId){
