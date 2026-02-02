@@ -811,19 +811,13 @@ async function salvarPrecoVenda(buffetId){
     0
   );
 
-  /* 2️⃣ IMPOSTOS SOBRE O CMV REAL */
+  /* 2️⃣ IMPOSTOS */
   let totalImpostos = 0;
 
   impostosCache.forEach(i => {
     const valor = Number(i.valor || 0);
-
-    if(i.modalidade === "FIXO"){
-      totalImpostos += valor;
-    }
-
-    if(i.modalidade === "PERCENTUAL"){
-      totalImpostos += (cmvBase * valor) / 100;
-    }
+    if(i.modalidade === "FIXO") totalImpostos += valor;
+    if(i.modalidade === "PERCENTUAL") totalImpostos += (cmvBase * valor) / 100;
   });
 
   const cmvFinal = cmvBase + totalImpostos;
@@ -831,7 +825,7 @@ async function salvarPrecoVenda(buffetId){
   /* 3️⃣ PREÇO DE VENDA */
   const precoVenda = cmvFinal * (1 + mk / 100);
 
-  /* 4️⃣ SALVA NO BANCO */
+  /* 4️⃣ SALVA */
   const { error } = await sb
     .from("buffet")
     .update({ preco_venda: precoVenda })
@@ -843,7 +837,7 @@ async function salvarPrecoVenda(buffetId){
     return;
   }
 
-  /* 5️⃣ RECARREGA UI */
+  /* 5️⃣ ATUALIZA UI */
   await carregarPratos();
   abrir(pratos.find(p => p.id === buffetId));
 }
