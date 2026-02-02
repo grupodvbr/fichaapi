@@ -462,23 +462,37 @@ async function carregarPratos(){
 function renderLista(){
   cards.innerHTML = "";
 
-  pratos.forEach(p=>{
-    const c = document.createElement("div");
-    c.className = "card";
-    c.onclick = ()=>abrirModal(p);
+  const nomeFiltro = (filtroNome.value || "").toUpperCase().trim();
+  const tipoFiltro = filtroTipo.value;
 
-    c.innerHTML = `
-      ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
-      <div class="card-body">
-        <h3>${p.nome}</h3>
-        <span class="badge">${p.tipo || "-"}</span>
-        <span class="badge">CMV ${moeda(p.custo_unitario)}</span>
-        ${p.preco_venda ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>` : ``}
-      </div>
-    `;
-    cards.appendChild(c);
-  });
+  pratos
+    .filter(p => {
+      const nomeOk =
+        !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
+
+      const tipoOk =
+        !tipoFiltro || p.tipo === tipoFiltro;
+
+      return nomeOk && tipoOk;
+    })
+    .forEach(p => {
+      const c = document.createElement("div");
+      c.className = "card";
+      c.onclick = ()=>abrirModal(p);
+
+      c.innerHTML = `
+        ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
+        <div class="card-body">
+          <h3>${p.nome}</h3>
+          <span class="badge">${p.tipo || "-"}</span>
+          <span class="badge">CMV ${moeda(p.custo_unitario)}</span>
+          ${p.preco_venda ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>` : ``}
+        </div>
+      `;
+      cards.appendChild(c);
+    });
 }
+
 
 /* =====================================================
    MODAL
@@ -796,6 +810,13 @@ async function editarIngrediente(itemId){
     abrirModal(pratoAtual);
   };
 }
+filtroNome.addEventListener("input", () => {
+  renderLista();
+});
+
+filtroTipo.addEventListener("change", () => {
+  renderLista();
+});
 
 </script>
 
