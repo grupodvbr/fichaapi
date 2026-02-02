@@ -381,10 +381,25 @@ async function abrir(p){
 
   impostosCache = impostos || [];
 
-  const totalImpostos = impostosCache.reduce((s,i)=>s + Number(i.valor||0),0);
+let totalImpostos = 0;
+
+impostosCache.forEach(i => {
+  const valor = Number(i.valor || 0);
+
+  if (i.modalidade === "FIXO") {
+    totalImpostos += valor;
+  }
+
+  if (i.modalidade === "PERCENTUAL") {
+    totalImpostos += (cmv * valor) / 100;
+  }
+});
   const precoVenda = Number(p.preco_venda||0);
   const lucro = precoVenda > 0 ? precoVenda - (cmv + totalImpostos) : 0;
-  const margem = precoVenda > 0 ? (lucro / precoVenda) * 100 : 0;
+const margem =
+  precoVenda > 0 && lucro !== 0
+    ? (lucro / precoVenda) * 100
+    : 0;
 
   mBody.innerHTML = `
     <h2>${p.nome}</h2>
@@ -421,30 +436,49 @@ async function abrir(p){
     ${impostosCache.map(i=>`
       <div class="ing">
         <span><b>${i.descricao}</b> (${i.tipo})</span>
-        <strong>${moeda(i.valor)}</strong>
+${impostosCache.map(i=>{
+  const exibicao =
+    i.modalidade === "PERCENTUAL"
+      ? moeda((cmv * i.valor) / 100) + ` (${i.valor}%)`
+      : moeda(i.valor);
+
+  return `
+    <div class="ing">
+      <span><b>${i.descricao}</b> (${i.tipo})</span>
+      <strong>${exibicao}</strong>
+    </div>
+  `;
+}).join("")}
       </div>
     `).join("")}
 
-    <div style="margin-top:12px;display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px">
-      <input id="impDesc" placeholder="Descrição">
-      <select id="impTipo">
-        <option value="IMPOSTO">IMPOSTO</option>
-        <option value="CUSTO">CUSTO</option>
-      </select>
-      <input id="impValor" type="number" step="0.01" placeholder="Valor">
-    </div>
+<div style="margin-top:12px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px">
+  <input id="impDesc" placeholder="Descrição">
 
-    <button style="margin-top:12px" onclick="salvarImposto('${p.id}')">
-      ADICIONAR
-    </button>
+  <select id="impTipo">
+    <option value="IMPOSTO">IMPOSTO</option>
+    <option value="CUSTO">CUSTO</option>
+  </select>
+
+  <select id="impModalidade">
+    <option value="FIXO">VALOR FIXO</option>
+    <option value="PERCENTUAL">PERCENTUAL (%)</option>
+  </select>
+
+  <input id="impValor" type="number" step="0.01" placeholder="Valor">
+</div>
+
+<button style="margin-top:12px" onclick="salvarImposto('${p.id}')">
+  ADICIONAR
+</button>
+
   `;
 }
-
-/* ================= SALVAR IMPOSTO ================= */
 async function salvarImposto(buffetId){
   const desc = impDesc.value.trim();
   const tipo = impTipo.value;
-  const valor = Number(impValor.value||0);
+  const modalidade = impModalidade.value;
+  const valor = Number(impValor.value || 0);
 
   if(!desc || valor <= 0){
     alert("Preencha descrição e valor");
@@ -457,16 +491,22 @@ async function salvarImposto(buffetId){
       buffet_id: buffetId,
       descricao: desc,
       tipo,
+      modalidade,
       valor
     });
 
   if(error){
-    console.error(error);
-    alert("Erro ao salvar imposto");
+    console.error("ERRO IMPOSTO:", error);
+    alert(error.message);
     return;
   }
 
-  abrir(pratos.find(p=>p.id===buffetId));
+  // limpa campos
+  impDesc.value = "";
+  impValor.value = "";
+
+  // recarrega modal
+  abrir(pratos.find(p => p.id === buffetId));
 }
 
 /* ================= FECHAR ================= */
