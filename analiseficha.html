@@ -232,12 +232,57 @@ body{
     grid-column:2;
   }
 }
+/* ================= FILTROS ================= */
+.filters{
+  display:flex;
+  gap:14px;
+  padding:22px 22px 0;
+  flex-wrap:wrap;
+}
+
+.filters input,
+.filters select{
+  padding:14px 18px;
+  border-radius:999px;
+  border:1px solid #e5e7eb;
+  font-size:14px;
+  font-weight:600;
+  outline:none;
+  background:#fff;
+}
+
+.filters input{
+  flex:1;
+  min-width:220px;
+}
+
+.filters select{
+  min-width:180px;
+}
+
+.filters input:focus,
+.filters select:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
 
   
 </style>
 </head>
 
 <body>
+<div class="filters">
+  <input id="filtroNome" type="text" placeholder="Buscar por nome do prato">
+  <select id="filtroTipo">
+    <option value="">Todos os tipos</option>
+    <option value="SUSHI">SUSHI</option>
+    <option value="DRINK">DRINK</option>
+    <option value="ENTRADA">ENTRADA</option>
+    <option value="PRATO PRINCIPAL">PRATO PRINCIPAL</option>
+    <option value="SOBREMESA">SOBREMESA</option>
+    <option value="ACOMPANHAMENTO">ACOMPANHAMENTO</option>
+  </select>
+</div>
 
 <div id="cards" class="grid"></div>
 
@@ -260,6 +305,8 @@ const sb = supabase.createClient(
 const moeda = v =>
   "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
+let pratos = [];
+
 /* ================= LOAD PRATOS ================= */
 (async ()=>{
   const { data, error } = await sb
@@ -273,8 +320,32 @@ const moeda = v =>
     return;
   }
 
-  data.forEach(renderCard);
+  pratos = data;
+  aplicarFiltro();
 })();
+
+/* ================= FILTRO ================= */
+filtroNome.oninput = aplicarFiltro;
+filtroTipo.onchange = aplicarFiltro;
+
+function aplicarFiltro(){
+  const nome = filtroNome.value.toLowerCase().trim();
+  const tipo = filtroTipo.value;
+
+  const filtrados = pratos.filter(p=>{
+    const matchNome = p.nome.toLowerCase().includes(nome);
+    const matchTipo = !tipo || p.tipo === tipo;
+    return matchNome && matchTipo;
+  });
+
+  renderLista(filtrados);
+}
+
+/* ================= RENDER LISTA ================= */
+function renderLista(lista){
+  cards.innerHTML = "";
+  lista.forEach(renderCard);
+}
 
 /* ================= CARD ================= */
 function renderCard(f){
@@ -287,7 +358,6 @@ function renderCard(f){
     <div class="card-body">
       <h3>${f.nome}</h3>
       <span class="badge">${f.tipo || "-"}</span>
-      <span class="badge">Venda ${moeda(f.preco_venda)}</span>
       <span class="badge">CMV ${moeda(f.custo_unitario)}</span>
     </div>
   `;
@@ -296,8 +366,6 @@ function renderCard(f){
 
 /* ================= MODAL ================= */
 async function abrir(f){
-  console.log("PRATO ABERTO:", f.nome, f.id);
-
   document.body.style.overflow = "hidden";
   modal.style.display = "flex";
   mFoto.src = f.foto_url || "";
@@ -317,12 +385,9 @@ async function abrir(f){
     0
   );
 
-  const lucro = (f.preco_venda || 0) - cmvTotal;
-
   mBody.innerHTML = `
     <h2>${f.nome}</h2>
-    <p><b>Preço:</b> ${moeda(f.preco_venda)}</p>
-    <p><b>CMV:</b> ${moeda(cmvTotal)}</p>
+    <p><b>CMV total:</b> ${moeda(cmvTotal)}</p>
 
     <hr>
     <h3>Ingredientes</h3>
@@ -338,16 +403,10 @@ async function abrir(f){
                 <b>${i.nome}</b><br>
                 <small>${i.quantidade} ${i.unidade_uso}</small>
               </span>
-              <span>${moeda(i.custo_unitario)}</span>
               <strong>${moeda(i.custo_calculado)}</strong>
             </div>
           `).join("")
     }
-
-    <hr>
-    <div class="lucro ${lucro >= 0 ? "pos":"neg"}">
-      Lucro da receita: ${moeda(lucro)}
-    </div>
   `;
 }
 
@@ -355,8 +414,8 @@ function fechar(){
   modal.style.display = "none";
   document.body.style.overflow = "";
 }
-
 </script>
+
 
 </body>
 </html>
