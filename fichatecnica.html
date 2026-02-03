@@ -339,18 +339,18 @@ buscaIngrediente.oninput = async () => {
 };
 
 
-    .ilike("nome",`%${q}%`)
-    .limit(10);
-  listaIngrediente.innerHTML=(data||[]).map(i=>`
-    <div class="item" onclick="selectIngrediente('${i.id}')">${i.nome}</div>
-  `).join("");
-};
-
 async function selectIngrediente(id){
-  const {data,error}=await sb.from("produtos")
-    .select("*")
-    .eq("id",id)
-    .single();
+const { data, error } = await sb
+  .from("produtos")
+  .select(`
+    id,nome,unidade_medida,valor,rendimento_percentual,
+    energia_kcal,carboidratos,acucares_totais,acucares_adicionados,
+    proteinas,gorduras_totais,gorduras_saturadas,gorduras_trans,
+    fibra_alimentar,sodio_mg
+  `)
+  .eq("id", id)
+  .single();
+
   if(error){toast("ERRO AO CARREGAR INGREDIENTE");return;}
 
 ingrediente = {
