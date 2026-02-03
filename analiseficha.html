@@ -412,6 +412,24 @@ button{
     width:100%;
   }
 }
+.badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:6px;
+}
+
+.badges.primary{
+  margin-top:4px;
+}
+
+.badges.secondary{
+  margin-top:10px;
+}
+
+.badge{
+  cursor:default;
+}
 
 
 </style>
@@ -591,6 +609,8 @@ for(const p of pratos){
       p.preco_venda ? (cmvFinal / p.preco_venda) * 100 : null;
     const lucro =
       p.preco_venda ? p.preco_venda - cmvFinal : null;
+const margem =
+  p.preco_venda ? (lucro / p.preco_venda) * 100 : null;
 
 const c = document.createElement("div");
 c.className = "card";
@@ -601,58 +621,61 @@ if (p.ativo === false) {
 
     c.onclick = ()=>abrirModal(p);
 
-    c.innerHTML = `
-      ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
-      <div class="card-body">
+c.innerHTML = `
+  ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
+  <div class="card-body">
 
-        <h3>
-          ${p.nome}
-          ${cmvPerc !== null ? `
-            <span class="badge"
-              style="
-                background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
-                color:${cmvPerc > 35 ? '#991b1b' : '#166534'};
-                margin-left:6px">
-              CMV ${cmvPerc.toFixed(1)}%
-            </span>
-          ` : ``}
-        </h3>
+    <h3>${p.nome}</h3>
 
-        <span class="badge">${p.tipo || "-"}</span>
+    <!-- LINHA 1 — STATUS FINANCEIRO -->
+    <div class="badges primary">
+      <span class="badge">${p.tipo || "-"}</span>
 
-        <span class="badge">Custo ${moeda(cmvFinal)}</span>
+      ${cmvPerc !== null ? `
+        <span class="badge"
+          style="
+            background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
+            color:${cmvPerc > 35 ? '#991b1b' : '#166534'}">
+          📊 CMV ${cmvPerc.toFixed(1)}%
+        </span>
+      ` : ``}
 
-        ${totalImpostos > 0
-          ? `<span class="badge">Operação ${moeda(totalImpostos)}</span>`
-          : ``}
+      ${margem !== null ? `
+        <span class="badge"
+          style="
+            background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
+            color:${margem < 30 ? '#991b1b' : '#166534'}">
+          📈 Margem ${margem.toFixed(1)}%
+        </span>
+      ` : ``}
+    </div>
 
-        ${p.preco_venda
-          ? `<span class="badge">Venda ${moeda(p.preco_venda)}</span>`
-          : ``}
+    <!-- LINHA 2 — CUSTOS -->
+    <div class="badges">
+      <span class="badge">🧾 Custo ${moeda(cmvFinal)}</span>
+      ${totalImpostos > 0
+        ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
+        : ``}
+    </div>
 
-        ${lucro !== null ? `
-          <span class="badge"
-            style="
-              background:${lucro < 0 ? '#fee2e2' : '#dcfce7'};
-              color:${lucro < 0 ? '#991b1b' : '#166534'}">
-            Lucro ${moeda(lucro)}
-          </span>
-        ` : ``}
-${margem !== null ? `
-  <span class="badge"
-    style="
-      background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
-      color:${margem < 30 ? '#991b1b' : '#166534'}">
-    Margem ${margem.toFixed(1)}%
-  </span>
-` : ``}
+    <!-- LINHA 3 — RESULTADO -->
+    <div class="badges secondary">
+      ${p.preco_venda
+        ? `<span class="badge">💰 Venda ${moeda(p.preco_venda)}</span>`
+        : ``}
 
-      </div>
-    `;
+      ${lucro !== null ? `
+        <span class="badge"
+          style="
+            background:${lucro < 0 ? '#fee2e2' : '#dcfce7'};
+            color:${lucro < 0 ? '#991b1b' : '#166534'}">
+          🟢 Lucro ${moeda(lucro)}
+        </span>
+      ` : ``}
+    </div>
 
-    cards.appendChild(c);
-  }
-}
+  </div>
+`;
 
 /* =====================================================
    MODAL
