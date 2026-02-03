@@ -762,24 +762,6 @@ const nutri = {
 
 
 
-   setTimeout(() => {
-  const margemSelect = document.getElementById("margemAlvo");
-  const saida = document.getElementById("precoSugerido");
-
-  if (!margemSelect || !saida) return;
-
-  function calcularSugestao() {
-    const margem = Number(margemSelect.value) / 100;
-
-    // fórmula correta por margem
-    const preco = cmvFinal / (1 - margem);
-
-    saida.innerHTML = `💡 Preço sugerido: <b>${moeda(preco)}</b>`;
-  }
-
-  margemSelect.onchange = calcularSugestao;
-  calcularSugestao(); // calcula ao abrir
-}, 0);
 
 mBody.innerHTML = `
 <h2>${p.nome}</h2>
@@ -828,33 +810,27 @@ mBody.innerHTML = `
   <hr>
 <hr>
 
-<h3>Preço sugerido</h3>
+<h3>Preço ideal</h3>
 
 <div class="precificacao">
-  <p>
-    🎯 Margem alvo:
-    <select id="margemAlvo">
-      <option value="30">30%</option>
-      <option value="35" selected>35%</option>
-      <option value="40">40%</option>
-    </select>
-  </p>
+  <label style="font-weight:800;font-size:13px">
+    💡 PREÇO IDEAL (R$)
+  </label>
 
-  <p id="precoSugerido"
-     style="font-size:18px;font-weight:900;color:#166534">
-    —
-  </p>
+  <input
+    id="precoIdealInput"
+    type="number"
+    step="0.01"
+    placeholder="Ex: 29.90"
+    value="${p.preco_ideal || ""}"
+    style="margin-top:8px"
+  >
 
-<small style="color:var(--muted)">
-  Valor ideal de referência (meta de margem).
-</small>
-
-<button class="btn-add" style="margin-top:10px"
-  onclick="salvarPrecoIdeal(${cmvFinal})">
-  SALVAR PREÇO IDEAL
-</button>
-
+  <small style="color:var(--muted)">
+    Valor de referência ideal (salva automaticamente).
+  </small>
 </div>
+
 
   <h3>Precificação</h3>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -875,12 +851,10 @@ ${precoVenda ? `
   <p><b>Lucro:</b> ${moeda(lucro)}</p>
   <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
 ` : ``}
-
 ${p.preco_ideal ? `
-  <p style="color:#166534;font-weight:800">
-    ⭐ Preço ideal: ${moeda(p.preco_ideal)}
-  </p>
+  <p><b>Preço ideal:</b> ${moeda(p.preco_ideal)}</p>
 ` : ``}
+
 
 
   <hr>
@@ -1103,6 +1077,32 @@ setTimeout(() => {
       .eq("id", pratoAtual.id);
   };
 }, 0);
+setTimeout(() => {
+  const input = document.getElementById("precoIdealInput");
+  if (!input) return;
+
+  const valorInicial = Number(p.preco_ideal || 0);
+
+  input.onblur = async () => {
+    const novoValor = Number(input.value || 0);
+
+    // não mudou → não salva
+    if (novoValor === valorInicial) return;
+
+    if (novoValor <= 0) {
+      alert("Preço ideal inválido");
+      input.value = valorInicial || "";
+      return;
+    }
+
+    await sb
+      .from("buffet")
+      .update({ preco_ideal: novoValor })
+      .eq("id", pratoAtual.id);
+
+    await carregarPratos();
+  };
+}, 0);
 
 
 setTimeout(() => {
@@ -1164,26 +1164,6 @@ async function salvarPrecoVenda(cmvFinal){
   await sb.from("buffet")
     .update({ preco_venda: preco })
     .eq("id", pratoAtual.id);
-
-  await carregarPratos();
-  abrirModal(pratos.find(p => p.id === pratoAtual.id));
-}
-
-async function salvarPrecoIdeal(cmvFinal){
-  const margemSelect = document.getElementById("margemAlvo");
-  if (!margemSelect) return;
-
-  const margem = Number(margemSelect.value) / 100;
-
-  const precoIdeal = cmvFinal / (1 - margem);
-
-  await sb.from("buffet")
-    .update({
-      preco_ideal: precoIdeal
-    })
-    .eq("id", pratoAtual.id);
-
-  alert("Preço ideal salvo com sucesso ✅");
 
   await carregarPratos();
   abrirModal(pratos.find(p => p.id === pratoAtual.id));
