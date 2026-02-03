@@ -690,10 +690,42 @@ async function abrirModal(p){
   mFoto.src = p.foto_url || "";
 
   /* INGREDIENTES */
-  const { data: itens } = await sb
-    .from("buffet_itens")
-    .select("*")
-    .eq("buffet_id", p.id);
+const { data: itens } = await sb
+  .from("buffet_itens")
+  .select(`
+    quantidade,
+    produtos (
+      calorias,
+      proteinas,
+      carboidratos,
+      gorduras,
+      fibras,
+      sodio
+    )
+  `)
+  .eq("buffet_id", p.id);
+const nutri = {
+  calorias: 0,
+  proteinas: 0,
+  carboidratos: 0,
+  gorduras: 0,
+  fibras: 0,
+  sodio: 0
+};
+
+(itens || []).forEach(i => {
+  const qtd = Number(i.quantidade || 0);
+  const p = i.produtos;
+  if (!p) return;
+
+  nutri.calorias     += (p.calorias || 0) * qtd;
+  nutri.proteinas    += (p.proteinas || 0) * qtd;
+  nutri.carboidratos += (p.carboidratos || 0) * qtd;
+  nutri.gorduras     += (p.gorduras || 0) * qtd;
+  nutri.fibras       += (p.fibras || 0) * qtd;
+  nutri.sodio        += (p.sodio || 0) * qtd;
+});
+
 
   const cmvBase = itens.reduce(
     (s,i)=>s + Number(i.custo_calculado||0),0
@@ -870,6 +902,22 @@ mBody.innerHTML = `
     <button class="btn-add" style="margin-top:10px"
       onclick="salvarImposto()">ADICIONAR</button>
   </div>
+
+<hr>
+
+<h3>Tabela Nutricional (por prato)</h3>
+
+<div class="precificacao">
+  <p>🔥 Calorias: <b>${nutri.calorias.toFixed(1)} kcal</b></p>
+  <p>🥩 Proteínas: <b>${nutri.proteinas.toFixed(1)} g</b></p>
+  <p>🍞 Carboidratos: <b>${nutri.carboidratos.toFixed(1)} g</b></p>
+  <p>🧈 Gorduras: <b>${nutri.gorduras.toFixed(1)} g</b></p>
+  <p>🌾 Fibras: <b>${nutri.fibras.toFixed(1)} g</b></p>
+  <p>🧂 Sódio: <b>${nutri.sodio.toFixed(1)} mg</b></p>
+</div>
+
+
+  
 <hr>
 
 <h3>Modo de preparo</h3>
