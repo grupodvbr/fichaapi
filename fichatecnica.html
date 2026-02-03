@@ -172,6 +172,43 @@ textarea:focus{
   box-shadow:0 0 0 3px rgba(20,184,166,.2);
 }
 
+
+  .modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:200;
+}
+
+.modal-box{
+  background:#fff;
+  border-radius:18px;
+  padding:24px;
+  width:100%;
+  position:relative; /* 👈 FALTAVA ISSO */
+}
+
+
+.close{
+  position:absolute;
+  top:14px;
+  right:18px;
+  cursor:pointer;
+  font-weight:800;
+}
+
+
+
+
+
+
+
+
+
+  
 </style>
 </head>
 
@@ -684,17 +721,27 @@ function confirmarClone(){
   if (flags.includes("preco")) precoVenda.value = prato.preco_venda;
   if (flags.includes("modo")) modoPreparo.value = prato.modo_preparo || "";
   if (flags.includes("rendimento")) rendimentoFinal.value = prato.rendimento || 1;
+if (flags.includes("foto") && prato.foto_url) {
+  previewFoto.src = prato.foto_url;
+  previewFoto.classList.remove("hidden");
+}
 
   if (flags.includes("ingredientes")) {
-    ingredientes = itens.map(i => ({
-      produto_id: i.produto_id,
-      nome: i.nome,
-      unidade: i.unidade_uso,
-      quantidade: i.quantidade,
-      custo_unitario: i.custo_unitario,
-      custo_total: i.custo_calculado,
-      rendimento: i.rendimento_percentual || 100
-    }));
+ingredientes = itens.map(i => ({
+  produto_id: i.produto_id,
+  nome: i.nome,
+  unidade: i.unidade_uso,
+  quantidade: i.quantidade,
+  custo_unitario: i.custo_unitario,
+custo_total: (i.quantidade * i.custo_unitario) / ((i.rendimento_percentual || 100) / 100),
+  rendimento: i.rendimento_percentual || 100,
+  nutricao: {
+    energia:0, carbo:0, acucares:0, acucares_add:0,
+    proteina:0, gordura:0, saturada:0, trans:0,
+    fibra:0, sodio:0
+  }
+}));
+
     render();
   }
 
