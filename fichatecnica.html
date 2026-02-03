@@ -530,47 +530,37 @@ show();
 btnSalvar.disabled = true;
 
   try{
-    /* ================= FOTO ================= */
-    let fotoUrl = null;
+  let fotoUrl = null;
 
-    if (fotoProduto.files.length > 0) {
-const file = fotoProduto.files[0];
+if (fotoProduto.files.length > 0) {
+  const file = fotoProduto.files[0];
 
-if (!file.type.startsWith("image/")) {
-  toast("ARQUIVO INVÁLIDO");
-  hide();
-  btnSalvar.disabled = false;
-  return;
+  const ext = file.name.split(".").pop();
+  const fileName = `${crypto.randomUUID()}.${ext}`;
+  const filePath = `fichas/${fileName}`;
+
+  const { error: uploadError } = await sb
+    .storage
+    .from("buffet")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false
+    });
+
+  if (uploadError) throw uploadError;
+
+  fotoUrl = sb
+    .storage
+    .from("buffet")
+    .getPublicUrl(filePath)
+    .data.publicUrl;
 }
 
-if (file.size > 10 * 1024 * 1024) {
-  toast("IMAGEM MUITO GRANDE (MAX 10MB)");
-  hide();
-  btnSalvar.disabled = false;
-  return;
+// 👇 ESTE BLOCO NÃO EXISTE HOJE
+if (!fotoUrl && !previewFoto.classList.contains("hidden")) {
+  fotoUrl = previewFoto.src;
 }
 
-
-      const ext = file.name.split(".").pop();
-      const fileName = `${crypto.randomUUID()}.${ext}`;
-      const filePath = `fichas/${fileName}`;
-
-      const { error: uploadError } = await sb
-        .storage
-        .from("buffet")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false
-        });
-
-      if (uploadError) throw uploadError;
-
-      fotoUrl = sb
-        .storage
-        .from("buffet")
-        .getPublicUrl(filePath)
-        .data.publicUrl;
-    }
 
     /* ================= CMV ================= */
     const cmv = ingredientes.reduce((s,i)=>s+i.custo_total,0);
@@ -635,7 +625,9 @@ if (itensError) {
 hide();
 btnSalvar.disabled = false;
 ingredientes = [];
+contadorIng.textContent = "INGREDIENTES ADICIONADOS: 0";
 toast("SALVO COM SUCESSO");
+
 modoPreparo.value = ""; // 👈 FALTAVA ISSO
 nomePrato.value = "";
 tipoPrato.value = "";
@@ -733,7 +725,8 @@ ingredientes = itens.map(i => ({
   unidade: i.unidade_uso,
   quantidade: i.quantidade,
   custo_unitario: i.custo_unitario,
-custo_total: (i.quantidade * i.custo_unitario) / ((i.rendimento_percentual || 100) / 100),
+  custo_total: (i.quantidade * i.custo_unitario) /
+               ((i.rendimento_percentual || 100) / 100),
   rendimento: i.rendimento_percentual || 100,
   nutricao: {
     energia:0, carbo:0, acucares:0, acucares_add:0,
@@ -742,6 +735,7 @@ custo_total: (i.quantidade * i.custo_unitario) / ((i.rendimento_percentual || 10
   }
 }));
 
+
     render();
   }
 
@@ -749,7 +743,9 @@ custo_total: (i.quantidade * i.custo_unitario) / ((i.rendimento_percentual || 10
 }
 function fecharClone(){
   cloneModal.style.display = "none";
+  fichaSelecionada = null;
 }
+
 
 
 
