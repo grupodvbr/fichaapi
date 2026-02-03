@@ -191,6 +191,39 @@ button{
 
     <label>RENDIMENTO (%)</label>
     <input id="rendimento" value="100">
+<hr style="margin:30px 0">
+
+<h3>INFORMAÇÃO NUTRICIONAL (por 100g ou 100ml)</h3>
+
+<label>VALOR ENERGÉTICO (kcal)</label>
+<input id="energia_kcal" type="number" step="0.01">
+
+<label>CARBOIDRATOS (g)</label>
+<input id="carboidratos" type="number" step="0.01">
+
+<label>AÇÚCARES TOTAIS (g)</label>
+<input id="acucares_totais" type="number" step="0.01">
+
+<label>AÇÚCARES ADICIONADOS (g)</label>
+<input id="acucares_adicionados" type="number" step="0.01">
+
+<label>PROTEÍNAS (g)</label>
+<input id="proteinas" type="number" step="0.01">
+
+<label>GORDURAS TOTAIS (g)</label>
+<input id="gorduras_totais" type="number" step="0.01">
+
+<label>GORDURAS SATURADAS (g)</label>
+<input id="gorduras_saturadas" type="number" step="0.01">
+
+<label>GORDURAS TRANS (g)</label>
+<input id="gorduras_trans" type="number" step="0.01">
+
+<label>FIBRA ALIMENTAR (g)</label>
+<input id="fibra_alimentar" type="number" step="0.01">
+
+<label>SÓDIO (mg)</label>
+<input id="sodio_mg" type="number" step="0.01">
 
     <button onclick="salvar()">SALVAR INGREDIENTE</button>
 
@@ -307,6 +340,16 @@ async function editar(id){
   unidade.value=data.unidade_medida;
   valor.value="R$ "+Number(data.valor).toFixed(2).replace(".",",");
   rendimento.value=data.rendimento_percentual;
+  energia_kcal.value = data.energia_kcal || 0;
+carboidratos.value = data.carboidratos || 0;
+acucares_totais.value = data.acucares_totais || 0;
+acucares_adicionados.value = data.acucares_adicionados || 0;
+proteinas.value = data.proteinas || 0;
+gorduras_totais.value = data.gorduras_totais || 0;
+gorduras_saturadas.value = data.gorduras_saturadas || 0;
+gorduras_trans.value = data.gorduras_trans || 0;
+fibra_alimentar.value = data.fibra_alimentar || 0;
+sodio_mg.value = data.sodio_mg || 0;
 
   await carregarVariacoes(id);
 }
@@ -323,13 +366,25 @@ function novo(){
 
 /* SALVAR */
 async function salvar(){
-  const payload={
-    nome:nome.value,
-    descricao:descricao.value,
-    unidade_medida:unidade.value,
-    valor:Number(valor.value.replace(/\D/g,""))/100,
-    rendimento_percentual:Number(rendimento.value)
-  };
+const payload = {
+  nome: nome.value,
+  descricao: descricao.value,
+  unidade_medida: unidade.value,
+  valor: Number(valor.value.replace(/\D/g,"")) / 100,
+  rendimento_percentual: Number(rendimento.value),
+
+  energia_kcal: Number(energia_kcal.value || 0),
+  carboidratos: Number(carboidratos.value || 0),
+  acucares_totais: Number(acucares_totais.value || 0),
+  acucares_adicionados: Number(acucares_adicionados.value || 0),
+  proteinas: Number(proteinas.value || 0),
+  gorduras_totais: Number(gorduras_totais.value || 0),
+  gorduras_saturadas: Number(gorduras_saturadas.value || 0),
+  gorduras_trans: Number(gorduras_trans.value || 0),
+  fibra_alimentar: Number(fibra_alimentar.value || 0),
+  sodio_mg: Number(sodio_mg.value || 0)
+};
+
 
   if(atual){
     await sb.from("produtos").update(payload).eq("id",atual.id);
