@@ -638,6 +638,14 @@ if (p.ativo === false) {
             Lucro ${moeda(lucro)}
           </span>
         ` : ``}
+${margem !== null ? `
+  <span class="badge"
+    style="
+      background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
+      color:${margem < 30 ? '#991b1b' : '#166534'}">
+    Margem ${margem.toFixed(1)}%
+  </span>
+` : ``}
 
       </div>
     `;
