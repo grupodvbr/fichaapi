@@ -273,6 +273,10 @@ async function login(){
     password: senha.value
   });
   if(error){ alert(error.message); return; }
+
+  // 🔐 garante que a sessão está pronta
+  await sb.auth.getSession();
+
   loginBox(false);
   openPage("home.html",document.querySelector(".icon"));
 }
