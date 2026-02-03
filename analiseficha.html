@@ -697,6 +697,7 @@ const { data: itens } = await sb
     nome,
     quantidade,
     unidade_uso,
+    custo_unitario,
     custo_calculado,
     produto:produtos (
       energia_kcal,
@@ -708,6 +709,7 @@ const { data: itens } = await sb
     )
   `)
   .eq("buffet_id", p.id);
+
 // ===============================
 // CALCULO FICHA NUTRICIONAL
 // ===============================
