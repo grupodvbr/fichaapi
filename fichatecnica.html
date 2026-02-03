@@ -244,6 +244,9 @@ textarea:focus{
 </div>
 
 <div id="ingredienteSelecionado" style="margin-top:8px;font-weight:800;color:#0f766e"></div>
+<div id="contadorIng" style="margin-top:6px;font-size:13px;font-weight:800;color:#334155">
+  INGREDIENTES ADICIONADOS: 0
+</div>
 
 
   <div id="listaIng"></div>
@@ -383,6 +386,12 @@ ingredienteSelecionado.textContent = ingrediente.nome;
 
 listaIngrediente.innerHTML = "";
 
+  // foco automático na quantidade
+setTimeout(() => {
+  qtd.focus();
+}, 50);
+
+
 }
 
 function addIngrediente(){
@@ -436,13 +445,39 @@ function render(){
 
   if(preco>0){
     const margemPerc=((preco-(cmv/por))/preco)*100;
-margem.textContent = margemPerc.toFixed(2) + "%";
-margem.style.color = margemPerc < 0 ? "#ef4444" : "#16a34a";
-  }else margem.textContent="—";
+    margem.textContent = margemPerc.toFixed(2) + "%";
+    margem.style.color = margemPerc < 0 ? "#ef4444" : "#16a34a";
+  } else {
+    margem.textContent="—";
+    margem.style.color="";
+  }
+
+  // 👇 CONTADOR DE INGREDIENTES (FALTAVA ISSO)
+  contadorIng.textContent =
+    "INGREDIENTES ADICIONADOS: " + ingredientes.length;
 }
+
 
 precoVenda.oninput=render;
 rendimentoFinal.oninput=render;
+// ENTER adiciona ingrediente automaticamente
+qtd.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    if (!ingrediente) {
+      toast("SELECIONE UM INGREDIENTE");
+      return;
+    }
+
+    if (Number(qtd.value) <= 0) {
+      toast("INFORME A QUANTIDADE");
+      return;
+    }
+
+    addIngrediente();
+  }
+});
 
 /* ================= SALVAR ================= */
 async function salvar(){
