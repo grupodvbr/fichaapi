@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Relatório Executivo • Fichas Técnicas</title>
+<title>Relatório Executivo • CMV</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -65,11 +65,11 @@ button{
 
 <body>
 <div class="container">
-  <h1>Relatório Executivo de Fichas Técnicas</h1>
-  <p>Resumo financeiro + ficha completa de ingredientes</p>
+  <h1>Relatório Executivo de CMV</h1>
+  <p>Resumo financeiro, ficha técnica e simulação de preços</p>
 
   <div class="card">
-    <button onclick="exportarRelatorioCompleto()">
+    <button onclick="exportarRelatorio()">
       📊 EXPORTAR RELATÓRIO COMPLETO (EXCEL)
     </button>
   </div>
@@ -89,7 +89,7 @@ const hoje = new Date().toISOString().slice(0,10);
 /* ===============================
    EXPORTAÇÃO
 ================================ */
-async function exportarRelatorioCompleto(){
+async function exportarRelatorio(){
 
   const { data: pratos } = await sb.from("buffet").select("*");
   const { data: itens } = await sb
@@ -135,25 +135,22 @@ async function exportarRelatorioCompleto(){
       Prato: p.nome,
       Tipo: p.tipo,
       Status: p.ativo ? "ATIVO" : "INATIVO",
-      "Preço Venda": venda,
       "Custo Base": base,
       Impostos: imp,
       "Custo Final": total,
-      Lucro: lucro,
-      "Margem %": margem.toFixed(2),
-      Cadastro: p.created_at?.slice(0,10)
+      "Preço Venda Atual": venda,
+      "Lucro Atual": lucro,
+      "Margem Atual %": margem.toFixed(2)
     };
   });
 
   /* ===== ABA 2 — DETALHADO ===== */
   const detalhado = [];
-
   pratos.forEach(p=>{
     const base = mapaCustos[p.id]?.base || 0;
     const imp  = mapaCustos[p.id]?.impostos || 0;
     const total = base + imp;
     const venda = Number(p.preco_venda||0);
-    const margem = venda ? ((venda-total)/venda)*100 : 0;
 
     (mapaItens[p.id] || []).forEach(i=>{
       detalhado.push({
@@ -167,18 +164,40 @@ async function exportarRelatorioCompleto(){
         "Custo Base Ficha": base,
         "Impostos Ficha": imp,
         "Custo Final Ficha": total,
-        "Preço Venda": venda,
-        "Margem %": margem.toFixed(2)
+        "Preço Venda Atual": venda
       });
     });
   });
 
+  /* ===== ABA 3 — SIMULAÇÃO ===== */
+  const simulacao = pratos.map(p=>{
+    const total = mapaCustos[p.id]
+      ? mapaCustos[p.id].base + mapaCustos[p.id].impostos
+      : 0;
+    const venda = Number(p.preco_venda||0);
+    const lucro = venda - total;
+    const margem = venda ? (lucro/venda)*100 : 0;
+
+    return {
+      Prato: p.nome,
+      Tipo: p.tipo,
+      "Custo Final": total,
+      "Preço Venda Atual": venda,
+      "Preço Venda Novo": "",
+      "Lucro Atual": lucro,
+      "Margem Atual %": margem.toFixed(2),
+      "Lucro Novo": "",
+      "Margem Nova %": ""
+    };
+  });
+
   /* ===== EXCEL ===== */
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumo), "Resumo das Fichas");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumo), "Resumo");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detalhado), "Fichas Detalhadas");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(simulacao), "Simulação de Preços");
 
-  XLSX.writeFile(wb, `relatorio_fichas_executivo_${hoje}.xlsx`);
+  XLSX.writeFile(wb, `relatorio_CMV_completo_${hoje}.xlsx`);
 }
 </script>
 </body>
