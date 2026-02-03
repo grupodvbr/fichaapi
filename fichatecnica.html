@@ -401,7 +401,11 @@ ingredientes.push({
   custo_unitario: ingrediente.custo,
   custo_total: total,
   rendimento: ingrediente.rendimento,
-  nutricao: ingrediente.nutricao   // 👈 ESSENCIAL
+nutricao: ingrediente.nutricao || {
+  energia:0, carbo:0, acucares:0, acucares_add:0,
+  proteina:0, gordura:0, saturada:0, trans:0,
+  fibra:0, sodio:0
+}
 });
 
 
