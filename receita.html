@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Registro de Modo de Preparo</title>
+<title>Receitas • Fichas Técnicas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -11,6 +11,8 @@
 <style>
 :root{
   --primary:#2563eb;
+  --success:#16a34a;
+  --danger:#dc2626;
   --bg:#f8fafc;
   --card:#ffffff;
   --text:#0f172a;
@@ -28,33 +30,16 @@ body{
   color:var(--text);
 }
 
-/* ===== HEADER ===== */
-.header{
+/* ================= FILTROS ================= */
+.filters{
   position:sticky;
   top:0;
   z-index:10;
   background:#fff;
   padding:14px;
+  display:grid;
+  gap:10px;
   box-shadow:0 4px 14px rgba(0,0,0,.08);
-  display:grid;
-  gap:10px;
-}
-
-.header button{
-  height:48px;
-  border:none;
-  border-radius:999px;
-  background:linear-gradient(135deg,var(--primary),#1e40af);
-  color:#fff;
-  font-weight:900;
-  letter-spacing:.05em;
-  cursor:pointer;
-}
-
-/* ===== FILTROS ===== */
-.filters{
-  display:grid;
-  gap:10px;
 }
 
 .filters input,
@@ -64,11 +49,10 @@ body{
   border:1px solid var(--border);
   padding:0 16px;
   font-size:14px;
-  font-weight:900;
-  text-transform:uppercase;
+  font-weight:700;
 }
 
-/* ===== GRID ===== */
+/* ================= GRID ================= */
 .grid{
   padding:16px;
   display:grid;
@@ -76,12 +60,22 @@ body{
   gap:16px;
 }
 
-/* ===== CARD ===== */
+/* ================= CARD ================= */
 .card{
   background:var(--card);
   border-radius:22px;
   box-shadow:var(--shadow);
   overflow:hidden;
+  cursor:pointer;
+  transition:.15s ease;
+}
+
+.card:hover{transform:translateY(-4px)}
+
+.card img{
+  width:100%;
+  height:150px;
+  object-fit:cover;
 }
 
 .card-body{
@@ -91,22 +85,28 @@ body{
 .card-body h3{
   margin:0;
   font-size:15px;
-  font-weight:900;
+  font-weight:800;
+}
+
+.badges{
+  display:flex;
+  gap:6px;
+  margin-top:8px;
 }
 
 .badge{
-  margin-top:8px;
-  display:inline-block;
   padding:6px 10px;
   border-radius:999px;
   font-size:11px;
-  font-weight:900;
+  font-weight:800;
+  background:#eef2ff;
+  color:#3730a3;
 }
 
-.ok{background:#dcfce7;color:#166534}
-.warn{background:#fee2e2;color:#991b1b}
+.badge.ok{background:#dcfce7;color:#166534}
+.badge.warn{background:#fee2e2;color:#991b1b}
 
-/* ===== MODAL ===== */
+/* ================= MODAL ================= */
 .modal{
   position:fixed;
   inset:0;
@@ -119,50 +119,72 @@ body{
 .modal-box{
   background:#fff;
   width:100%;
-  max-height:95vh;
+  max-height:94vh;
   border-radius:22px 22px 0 0;
+  overflow:auto;
+}
+
+.modal img{
+  width:100%;
+  height:200px;
+  object-fit:cover;
+}
+
+.modal-body{
   padding:18px;
 }
 
-.modal-box h2{
-  margin:0 0 12px;
-  font-size:20px;
-  font-weight:900;
+.modal-body h2{
+  margin:0 0 8px;
+  font-size:22px;
 }
 
-.modal-box select,
-.modal-box textarea{
+.modal-body h3{
+  margin:18px 0 6px;
+}
+
+.modal-body textarea{
   width:100%;
-  margin-top:10px;
+  min-height:160px;
   border-radius:14px;
   border:1px solid var(--border);
   padding:14px;
   font-size:14px;
-  font-weight:900;
+  font-weight:700;
+  resize:vertical;
   text-transform:uppercase;
 }
 
-.modal-box textarea{
-  min-height:200px;
-  resize:vertical;
+.modal-body textarea::placeholder{
+  text-transform:uppercase;
 }
 
-.modal-box button{
+.btn{
   width:100%;
-  height:48px;
-  margin-top:14px;
+  height:46px;
   border:none;
   border-radius:14px;
+  font-weight:900;
+  letter-spacing:.04em;
+  margin-top:12px;
+  cursor:pointer;
+}
+
+.btn-save{
   background:linear-gradient(135deg,var(--primary),#1e40af);
   color:#fff;
-  font-weight:900;
-  cursor:pointer;
+}
+
+.ing{
+  border-bottom:1px dashed var(--border);
+  padding:8px 0;
+  font-size:14px;
 }
 
 .close{
   position:absolute;
-  top:12px;
-  right:18px;
+  top:10px;
+  right:14px;
   font-size:22px;
   color:#fff;
   font-weight:900;
@@ -173,48 +195,33 @@ body{
 
 <body>
 
-<!-- ===== HEADER ===== -->
-<div class="header">
-  <button onclick="abrirCadastro()">➕ REGISTRAR MODO DE PREPARO</button>
-
-  <div class="filters">
-    <input id="filtroNome" placeholder="🔍 BUSCAR PRATO">
-
-    <select id="filtroTipo">
-      <option value="">🍽 TODOS OS TIPOS</option>
-      <option>SUSHI</option>
-      <option>DRINK</option>
-      <option>ENTRADA</option>
-      <option>PRATO PRINCIPAL</option>
-      <option>SOBREMESA</option>
-      <option>ACOMPANHAMENTO</option>
-    </select>
-
-    <select id="filtroReceita">
-      <option value="">📋 TODAS</option>
-      <option value="COM">COM RECEITA</option>
-      <option value="SEM">SEM RECEITA</option>
-    </select>
-  </div>
+<!-- ================= FILTROS ================= -->
+<div class="filters">
+  <input id="filtroNome" placeholder="🔍 BUSCAR PRATO">
+  <select id="filtroTipo">
+    <option value="">🍽 TODOS OS TIPOS</option>
+    <option>SUSHI</option>
+    <option>DRINK</option>
+    <option>ENTRADA</option>
+    <option>PRATO PRINCIPAL</option>
+    <option>SOBREMESA</option>
+    <option>ACOMPANHAMENTO</option>
+  </select>
+  <select id="filtroReceita">
+    <option value="">📋 TODAS</option>
+    <option value="COM">COM RECEITA</option>
+    <option value="SEM">SEM RECEITA</option>
+  </select>
 </div>
 
 <div id="cards" class="grid"></div>
 
-<!-- ===== MODAL CADASTRO ===== -->
+<!-- ================= MODAL ================= -->
 <div id="modal" class="modal" onclick="fechar()">
   <div class="modal-box" onclick="event.stopPropagation()">
     <span class="close" onclick="fechar()">✕</span>
-
-    <h2>REGISTRAR MODO DE PREPARO</h2>
-
-    <select id="pratoSelect">
-      <option value="">SELECIONE O PRATO</option>
-    </select>
-
-    <textarea id="modoInput"
-      placeholder="DIGITE O MODO DE PREPARO COMPLETO..."></textarea>
-
-    <button onclick="salvar()">SALVAR MODO DE PREPARO</button>
+    <img id="mFoto">
+    <div id="mBody" class="modal-body"></div>
   </div>
 </div>
 
@@ -224,73 +231,94 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-let pratos=[];
+let pratos = [];
+let pratoAtual = null;
 
 async function carregar(){
   const { data } = await sb.from("buffet").select("*").order("nome");
-  pratos=data||[];
-  preencherSelect();
+  pratos = data || [];
   render();
 }
 
-function preencherSelect(){
-  pratoSelect.innerHTML='<option value="">SELECIONE O PRATO</option>';
-  pratos.forEach(p=>{
-    pratoSelect.innerHTML+=`
-      <option value="${p.id}">${p.nome}</option>`;
-  });
-}
-
 function render(){
-  cards.innerHTML="";
-  const nome=filtroNome.value.toUpperCase();
-  const tipo=filtroTipo.value;
-  const rec=filtroReceita.value;
+  cards.innerHTML = "";
 
-  pratos.forEach(p=>{
-    if(nome && !p.nome.toUpperCase().includes(nome)) return;
-    if(tipo && p.tipo!==tipo) return;
-    if(rec==="COM" && !p.modo_preparo) return;
-    if(rec==="SEM" && p.modo_preparo) return;
+  const nome = filtroNome.value.toUpperCase();
+  const tipo = filtroTipo.value;
+  const receita = filtroReceita.value;
 
-    cards.innerHTML+=`
-      <div class="card">
-        <div class="card-body">
-          <h3>${p.nome}</h3>
-          <span class="badge ${p.modo_preparo?'ok':'warn'}">
-            ${p.modo_preparo?'COM RECEITA':'SEM RECEITA'}
-          </span>
+  for(const p of pratos){
+    if(nome && !p.nome.toUpperCase().includes(nome)) continue;
+    if(tipo && p.tipo !== tipo) continue;
+    if(receita==="COM" && !p.modo_preparo) continue;
+    if(receita==="SEM" && p.modo_preparo) continue;
+
+    const c = document.createElement("div");
+    c.className="card";
+    c.onclick=()=>abrir(p);
+
+    c.innerHTML=`
+      ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
+      <div class="card-body">
+        <h3>${p.nome}</h3>
+        <div class="badges">
+          <span class="badge">${p.tipo||"-"}</span>
+          ${p.modo_preparo
+            ? `<span class="badge ok">COM RECEITA</span>`
+            : `<span class="badge warn">SEM RECEITA</span>`}
         </div>
       </div>`;
-  });
+    cards.appendChild(c);
+  }
 }
 
-function abrirCadastro(){
+async function abrir(p){
+  pratoAtual = p;
   modal.style.display="flex";
+  mFoto.src = p.foto_url || "";
+
+  const { data: itens } = await sb
+    .from("buffet_itens")
+    .select("*")
+    .eq("buffet_id", p.id);
+
+  mBody.innerHTML=`
+    <h2>${p.nome}</h2>
+
+    <h3>MODO DE PREPARO</h3>
+    <textarea id="receitaInput"
+      placeholder="DESCREVA A RECEITA COMPLETA AQUI...">${p.modo_preparo||""}</textarea>
+
+    <button class="btn btn-save" onclick="salvarReceita()">
+      SALVAR RECEITA
+    </button>
+
+    <h3>INGREDIENTES</h3>
+    ${itens.map(i=>`
+      <div class="ing">
+        ${i.nome} — ${i.quantidade} ${i.unidade_uso}
+      </div>
+    `).join("")}
+  `;
 }
 
-async function salvar(){
-  const pratoId=pratoSelect.value;
-  const texto=modoInput.value.trim().toUpperCase();
-  if(!pratoId||!texto) return alert("PREENCHA TUDO");
-
+async function salvarReceita(){
+  const texto = receitaInput.value.trim().toUpperCase();
   await sb.from("buffet")
-    .update({ modo_preparo:texto })
-    .eq("id",pratoId);
+    .update({ modo_preparo: texto })
+    .eq("id", pratoAtual.id);
 
+  await carregar();
   fechar();
-  carregar();
 }
 
 function fechar(){
   modal.style.display="none";
-  pratoSelect.value="";
-  modoInput.value="";
 }
 
-filtroNome.oninput=render;
-filtroTipo.onchange=render;
-filtroReceita.onchange=render;
+filtroNome.oninput = render;
+filtroTipo.onchange = render;
+filtroReceita.onchange = render;
 
 carregar();
 </script>
