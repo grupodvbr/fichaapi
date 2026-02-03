@@ -1122,22 +1122,21 @@ setTimeout(() => {
       .eq("id", pratoAtual.id);
   };
 }, 0);
-setTimeout(() => {
+setTimeout(async () => {
   const input = document.getElementById("precoIdealInput");
   if (!input) return;
 
   const valorInicial = Number(p.preco_ideal || 0);
-   if (!usuarioEmailAtual) {
-  console.warn("⏳ Aguardando auth para liberar preço ideal");
-  return;
-}
 
-const autorizado =
-  usuarioEmailAtual &&
-  EMAILS_AUTORIZADOS_PRECO_IDEAL.includes(usuarioEmailAtual);
+  // 🔐 busca o usuário direto do Supabase (SEM race condition)
+  const { data: { user } } = await sb.auth.getUser();
+  const email = user?.email || null;
 
+  console.log("🔐 EMAIL NO MODAL:", email);
 
-  // ❌ não autorizado → bloqueia edição
+  const autorizado =
+    email && EMAILS_AUTORIZADOS_PRECO_IDEAL.includes(email);
+
   if (!autorizado) {
     input.readOnly = true;
     input.style.opacity = "0.6";
@@ -1166,7 +1165,6 @@ const autorizado =
     await carregarPratos();
   };
 }, 0);
-
 
 
 setTimeout(() => {
