@@ -845,9 +845,15 @@ mBody.innerHTML = `
     —
   </p>
 
-  <small style="color:var(--muted)">
-    Valor apenas sugestivo, não altera o preço de venda.
-  </small>
+<small style="color:var(--muted)">
+  Valor ideal de referência (meta de margem).
+</small>
+
+<button class="btn-add" style="margin-top:10px"
+  onclick="salvarPrecoIdeal(${cmvFinal})">
+  SALVAR PREÇO IDEAL
+</button>
+
 </div>
 
   <h3>Precificação</h3>
@@ -864,11 +870,18 @@ mBody.innerHTML = `
     SALVAR PREÇO DE VENDA
   </button>
 
-  ${precoVenda ? `
-    <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
-    <p><b>Lucro:</b> ${moeda(lucro)}</p>
-    <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
-  ` : ``}
+${precoVenda ? `
+  <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
+  <p><b>Lucro:</b> ${moeda(lucro)}</p>
+  <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
+` : ``}
+
+${p.preco_ideal ? `
+  <p style="color:#166534;font-weight:800">
+    ⭐ Preço ideal: ${moeda(p.preco_ideal)}
+  </p>
+` : ``}
+
 
   <hr>
 
@@ -1156,6 +1169,25 @@ async function salvarPrecoVenda(cmvFinal){
   abrirModal(pratos.find(p => p.id === pratoAtual.id));
 }
 
+async function salvarPrecoIdeal(cmvFinal){
+  const margemSelect = document.getElementById("margemAlvo");
+  if (!margemSelect) return;
+
+  const margem = Number(margemSelect.value) / 100;
+
+  const precoIdeal = cmvFinal / (1 - margem);
+
+  await sb.from("buffet")
+    .update({
+      preco_ideal: precoIdeal
+    })
+    .eq("id", pratoAtual.id);
+
+  alert("Preço ideal salvo com sucesso ✅");
+
+  await carregarPratos();
+  abrirModal(pratos.find(p => p.id === pratoAtual.id));
+}
 
 async function salvarIngrediente(){
   const prodId = ingProduto.value;
