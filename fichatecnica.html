@@ -315,11 +315,30 @@ fotoProduto.onchange=()=>{
 let ingrediente=null;
 let ingredientes=[];
 
-buscaIngrediente.oninput=async()=>{
-  const q=buscaIngrediente.value.trim().toUpperCase();
-  if(q.length<2){listaIngrediente.innerHTML="";return;}
-  const {data}=await sb.from("produtos")
-    .select("id,nome,unidade_medida,valor,rendimento_percentual")
+buscaIngrediente.oninput = async () => {
+  const q = buscaIngrediente.value.trim().toUpperCase();
+  if (q.length < 2) {
+    listaIngrediente.innerHTML = "";
+    return;
+  }
+
+  const { data } = await sb
+    .from("produtos")
+    .select(`
+      id,nome,unidade_medida,valor,rendimento_percentual,
+      energia_kcal,carboidratos,acucares_totais,acucares_adicionados,
+      proteinas,gorduras_totais,gorduras_saturadas,gorduras_trans,
+      fibra_alimentar,sodio_mg
+    `)
+    .ilike("nome", `%${q}%`)
+    .limit(10);
+
+  listaIngrediente.innerHTML = (data || []).map(i => `
+    <div class="item" onclick="selectIngrediente('${i.id}')">${i.nome}</div>
+  `).join("");
+};
+
+
     .ilike("nome",`%${q}%`)
     .limit(10);
   listaIngrediente.innerHTML=(data||[]).map(i=>`
@@ -334,13 +353,27 @@ async function selectIngrediente(id){
     .single();
   if(error){toast("ERRO AO CARREGAR INGREDIENTE");return;}
 
-  ingrediente={
-    produto_id:data.id,
-    nome:data.nome,
-    unidade:data.unidade_medida,
-    custo:Number(data.valor),
-    rendimento:Number(data.rendimento_percentual||100)
-  };
+ingrediente = {
+  produto_id: data.id,
+  nome: data.nome,
+  unidade: data.unidade_medida,
+  custo: Number(data.valor),
+  rendimento: Number(data.rendimento_percentual || 100),
+
+  nutricao: {
+    energia: Number(data.energia_kcal || 0),
+    carbo: Number(data.carboidratos || 0),
+    acucares: Number(data.acucares_totais || 0),
+    acucares_add: Number(data.acucares_adicionados || 0),
+    proteina: Number(data.proteinas || 0),
+    gordura: Number(data.gorduras_totais || 0),
+    saturada: Number(data.gorduras_saturadas || 0),
+    trans: Number(data.gorduras_trans || 0),
+    fibra: Number(data.fibra_alimentar || 0),
+    sodio: Number(data.sodio_mg || 0)
+  }
+};
+
 
 unUso.value = ingrediente.unidade;
 custo.value = ingrediente.custo.toFixed(4);
@@ -360,15 +393,17 @@ if (!ingrediente || qtd.value <= 0) {
   const fator=ingrediente.rendimento/100;
   const total=(qtd.value*ingrediente.custo)/fator;
 
-  ingredientes.push({
-    produto_id:ingrediente.produto_id,
-    nome:ingrediente.nome,
-    unidade:ingrediente.unidade,
-    quantidade:Number(qtd.value),
-    custo_unitario:ingrediente.custo,
-    custo_total:total,
-    rendimento:ingrediente.rendimento
-  });
+ingredientes.push({
+  produto_id: ingrediente.produto_id,
+  nome: ingrediente.nome,
+  unidade: ingrediente.unidade,
+  quantidade: Number(qtd.value),
+  custo_unitario: ingrediente.custo,
+  custo_total: total,
+  rendimento: ingrediente.rendimento,
+  nutricao: ingrediente.nutricao   // 👈 ESSENCIAL
+});
+
 
 qtd.value = "";
 unUso.value = "";
