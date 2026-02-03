@@ -693,7 +693,12 @@ async function abrirModal(p){
 const { data: itens } = await sb
   .from("buffet_itens")
   .select(`
+    id,
+    nome,
     quantidade,
+    unidade_uso,
+    custo_unitario,
+    custo_calculado,
     produtos (
       calorias,
       proteinas,
@@ -704,6 +709,7 @@ const { data: itens } = await sb
     )
   `)
   .eq("buffet_id", p.id);
+
 const nutri = {
   calorias: 0,
   proteinas: 0,
@@ -715,16 +721,17 @@ const nutri = {
 
 (itens || []).forEach(i => {
   const qtd = Number(i.quantidade || 0);
-  const p = i.produtos;
-  if (!p) return;
+  const prod = i.produtos;
+  if (!prod) return;
 
-  nutri.calorias     += (p.calorias || 0) * qtd;
-  nutri.proteinas    += (p.proteinas || 0) * qtd;
-  nutri.carboidratos += (p.carboidratos || 0) * qtd;
-  nutri.gorduras     += (p.gorduras || 0) * qtd;
-  nutri.fibras       += (p.fibras || 0) * qtd;
-  nutri.sodio        += (p.sodio || 0) * qtd;
+  nutri.calorias     += (prod.calorias || 0) * qtd;
+  nutri.proteinas    += (prod.proteinas || 0) * qtd;
+  nutri.carboidratos += (prod.carboidratos || 0) * qtd;
+  nutri.gorduras     += (prod.gorduras || 0) * qtd;
+  nutri.fibras       += (prod.fibras || 0) * qtd;
+  nutri.sodio        += (prod.sodio || 0) * qtd;
 });
+
 
 
   const cmvBase = itens.reduce(
