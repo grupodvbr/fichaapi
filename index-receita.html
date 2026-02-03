@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Receitas • Fichas Técnicas</title>
+<title>Modo de Preparo • Receitas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -11,8 +11,6 @@
 <style>
 :root{
   --primary:#2563eb;
-  --success:#16a34a;
-  --danger:#dc2626;
   --bg:#f8fafc;
   --card:#ffffff;
   --text:#0f172a;
@@ -49,7 +47,7 @@ body{
   border:1px solid var(--border);
   padding:0 16px;
   font-size:14px;
-  font-weight:800;
+  font-weight:900;
   text-transform:uppercase;
 }
 
@@ -92,7 +90,6 @@ body{
   display:flex;
   gap:6px;
   margin-top:8px;
-  flex-wrap:wrap;
 }
 
 .badge{
@@ -100,8 +97,6 @@ body{
   border-radius:999px;
   font-size:11px;
   font-weight:900;
-  background:#eef2ff;
-  color:#3730a3;
 }
 
 .badge.ok{background:#dcfce7;color:#166534}
@@ -136,53 +131,34 @@ body{
 }
 
 .modal-body h2{
-  margin:0 0 10px;
+  margin:0 0 12px;
   font-size:22px;
-  font-weight:900;
-}
-
-.modal-body h3{
-  margin:18px 0 6px;
-  font-size:14px;
   font-weight:900;
 }
 
 .modal-body textarea{
   width:100%;
-  min-height:160px;
+  min-height:200px;
   border-radius:14px;
   border:1px solid var(--border);
   padding:14px;
   font-size:14px;
-  font-weight:800;
+  font-weight:900;
+  text-transform:uppercase;
   resize:vertical;
-  text-transform:uppercase;
-}
-
-.modal-body textarea::placeholder{
-  text-transform:uppercase;
 }
 
 .btn{
   width:100%;
-  height:46px;
+  height:48px;
+  margin-top:12px;
   border:none;
   border-radius:14px;
   font-weight:900;
   letter-spacing:.05em;
-  margin-top:12px;
   cursor:pointer;
-}
-
-.btn-save{
   background:linear-gradient(135deg,var(--primary),#1e40af);
   color:#fff;
-}
-
-.ing{
-  border-bottom:1px dashed var(--border);
-  padding:8px 0;
-  font-size:14px;
 }
 
 .close{
@@ -214,7 +190,7 @@ body{
   </select>
 
   <select id="filtroReceita">
-    <option value="">📋 TODAS AS RECEITAS</option>
+    <option value="">📋 TODAS</option>
     <option value="COM">COM RECEITA</option>
     <option value="SEM">SEM RECEITA</option>
   </select>
@@ -247,17 +223,17 @@ async function carregar(){
 }
 
 function render(){
-  cards.innerHTML = "";
+  cards.innerHTML="";
 
   const nome = filtroNome.value.toUpperCase();
   const tipo = filtroTipo.value;
-  const receita = filtroReceita.value;
+  const rec = filtroReceita.value;
 
   for(const p of pratos){
     if(nome && !p.nome.toUpperCase().includes(nome)) continue;
     if(tipo && p.tipo !== tipo) continue;
-    if(receita==="COM" && !p.modo_preparo) continue;
-    if(receita==="SEM" && p.modo_preparo) continue;
+    if(rec==="COM" && !p.modo_preparo) continue;
+    if(rec==="SEM" && p.modo_preparo) continue;
 
     const c = document.createElement("div");
     c.className="card";
@@ -268,7 +244,6 @@ function render(){
       <div class="card-body">
         <h3>${p.nome}</h3>
         <div class="badges">
-          <span class="badge">${p.tipo||"-"}</span>
           ${p.modo_preparo
             ? `<span class="badge ok">COM RECEITA</span>`
             : `<span class="badge warn">SEM RECEITA</span>`}
@@ -278,38 +253,25 @@ function render(){
   }
 }
 
-async function abrir(p){
+function abrir(p){
   pratoAtual = p;
   modal.style.display="flex";
   mFoto.src = p.foto_url || "";
 
-  const { data: itens } = await sb
-    .from("buffet_itens")
-    .select("*")
-    .eq("buffet_id", p.id);
-
   mBody.innerHTML=`
     <h2>${p.nome}</h2>
 
-    <h3>MODO DE PREPARO</h3>
-    <textarea id="receitaInput"
-      placeholder="DESCREVA A RECEITA COMPLETA AQUI...">${p.modo_preparo||""}</textarea>
+    <textarea id="modoInput"
+      placeholder="DIGITE AQUI O MODO DE PREPARO COMPLETO...">${p.modo_preparo||""}</textarea>
 
-    <button class="btn btn-save" onclick="salvarReceita()">
-      SALVAR RECEITA
+    <button class="btn" onclick="salvar()">
+      SALVAR MODO DE PREPARO
     </button>
-
-    <h3>INGREDIENTES</h3>
-    ${itens.map(i=>`
-      <div class="ing">
-        ${i.nome} — ${i.quantidade} ${i.unidade_uso}
-      </div>
-    `).join("")}
   `;
 }
 
-async function salvarReceita(){
-  const texto = receitaInput.value.trim().toUpperCase();
+async function salvar(){
+  const texto = modoInput.value.trim().toUpperCase();
 
   await sb.from("buffet")
     .update({ modo_preparo: texto })
