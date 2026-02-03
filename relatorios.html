@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório Completo • Fichas Técnicas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --primary:#2563eb;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:#e5e7eb;
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:32px;
+}
+
+h1{
+  font-size:28px;
+  margin-bottom:6px;
+}
+
+p{
+  color:var(--muted);
+  margin-bottom:24px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:26px;
+}
+
+button{
+  background:linear-gradient(135deg,#2563eb,#1e40af);
+  color:#fff;
+  border:none;
+  border-radius:14px;
+  padding:16px 26px;
+  font-weight:900;
+  cursor:pointer;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>Relatório de Fichas Técnicas</h1>
+  <p>Exportação completa: fichas + ingredientes + custos + margens</p>
+
+  <div class="card">
+    <button onclick="exportarFichasCompletas()">
+      📊 EXPORTAR FICHAS COMPLETAS (EXCEL)
+    </button>
+  </div>
+</div>
+
+<script>
+/* ===============================
+   SUPABASE
+================================ */
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+);
+
+const hoje = new Date().toISOString().slice(0,10);
+
+/* ===============================
+   EXPORTAÇÃO COMPLETA
+================================ */
+async function exportarFichasCompletas(){
+
+  const { data: pratos } = await sb.from("buffet").select("*");
+  const { data: itens } = await sb
+    .from("buffet_itens")
+    .select("buffet_id, nome, quantidade, unidade_uso, custo_unitario, custo_calculado");
+
+  const { data: impostos } = await sb
+    .from("impostos")
+    .select("buffet_id, modalidade, valor");
+
+  /* === AGRUPAMENTOS === */
+  const mapaItens = {};
+  itens.forEach(i=>{
+    mapaItens[i.buffet_id] ??= [];
+    mapaItens[i.buffet_id].push(i);
+  });
+
+  const mapaCustos = {};
+  itens.forEach(i=>{
+    mapaCustos[i.buffet_id] ??= { base:0, impostos:0 };
+    mapaCustos[i.buffet_id].base += Number(i.custo_calculado||0);
+  });
+
+  impostos.forEach(i=>{
+    mapaCustos[i.buffet_id] ??= { base:0, impostos:0 };
+    if(i.modalidade === "FIXO")
+      mapaCustos[i.buffet_id].impostos += Number(i.valor||0);
+    if(i.modalidade === "PERCENTUAL")
+      mapaCustos[i.buffet_id].impostos +=
+        (mapaCustos[i.buffet_id].base * Number(i.valor||0)) / 100;
+  });
+
+  /* === LINHAS DO EXCEL === */
+  const linhas = [];
+
+  pratos.forEach(p=>{
+    const base = mapaCustos[p.id]?.base || 0;
+    const imp  = mapaCustos[p.id]?.impostos || 0;
+    const total = base + imp;
+    const venda = Number(p.preco_venda||0);
+    const lucro = venda - total;
+    const margem = venda ? (lucro/venda)*100 : 0;
+
+    const lista = mapaItens[p.id] || [];
+
+    if(lista.length === 0){
+      linhas.push({
+        Prato: p.nome,
+        Tipo: p.tipo,
+        Status: p.ativo ? "ATIVO" : "INATIVO",
+        "Preço Venda": venda,
+        "Custo Base": base,
+        Impostos: imp,
+        "Custo Final": total,
+        Lucro: lucro,
+        "Margem %": margem.toFixed(2),
+        Ingrediente: "",
+        Quantidade: "",
+        Unidade: "",
+        "Custo Unitário": "",
+        "Custo Ingrediente": "",
+        Cadastro: p.created_at?.slice(0,10)
+      });
+    }
+
+    lista.forEach(i=>{
+      linhas.push({
+        Prato: p.nome,
+        Tipo: p.tipo,
+        Status: p.ativo ? "ATIVO" : "INATIVO",
+        "Preço Venda": venda,
+        "Custo Base": base,
+        Impostos: imp,
+        "Custo Final": total,
+        Lucro: lucro,
+        "Margem %": margem.toFixed(2),
+        Ingrediente: i.nome,
+        Quantidade: i.quantidade,
+        Unidade: i.unidade_uso,
+        "Custo Unitário": i.custo_unitario,
+        "Custo Ingrediente": i.custo_calculado,
+        Cadastro: p.created_at?.slice(0,10)
+      });
+    });
+  });
+
+  gerarExcel(linhas, `relatorio_fichas_completo_${hoje}.xlsx`);
+}
+
+/* ===============================
+   GERAR EXCEL
+================================ */
+function gerarExcel(dados, nome){
+  const ws = XLSX.utils.json_to_sheet(dados);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Fichas Técnicas");
+  XLSX.writeFile(wb, nome);
+}
+</script>
+</body>
+</html>
