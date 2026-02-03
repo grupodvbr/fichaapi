@@ -28,7 +28,7 @@ body{
   color:var(--text);
 }
 
-/* ===== FILTROS ===== */
+/* ================= FILTROS ================= */
 .filters{
   position:sticky;
   top:0;
@@ -51,7 +51,7 @@ body{
   text-transform:uppercase;
 }
 
-/* ===== GRID ===== */
+/* ================= GRID ================= */
 .grid{
   padding:16px;
   display:grid;
@@ -59,7 +59,7 @@ body{
   gap:16px;
 }
 
-/* ===== CARD ===== */
+/* ================= CARD ================= */
 .card{
   background:var(--card);
   border-radius:22px;
@@ -99,10 +99,17 @@ body{
   font-weight:900;
 }
 
-.badge.ok{background:#dcfce7;color:#166534}
-.badge.warn{background:#fee2e2;color:#991b1b}
+.badge.ok{
+  background:#dcfce7;
+  color:#166534;
+}
 
-/* ===== MODAL ===== */
+.badge.warn{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+/* ================= MODAL ================= */
 .modal{
   position:fixed;
   inset:0;
@@ -175,7 +182,7 @@ body{
 
 <body>
 
-<!-- ===== FILTROS ===== -->
+<!-- ================= FILTROS ================= -->
 <div class="filters">
   <input id="filtroNome" placeholder="🔍 BUSCAR PRATO">
 
@@ -198,7 +205,7 @@ body{
 
 <div id="cards" class="grid"></div>
 
-<!-- ===== MODAL ===== -->
+<!-- ================= MODAL ================= -->
 <div id="modal" class="modal" onclick="fechar()">
   <div class="modal-box" onclick="event.stopPropagation()">
     <span class="close" onclick="fechar()">✕</span>
@@ -217,7 +224,11 @@ let pratos = [];
 let pratoAtual = null;
 
 async function carregar(){
-  const { data } = await sb.from("buffet").select("*").order("nome");
+  const { data } = await sb
+    .from("buffet")
+    .select("*")
+    .order("nome");
+
   pratos = data || [];
   render();
 }
@@ -248,7 +259,8 @@ function render(){
             ? `<span class="badge ok">COM RECEITA</span>`
             : `<span class="badge warn">SEM RECEITA</span>`}
         </div>
-      </div>`;
+      </div>
+    `;
     cards.appendChild(c);
   }
 }
@@ -273,7 +285,8 @@ function abrir(p){
 async function salvar(){
   const texto = modoInput.value.trim().toUpperCase();
 
-  await sb.from("buffet")
+  await sb
+    .from("buffet")
     .update({ modo_preparo: texto })
     .eq("id", pratoAtual.id);
 
