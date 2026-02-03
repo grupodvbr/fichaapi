@@ -194,6 +194,9 @@ textarea:focus{
   <div id="overlay" class="overlay"><div class="spinner"></div></div>
 
   <h1>FICHA TÉCNICA</h1>
+<label>CLONAR FICHA EXISTENTE</label>
+<input id="buscarFicha" placeholder="Digite o nome do prato...">
+<div id="listaFichas" class="lista"></div>
 
   <label>NOME DO PRATO</label>
   <input id="nomePrato">
@@ -625,7 +628,107 @@ toast(err.message || "ERRO AO SALVAR");
 
   }
 }
+
+let fichaSelecionada = null;
+
+buscarFicha.oninput = async () => {
+  const q = buscarFicha.value.trim();
+  if (q.length < 2) {
+    listaFichas.innerHTML = "";
+    return;
+  }
+
+  const { data } = await sb
+    .from("buffet")
+    .select("id,nome")
+    .ilike("nome", `%${q}%`)
+    .limit(6);
+
+  listaFichas.innerHTML = (data || []).map(p => `
+    <div class="item" onclick="abrirClone('${p.id}')">
+      ${p.nome}
+    </div>
+  `).join("");
+};
+async function abrirClone(id){
+  const { data: prato } = await sb
+    .from("buffet")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  const { data: itens } = await sb
+    .from("buffet_itens")
+    .select("*")
+    .eq("buffet_id", id);
+
+  fichaSelecionada = { prato, itens };
+
+  // restaura flags do storage
+  const prefs = JSON.parse(localStorage.getItem("cloneFlags") || "[]");
+  document.querySelectorAll("#cloneModal input[type=checkbox]")
+    .forEach(cb => cb.checked = prefs.includes(cb.dataset.key));
+
+  cloneModal.style.display = "flex";
+}
+function confirmarClone(){
+  const flags = [...document.querySelectorAll("#cloneModal input:checked")]
+    .map(i => i.dataset.key);
+
+  localStorage.setItem("cloneFlags", JSON.stringify(flags));
+
+  const { prato, itens } = fichaSelecionada;
+
+  if (flags.includes("nome")) nomePrato.value = prato.nome;
+  if (flags.includes("tipo")) tipoPrato.value = prato.tipo;
+  if (flags.includes("preco")) precoVenda.value = prato.preco_venda;
+  if (flags.includes("modo")) modoPreparo.value = prato.modo_preparo || "";
+  if (flags.includes("rendimento")) rendimentoFinal.value = prato.rendimento || 1;
+
+  if (flags.includes("ingredientes")) {
+    ingredientes = itens.map(i => ({
+      produto_id: i.produto_id,
+      nome: i.nome,
+      unidade: i.unidade_uso,
+      quantidade: i.quantidade,
+      custo_unitario: i.custo_unitario,
+      custo_total: i.custo_calculado,
+      rendimento: i.rendimento_percentual || 100
+    }));
+    render();
+  }
+
+  fecharClone();
+}
+function fecharClone(){
+  cloneModal.style.display = "none";
+}
+
+
+
+
+
+
+
+  
 </script>
+<div id="cloneModal" class="modal">
+  <div class="modal-box" style="max-width:520px">
+    <span class="close" onclick="fecharClone()">✕</span>
+
+    <h3>Clonar informações</h3>
+
+    <label><input type="checkbox" data-key="nome"> Nome do prato</label>
+    <label><input type="checkbox" data-key="tipo"> Tipo</label>
+    <label><input type="checkbox" data-key="preco"> Preço de venda</label>
+    <label><input type="checkbox" data-key="foto"> Foto</label>
+    <label><input type="checkbox" data-key="ingredientes"> Ingredientes</label>
+    <label><input type="checkbox" data-key="modo"> Modo de preparo</label>
+    <label><input type="checkbox" data-key="rendimento"> Rendimento</label>
+
+    <button onclick="confirmarClone()">IMPORTAR SELEÇÃO</button>
+  </div>
+</div>
 
 </body>
 </html>
