@@ -732,10 +732,13 @@ mBody.innerHTML = `
   <hr>
 
   <h3>Precificação</h3>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <input id="markupPerc" type="number" placeholder="Markup (%)">
-    <input id="precoSugerido" readonly placeholder="Preço sugerido">
-  </div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <input id="markupPerc" type="number" step="0.01" placeholder="Markup (%)">
+  <input id="precoVendaInput" type="number" step="0.01" placeholder="Preço de venda (R$)">
+</div>
+
+<p id="previewPreco" style="margin-top:8px;font-size:13px;font-weight:700;color:#166534"></p>
+
 
   <button class="btn-add" style="margin-top:10px"
     onclick="salvarPrecoVenda(${cmvFinal})">
@@ -958,12 +961,48 @@ setTimeout(() => {
 }, 0);
 
 
-  setTimeout(()=>{
-    markupPerc.oninput = ()=>{
-      const mk = Number(markupPerc.value||0);
-      precoSugerido.value = moeda(cmvFinal * (1 + mk/100));
-    };
-  },50);
+setTimeout(() => {
+  const mkInput = document.getElementById("markupPerc");
+  const precoInput = document.getElementById("precoVendaInput");
+  const preview = document.getElementById("previewPreco");
+
+  function atualizarPorMarkup() {
+    const mk = Number(mkInput.value || 0);
+    if (mk <= 0) return;
+
+    const preco = cmvFinal * (1 + mk / 100);
+    precoInput.value = preco.toFixed(2);
+
+    const lucro = preco - cmvFinal;
+    const margem = (lucro / preco) * 100;
+
+    preview.innerHTML = `
+      Preço: <b>${moeda(preco)}</b> •
+      Lucro: <b>${moeda(lucro)}</b> •
+      Margem: <b>${margem.toFixed(1)}%</b>
+    `;
+  }
+
+  function atualizarPorPreco() {
+    const preco = Number(precoInput.value || 0);
+    if (preco <= cmvFinal) return;
+
+    const mk = ((preco - cmvFinal) / cmvFinal) * 100;
+    mkInput.value = mk.toFixed(2);
+
+    const lucro = preco - cmvFinal;
+    const margem = (lucro / preco) * 100;
+
+    preview.innerHTML = `
+      Markup: <b>${mk.toFixed(1)}%</b> •
+      Lucro: <b>${moeda(lucro)}</b> •
+      Margem: <b>${margem.toFixed(1)}%</b>
+    `;
+  }
+
+  mkInput.oninput = atualizarPorMarkup;
+  precoInput.oninput = atualizarPorPreco;
+}, 50);
 
 } // ✅ FECHA abrirModal(p)
 
@@ -972,18 +1011,20 @@ setTimeout(() => {
    AÇÕES
 ===================================================== */
 async function salvarPrecoVenda(cmvFinal){
-  const mk = Number(markupPerc.value||0);
-  if(mk<=0) return alert("Informe o markup");
-
-  const preco = cmvFinal * (1 + mk/100);
+  const preco = Number(precoVendaInput.value || 0);
+  if (preco <= cmvFinal) {
+    alert("Preço inválido");
+    return;
+  }
 
   await sb.from("buffet")
     .update({ preco_venda: preco })
     .eq("id", pratoAtual.id);
 
   await carregarPratos();
-  abrirModal(pratos.find(p=>p.id===pratoAtual.id));
+  abrirModal(pratos.find(p => p.id === pratoAtual.id));
 }
+
 
 async function salvarIngrediente(){
   const prodId = ingProduto.value;
