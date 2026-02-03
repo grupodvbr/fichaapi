@@ -760,6 +760,27 @@ const nutri = {
   const lucro = precoVenda ? precoVenda - cmvFinal : 0;
   const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
 
+
+
+   setTimeout(() => {
+  const margemSelect = document.getElementById("margemAlvo");
+  const saida = document.getElementById("precoSugerido");
+
+  if (!margemSelect || !saida) return;
+
+  function calcularSugestao() {
+    const margem = Number(margemSelect.value) / 100;
+
+    // fórmula correta por margem
+    const preco = cmvFinal / (1 - margem);
+
+    saida.innerHTML = `💡 Preço sugerido: <b>${moeda(preco)}</b>`;
+  }
+
+  margemSelect.onchange = calcularSugestao;
+  calcularSugestao(); // calcula ao abrir
+}, 0);
+
 mBody.innerHTML = `
 <h2>${p.nome}</h2>
 
@@ -805,6 +826,29 @@ mBody.innerHTML = `
   </select>
 
   <hr>
+<hr>
+
+<h3>Preço sugerido</h3>
+
+<div class="precificacao">
+  <p>
+    🎯 Margem alvo:
+    <select id="margemAlvo">
+      <option value="30">30%</option>
+      <option value="35" selected>35%</option>
+      <option value="40">40%</option>
+    </select>
+  </p>
+
+  <p id="precoSugerido"
+     style="font-size:18px;font-weight:900;color:#166534">
+    —
+  </p>
+
+  <small style="color:var(--muted)">
+    Valor apenas sugestivo, não altera o preço de venda.
+  </small>
+</div>
 
   <h3>Precificação</h3>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
