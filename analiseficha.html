@@ -461,13 +461,22 @@ button{
 </div>
 
 <script>
-/* =====================================================
-   SUPABASE
-===================================================== */
+const EMAILS_AUTORIZADOS_PRECO_IDEAL = [
+  "leonardo_henrique1@hotmail.com",
+  "souzanalbert58@gmal.com"
+];
+
+let usuarioEmailAtual = null;
+
+
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
+(async () => {
+  const { data: { user } } = await sb.auth.getUser();
+  usuarioEmailAtual = user?.email || null;
+})();
 
 /* =====================================================
    UTIL
@@ -482,6 +491,7 @@ let pratos = [];
 let ingredientesBase = [];
 let impostosCache = [];
 let pratoAtual = null;
+
 
 /* =====================================================
    LOAD BASE
@@ -851,6 +861,21 @@ ${precoVenda ? `
   <p><b>Lucro:</b> ${moeda(lucro)}</p>
   <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
 ` : ``}
+
+${p.preco_ideal && precoVenda && precoVenda !== p.preco_ideal ? `
+  <p style="
+    margin-top:10px;
+    padding:10px 14px;
+    border-radius:12px;
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+    font-weight:800;
+  ">
+    ⚠️ Preço de venda diferente do preço sugerido
+  </p>
+` : ``}
+
 ${p.preco_ideal ? `
   <p><b>Preço ideal:</b> ${moeda(p.preco_ideal)}</p>
 ` : ``}
@@ -1078,15 +1103,27 @@ setTimeout(() => {
   };
 }, 0);
 setTimeout(() => {
+setTimeout(() => {
   const input = document.getElementById("precoIdealInput");
   if (!input) return;
 
   const valorInicial = Number(p.preco_ideal || 0);
+  const autorizado =
+    EMAILS_AUTORIZADOS_PRECO_IDEAL.includes(usuarioEmailAtual);
 
+  // ❌ não autorizado → bloqueia edição
+  if (!autorizado) {
+    input.readOnly = true;
+    input.style.opacity = "0.6";
+    input.title =
+      "Apenas usuários autorizados podem alterar o preço sugerido";
+    return;
+  }
+
+  // ✅ autorizado → salva automático
   input.onblur = async () => {
     const novoValor = Number(input.value || 0);
 
-    // não mudou → não salva
     if (novoValor === valorInicial) return;
 
     if (novoValor <= 0) {
@@ -1103,6 +1140,7 @@ setTimeout(() => {
     await carregarPratos();
   };
 }, 0);
+
 
 
 setTimeout(() => {
