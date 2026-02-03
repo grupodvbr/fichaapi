@@ -40,11 +40,7 @@ body{
   flex-direction:column;
 }
 
-.sidebar h2{
-  font-size:18px;
-  margin-bottom:12px;
-}
-
+.sidebar h2{margin-bottom:12px}
 .sidebar input{
   padding:12px;
   border-radius:14px;
@@ -64,7 +60,6 @@ body{
   margin-bottom:6px;
   cursor:pointer;
   font-weight:800;
-  text-transform:uppercase;
 }
 
 .item:hover{background:#f1f5f9}
@@ -81,9 +76,7 @@ body{
 }
 
 /* MAIN */
-.main{
-  padding:28px;
-}
+.main{padding:28px}
 
 .card{
   background:var(--card);
@@ -91,6 +84,12 @@ body{
   padding:28px;
   box-shadow:0 20px 40px rgba(0,0,0,.08);
   max-width:900px;
+}
+
+.section{
+  margin-top:28px;
+  padding-top:20px;
+  border-top:1px solid #e5e7eb;
 }
 
 label{
@@ -115,24 +114,7 @@ button{
   font-weight:800;
   border:none;
   cursor:pointer;
-  margin-top:20px;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr auto;
-  gap:10px;
-}
-
-.var{
-  background:#f8fafc;
-  padding:14px;
-  border-radius:14px;
-  margin-top:8px;
-  display:flex;
-  justify-content:space-between;
-  font-weight:800;
-  text-transform:uppercase;
+  margin-top:30px;
 }
 
 /* TOAST */
@@ -148,13 +130,9 @@ button{
   opacity:0;
   transform:translateY(10px);
   transition:.3s;
-  pointer-events:none;
 }
 
-.toast.show{
-  opacity:1;
-  transform:translateY(0);
-}
+.toast.show{opacity:1;transform:translateY(0)}
 </style>
 </head>
 
@@ -173,74 +151,69 @@ button{
 <!-- MAIN -->
 <div class="main">
   <div class="card">
+
     <h1 id="titulo">NOVO INGREDIENTE</h1>
 
-    <label>NOME</label>
-    <input id="nome">
+    <!-- DADOS BÁSICOS -->
+    <div class="section">
+      <label>NOME</label>
+      <input id="nome">
 
-    <label>DESCRIÇÃO</label>
-    <input id="descricao">
+      <label>DESCRIÇÃO</label>
+      <input id="descricao">
 
-    <label>UNIDADE</label>
-    <select id="unidade">
-      <option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option>
-    </select>
+      <label>UNIDADE</label>
+      <select id="unidade">
+        <option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option>
+      </select>
+    </div>
 
-    <label>VALOR</label>
-    <input id="valor">
+    <!-- CUSTO -->
+    <div class="section">
+      <label>VALOR</label>
+      <input id="valor">
 
-    <label>RENDIMENTO (%)</label>
-    <input id="rendimento" value="100">
-<hr style="margin:30px 0">
+      <label>RENDIMENTO (%)</label>
+      <input id="rendimento" value="100">
+    </div>
 
-<h3>INFORMAÇÃO NUTRICIONAL (por 100g ou 100ml)</h3>
+    <!-- NUTRIÇÃO -->
+    <div class="section">
+      <h3>INFORMAÇÃO NUTRICIONAL (por 100g ou 100ml)</h3>
 
-<label>VALOR ENERGÉTICO (kcal)</label>
-<input id="energia_kcal" type="number" step="0.01">
+      <label>VALOR ENERGÉTICO (kcal)</label>
+      <input id="energia_kcal" type="number">
 
-<label>CARBOIDRATOS (g)</label>
-<input id="carboidratos" type="number" step="0.01">
+      <label>CARBOIDRATOS (g)</label>
+      <input id="carboidratos" type="number">
 
-<label>AÇÚCARES TOTAIS (g)</label>
-<input id="acucares_totais" type="number" step="0.01">
+      <label>AÇÚCARES TOTAIS (g)</label>
+      <input id="acucares_totais" type="number">
 
-<label>AÇÚCARES ADICIONADOS (g)</label>
-<input id="acucares_adicionados" type="number" step="0.01">
+      <label>AÇÚCARES ADICIONADOS (g)</label>
+      <input id="acucares_adicionados" type="number">
 
-<label>PROTEÍNAS (g)</label>
-<input id="proteinas" type="number" step="0.01">
+      <label>PROTEÍNAS (g)</label>
+      <input id="proteinas" type="number">
 
-<label>GORDURAS TOTAIS (g)</label>
-<input id="gorduras_totais" type="number" step="0.01">
+      <label>GORDURAS TOTAIS (g)</label>
+      <input id="gorduras_totais" type="number">
 
-<label>GORDURAS SATURADAS (g)</label>
-<input id="gorduras_saturadas" type="number" step="0.01">
+      <label>GORDURAS SATURADAS (g)</label>
+      <input id="gorduras_saturadas" type="number">
 
-<label>GORDURAS TRANS (g)</label>
-<input id="gorduras_trans" type="number" step="0.01">
+      <label>GORDURAS TRANS (g)</label>
+      <input id="gorduras_trans" type="number">
 
-<label>FIBRA ALIMENTAR (g)</label>
-<input id="fibra_alimentar" type="number" step="0.01">
+      <label>FIBRA ALIMENTAR (g)</label>
+      <input id="fibra_alimentar" type="number">
 
-<label>SÓDIO (mg)</label>
-<input id="sodio_mg" type="number" step="0.01">
+      <label>SÓDIO (mg)</label>
+      <input id="sodio_mg" type="number">
+    </div>
 
     <button onclick="salvar()">SALVAR INGREDIENTE</button>
 
-    <hr style="margin:30px 0">
-
-    <h3>VARIAÇÕES</h3>
-
-    <div class="grid">
-      <select id="vUn">
-        <option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option>
-      </select>
-      <input id="vValor" placeholder="R$ 0,00">
-      <input id="vRend" value="100">
-      <button onclick="addVariacao()">+</button>
-    </div>
-
-    <div id="vars"></div>
   </div>
 </div>
 
@@ -256,7 +229,6 @@ const sb = supabase.createClient(
 
 let atual=null;
 
-/* TOAST */
 function toast(msg){
   const t=document.getElementById("toast");
   t.textContent=msg;
@@ -264,127 +236,71 @@ function toast(msg){
   setTimeout(()=>t.classList.remove("show"),2500);
 }
 
-/* FORÇA MAIÚSCULA */
 document.addEventListener("input",e=>{
   if(e.target.tagName==="INPUT") e.target.value=e.target.value.toUpperCase();
 });
 
-/* MÁSCARAS */
 function moeda(el){
   el.oninput=()=>{
     let v=el.value.replace(/\D/g,"");
     el.value="R$ "+(v/100).toFixed(2).replace(".",",");
   }
 }
-function numero(el){el.oninput=()=>el.value=el.value.replace(/\D/g,"")}
+moeda(valor);
 
-moeda(valor); moeda(vValor);
-numero(rendimento); numero(vRend);
-
-/* LISTAR */
 async function carregar(){
-  const { data, error } = await sb
-    .from("produtos")
-    .select("*")
-    .order("nome", { ascending: true })
-    .range(0, 5000); // <<< AQUI está o conserto
-
-  if(error){
-    toast("ERRO AO CARREGAR INGREDIENTES");
-    return;
-  }
-
-  renderLista(data || []);
+  const { data } = await sb.from("produtos").select("*").order("nome");
+  lista.innerHTML=(data||[]).map(i=>`
+    <div class="item ${atual?.id===i.id?'active':''}" onclick="editar('${i.id}')">${i.nome}</div>
+  `).join("");
 }
-
 carregar();
 
-function renderLista(items){
-  lista.innerHTML=items.map(i=>`
-    <div class="item ${atual?.id===i.id?'active':''}" onclick="editar('${i.id}')">
-      ${i.nome}
-    </div>`).join("");
-}
-
-/* BUSCA */
-busca.oninput = async () => {
-  const q = busca.value.toLowerCase();
-
-  const { data, error } = await sb
-    .from("produtos")
-    .select("*")
-    .order("nome", { ascending: true })
-    .range(0, 5000); // <<< MESMO AJUSTE AQUI
-
-  if(error){
-    toast("ERRO NA BUSCA");
-    return;
-  }
-
-  renderLista(
-    (data || []).filter(p =>
-      p.nome && p.nome.toLowerCase().includes(q)
-    )
-  );
+busca.oninput=async()=>{
+  const q=busca.value.toLowerCase();
+  const {data}=await sb.from("produtos").select("*");
+  lista.innerHTML=(data||[]).filter(i=>i.nome?.toLowerCase().includes(q))
+    .map(i=>`<div class="item" onclick="editar('${i.id}')">${i.nome}</div>`).join("");
 };
 
-
-/* EDITAR */
 async function editar(id){
   const {data}=await sb.from("produtos").select("*").eq("id",id).single();
   atual=data;
-
   titulo.textContent="EDITAR INGREDIENTE";
-  nome.value=data.nome;
-  descricao.value=data.descricao||"";
-  unidade.value=data.unidade_medida;
-  valor.value="R$ "+Number(data.valor).toFixed(2).replace(".",",");
-  rendimento.value=data.rendimento_percentual;
-  energia_kcal.value = data.energia_kcal || 0;
-carboidratos.value = data.carboidratos || 0;
-acucares_totais.value = data.acucares_totais || 0;
-acucares_adicionados.value = data.acucares_adicionados || 0;
-proteinas.value = data.proteinas || 0;
-gorduras_totais.value = data.gorduras_totais || 0;
-gorduras_saturadas.value = data.gorduras_saturadas || 0;
-gorduras_trans.value = data.gorduras_trans || 0;
-fibra_alimentar.value = data.fibra_alimentar || 0;
-sodio_mg.value = data.sodio_mg || 0;
 
-  await carregarVariacoes(id);
+  Object.keys(data).forEach(k=>{
+    if(document.getElementById(k)) document.getElementById(k).value=data[k]||"";
+  });
+
+  valor.value="R$ "+Number(data.valor).toFixed(2).replace(".",",");
 }
 
-
-/* NOVO */
 function novo(){
   atual=null;
   titulo.textContent="NOVO INGREDIENTE";
-  nome.value=descricao.value=valor.value="";
+  document.querySelectorAll("input").forEach(i=>i.value="");
   rendimento.value=100;
-  vars.innerHTML="";
 }
 
-/* SALVAR */
 async function salvar(){
-const payload = {
-  nome: nome.value,
-  descricao: descricao.value,
-  unidade_medida: unidade.value,
-  valor: Number(valor.value.replace(/\D/g,"")) / 100,
-  rendimento_percentual: Number(rendimento.value),
+  const payload={
+    nome:nome.value,
+    descricao:descricao.value,
+    unidade_medida:unidade.value,
+    valor:Number(valor.value.replace(/\D/g,""))/100,
+    rendimento_percentual:Number(rendimento.value),
 
-  energia_kcal: Number(energia_kcal.value || 0),
-  carboidratos: Number(carboidratos.value || 0),
-  acucares_totais: Number(acucares_totais.value || 0),
-  acucares_adicionados: Number(acucares_adicionados.value || 0),
-  proteinas: Number(proteinas.value || 0),
-  gorduras_totais: Number(gorduras_totais.value || 0),
-  gorduras_saturadas: Number(gorduras_saturadas.value || 0),
-  gorduras_trans: Number(gorduras_trans.value || 0),
-  fibra_alimentar: Number(fibra_alimentar.value || 0),
-  sodio_mg: Number(sodio_mg.value || 0)
-};
-
+    energia_kcal:+energia_kcal.value||0,
+    carboidratos:+carboidratos.value||0,
+    acucares_totais:+acucares_totais.value||0,
+    acucares_adicionados:+acucares_adicionados.value||0,
+    proteinas:+proteinas.value||0,
+    gorduras_totais:+gorduras_totais.value||0,
+    gorduras_saturadas:+gorduras_saturadas.value||0,
+    gorduras_trans:+gorduras_trans.value||0,
+    fibra_alimentar:+fibra_alimentar.value||0,
+    sodio_mg:+sodio_mg.value||0
+  };
 
   if(atual){
     await sb.from("produtos").update(payload).eq("id",atual.id);
@@ -396,70 +312,6 @@ const payload = {
   toast("SALVO COM SUCESSO");
   carregar();
 }
-
-/* VARIAÇÕES */
-async function addVariacao(){
-  if(!atual) return toast("SALVE O INGREDIENTE PRIMEIRO");
-
-  const unidadeMedida = vUn.value;
-  const valorNum = Number(vValor.value.replace(/\D/g,""))/100;
-  const rendNum = Number(vRend.value);
-
-  // 🔎 verifica se já existe
-  const { data:existe } = await sb
-    .from("produto_variacoes")
-    .select("id")
-    .eq("produto_id", atual.id)
-    .eq("unidade_medida", unidadeMedida)
-    .single();
-
-  if(existe){
-    // 🔁 UPDATE
-    await sb
-      .from("produto_variacoes")
-      .update({
-        valor: valorNum,
-        rendimento_percentual: rendNum
-      })
-      .eq("id", existe.id);
-
-    toast("VARIAÇÃO ATUALIZADA");
-  }else{
-    // ➕ INSERT
-    await sb.from("produto_variacoes").insert({
-      produto_id: atual.id,
-      unidade_medida: unidadeMedida,
-      valor: valorNum,
-      rendimento_percentual: rendNum
-    });
-
-    toast("VARIAÇÃO CRIADA");
-  }
-
-  await carregarVariacoes(atual.id);
-}
-
-
-function renderVars(vs){
-  vars.innerHTML=vs.map(v=>`
-    <div class="var">
-      ${v.unidade_medida} • R$ ${Number(v.valor).toFixed(2)} • ${v.rendimento_percentual}%
-    </div>`).join("");
-}async function carregarVariacoes(produtoId){
-  const { data, error } = await sb
-    .from("produto_variacoes")
-    .select("*")
-    .eq("produto_id", produtoId)
-    .order("unidade_medida");
-
-  if(error){
-    toast("ERRO AO CARREGAR VARIAÇÕES");
-    return;
-  }
-
-  renderVars(data || []);
-}
-
 </script>
 
 </body>
