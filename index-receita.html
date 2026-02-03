@@ -30,7 +30,7 @@ body{
   color:var(--text);
 }
 
-/* ================= FILTROS ================= */
+/* ===== FILTROS ===== */
 .filters{
   position:sticky;
   top:0;
@@ -49,10 +49,11 @@ body{
   border:1px solid var(--border);
   padding:0 16px;
   font-size:14px;
-  font-weight:700;
+  font-weight:800;
+  text-transform:uppercase;
 }
 
-/* ================= GRID ================= */
+/* ===== GRID ===== */
 .grid{
   padding:16px;
   display:grid;
@@ -60,7 +61,7 @@ body{
   gap:16px;
 }
 
-/* ================= CARD ================= */
+/* ===== CARD ===== */
 .card{
   background:var(--card);
   border-radius:22px;
@@ -69,7 +70,6 @@ body{
   cursor:pointer;
   transition:.15s ease;
 }
-
 .card:hover{transform:translateY(-4px)}
 
 .card img{
@@ -85,20 +85,21 @@ body{
 .card-body h3{
   margin:0;
   font-size:15px;
-  font-weight:800;
+  font-weight:900;
 }
 
 .badges{
   display:flex;
   gap:6px;
   margin-top:8px;
+  flex-wrap:wrap;
 }
 
 .badge{
   padding:6px 10px;
   border-radius:999px;
   font-size:11px;
-  font-weight:800;
+  font-weight:900;
   background:#eef2ff;
   color:#3730a3;
 }
@@ -106,7 +107,7 @@ body{
 .badge.ok{background:#dcfce7;color:#166534}
 .badge.warn{background:#fee2e2;color:#991b1b}
 
-/* ================= MODAL ================= */
+/* ===== MODAL ===== */
 .modal{
   position:fixed;
   inset:0;
@@ -135,12 +136,15 @@ body{
 }
 
 .modal-body h2{
-  margin:0 0 8px;
+  margin:0 0 10px;
   font-size:22px;
+  font-weight:900;
 }
 
 .modal-body h3{
   margin:18px 0 6px;
+  font-size:14px;
+  font-weight:900;
 }
 
 .modal-body textarea{
@@ -150,7 +154,7 @@ body{
   border:1px solid var(--border);
   padding:14px;
   font-size:14px;
-  font-weight:700;
+  font-weight:800;
   resize:vertical;
   text-transform:uppercase;
 }
@@ -165,7 +169,7 @@ body{
   border:none;
   border-radius:14px;
   font-weight:900;
-  letter-spacing:.04em;
+  letter-spacing:.05em;
   margin-top:12px;
   cursor:pointer;
 }
@@ -195,9 +199,10 @@ body{
 
 <body>
 
-<!-- ================= FILTROS ================= -->
+<!-- ===== FILTROS ===== -->
 <div class="filters">
   <input id="filtroNome" placeholder="🔍 BUSCAR PRATO">
+
   <select id="filtroTipo">
     <option value="">🍽 TODOS OS TIPOS</option>
     <option>SUSHI</option>
@@ -207,8 +212,9 @@ body{
     <option>SOBREMESA</option>
     <option>ACOMPANHAMENTO</option>
   </select>
+
   <select id="filtroReceita">
-    <option value="">📋 TODAS</option>
+    <option value="">📋 TODAS AS RECEITAS</option>
     <option value="COM">COM RECEITA</option>
     <option value="SEM">SEM RECEITA</option>
   </select>
@@ -216,7 +222,7 @@ body{
 
 <div id="cards" class="grid"></div>
 
-<!-- ================= MODAL ================= -->
+<!-- ===== MODAL ===== -->
 <div id="modal" class="modal" onclick="fechar()">
   <div class="modal-box" onclick="event.stopPropagation()">
     <span class="close" onclick="fechar()">✕</span>
@@ -304,6 +310,7 @@ async function abrir(p){
 
 async function salvarReceita(){
   const texto = receitaInput.value.trim().toUpperCase();
+
   await sb.from("buffet")
     .update({ modo_preparo: texto })
     .eq("id", pratoAtual.id);
