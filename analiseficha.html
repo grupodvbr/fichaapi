@@ -438,15 +438,9 @@ button{
 <body>
 <div class="filters">
   <input id="filtroNome" type="text" placeholder="Buscar por nome do prato">
-  <select id="filtroTipo">
-    <option value="">Todos os tipos</option>
-    <option value="SUSHI">SUSHI</option>
-    <option value="DRINK">DRINK</option>
-    <option value="ENTRADA">ENTRADA</option>
-    <option value="PRATO PRINCIPAL">PRATO PRINCIPAL</option>
-    <option value="SOBREMESA">SOBREMESA</option>
-    <option value="ACOMPANHAMENTO">ACOMPANHAMENTO</option>
-  </select>
+<select id="filtroTipo">
+  <option value="">Todos os tipos</option>
+</select>
 </div>
 
 <div id="cards" class="grid"></div>
@@ -732,7 +726,7 @@ async function abrirModal(p){
   modal.style.display = "flex";
   document.body.style.overflow = "hidden";
   mFoto.src = p.foto_url || "";
-
+  await carregarTipos();
   /* INGREDIENTES */
 const { data: itens } = await sb
   .from("buffet_itens")
@@ -857,15 +851,9 @@ mBody.innerHTML = `
   <hr>
   <h3>Tipo do prato</h3>
 
-  <select id="tipoPrato">
-    <option value="">SELECIONE</option>
-    <option>PRATO PRINCIPAL</option>
-    <option>ENTRADA</option>
-    <option>SOBREMESA</option>
-    <option>DRINK</option>
-    <option>SUSHI</option>
-    <option>ACOMPANHAMENTO</option>
-  </select>
+<select id="tipoPrato">
+  <option value="">SELECIONE</option>
+</select>
 
   <hr>
 <hr>
@@ -1357,16 +1345,6 @@ function fechar(){
   document.body.style.overflow="";
 }
 
-/* =====================================================
-   INIT
-===================================================== */
-(async ()=>{
-  await carregarIngredientesBase();
-  await carregarPratos();
-  await carregarCMVCache();
-  renderLista();
-})();
-
 
 async function editarIngrediente(itemId){
   const { data, error } = await sb
@@ -1423,7 +1401,46 @@ filtroTipo.addEventListener("change", () => {
 });
 
 
- 
+ async function carregarTipos(){
+  const { data, error } = await sb
+    .from("buffet")
+    .select("tipo");
+
+  if(error){
+    console.error("Erro ao buscar tipos:", error);
+    return;
+  }
+
+  // remove vazios e duplicados
+  const tiposUnicos = [...new Set(
+    (data || [])
+      .map(i => (i.tipo || "").trim())
+      .filter(Boolean)
+  )].sort();
+
+  // filtro principal
+  filtroTipo.innerHTML = `<option value="">Todos os tipos</option>` +
+    tiposUnicos.map(t => `
+      <option value="${t}">${t}</option>
+    `).join("");
+
+  // select do modal (se existir no momento)
+  const selectModal = document.getElementById("tipoPrato");
+  if(selectModal){
+    selectModal.innerHTML = `
+      <option value="">SELECIONE</option>
+      ${tiposUnicos.map(t => `
+        <option value="${t}">${t}</option>
+      `).join("")}
+    `;
+  }
+}(async ()=>{
+  await carregarIngredientesBase();
+  await carregarPratos();
+  await carregarCMVCache();
+  await carregarTipos();   // 👈 ADICIONA ISSO
+  renderLista();
+})();
 
 </script>
 
