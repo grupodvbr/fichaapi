@@ -70,6 +70,20 @@ html, body {
   touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
 }
+.subcats{
+  margin-top:8px;
+  padding-bottom:4px;
+  opacity:.9;
+}
+.cat.group{
+  border-style:dashed;
+  opacity:.9;
+}
+.cat.back{
+  background:transparent;
+  border-color:transparent;
+  color:var(--muted);
+}
 
 </style>
 </head>
@@ -79,7 +93,9 @@ html, body {
 <div class="top">
   <input id="search" class="search" placeholder="Buscar no cardápio..." />
   <div id="cats" class="cats"></div>
+  <div id="subcats" class="cats subcats" style="display:none"></div>
 </div>
+
 
 <div id="grid" class="grid"></div>
 
@@ -101,16 +117,82 @@ html, body {
 <script>
 /* Seu JS original (sem mudanças de lógica) */
 const sb = supabase.createClient("https://dxkszikemntfusfyrzos.supabase.co","sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed");
-const CATS=[{key:"",label:"TODOS"},{key:"PRATO PRINCIPAL",label:"PRATO PRINCIPAL"},{key:"ENTRADA",label:"ENTRADA"},{key:"SOBREMESA",label:"SOBREMESA"},{key:"DRINK",label:"DRINK"},{key:"SUSHI",label:"SUSHI"},{key:"ACOMPANHAMENTO",label:"ACOMPANHAMENTO"}];
+const GROUPS = [
+  { key: "", label: "TODOS" },
+
+  { key: "BEBIDAS", label: "BEBIDAS", sub: [
+    { key: "DRINK", label: "DRINKS" },
+    { key: "VINHO", label: "VINHOS" },
+    { key: "ESPUMANTE", label: "ESPUMANTES" },
+    { key: "WHISKY", label: "WHISKY" },
+    { key: "GIN", label: "GIN" },
+    { key: "VODKA", label: "VODKA" },
+    { key: "TEQUILA", label: "TEQUILA" },
+    { key: "LICOR", label: "LICOR" },
+    { key: "CAMPARI", label: "CAMPARI" }
+  ]},
+
+  { key: "COMIDAS", label: "COMIDAS", sub: [
+    { key: "SUSHI", label: "SUSHI" }
+  ]}
+];
+
 let page=0, PAGE_SIZE=10, catAtiva="", termo="", carregando=false, fimLista=false;
+let grupoAberto = null;
+
 const idsCarregados=new Set();
-const grid=document.getElementById("grid"), cats=document.getElementById("cats");
+const grid=document.getElementById("grid");
+const cats=document.getElementById("cats");
+const subcats=document.getElementById("subcats");
+
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
 function renderCats(){
-  cats.innerHTML=CATS.map(c=>`<button class="cat ${c.key===catAtiva?'active':''}" onclick="setCat('${c.key.replace(/'/g,"\\'")}')">${c.label}</button>`).join("");
+  cats.innerHTML = GROUPS.map(g => {
+    if(!g.sub){
+      return `<button class="cat ${catAtiva===''?'active':''}" onclick="setCat('')">TODOS</button>`;
+    }
+    return `<button class="cat group ${grupoAberto===g.key?'active':''}" onclick="openGroup('${g.key}')">${g.label}</button>`;
+  }).join("");
+
+  if(!grupoAberto){
+    subcats.style.display = "none";
+    subcats.innerHTML = "";
+  }
 }
-function setCat(k){catAtiva=k;page=0;fimLista=false;idsCarregados.clear();grid.innerHTML="";renderCats();loadMore();}
+
+function openGroup(k){
+  grupoAberto = grupoAberto === k ? null : k;
+  const group = GROUPS.find(g => g.key === grupoAberto);
+  if(!group){ subcats.style.display="none"; return; }
+
+  subcats.style.display = "flex";
+  subcats.innerHTML = `
+    <button class="cat back" onclick="closeGroup()">◀ Voltar</button>
+    ${group.sub.map(s => `
+      <button class="cat ${s.key===catAtiva?'active':''}" onclick="setCat('${s.key}')">${s.label}</button>
+    `).join("")}
+  `;
+  renderCats();
+}
+
+function closeGroup(){
+  grupoAberto = null;
+  subcats.style.display = "none";
+  subcats.innerHTML = "";
+  renderCats();
+}
+
+function setCat(k){
+  catAtiva = k;
+  page = 0;
+  fimLista = false;
+  idsCarregados.clear();
+  grid.innerHTML = "";
+  renderCats();
+  loadMore();
+}
+
 function openModal(p){mImg.src=p.foto_url||"";mName.textContent=p.nome;mDesc.textContent=p.descricao||"";mPrice.textContent=moeda(p.preco_venda);modal.classList.add("open");}
 function closeModal(){modal.classList.remove("open");}
 
