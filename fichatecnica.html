@@ -361,6 +361,7 @@ fotoProduto.onchange=()=>{
 /* ================= INGREDIENTES ================= */
 let ingrediente=null;
 let ingredientes=[];
+let removendoIndex = null;
 
 buscaIngrediente.oninput = async () => {
   const q = buscaIngrediente.value.trim().toUpperCase();
@@ -814,7 +815,6 @@ function removerIngrediente(index, btn){
   }, 350);
 }
 
-  
 
 
 
