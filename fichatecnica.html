@@ -478,18 +478,47 @@ listaIng.innerHTML=ingredientes.map((i,idx)=>`
     <span>${i.nome} (${i.quantidade} ${i.unidade})</span>
     <div style="display:flex;gap:10px;align-items:center">
       <strong>${moeda(i.custo_total)}</strong>
-      <button
-        onclick="removerIngrediente(${idx})"
-        style="
-          background:#ef4444;
-          color:#fff;
-          border:none;
-          border-radius:10px;
-          padding:6px 10px;
-          cursor:pointer;
-          font-weight:800
-        "
-      >✕</button>
+<button
+  id="btnDel-${idx}"
+  onclick="removerIngrediente(${idx})"
+  style="
+    position:relative;
+    background:#ef4444;
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:6px 10px;
+    cursor:pointer;
+    font-weight:800;
+    min-width:34px;
+    min-height:28px;
+  "
+>
+  <span id="iconDel-${idx}">✕</span>
+  <span
+    id="spinDel-${idx}"
+    style="
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+    "
+  >
+    <span
+      style="
+        width:14px;
+        height:14px;
+        border:3px solid rgba(255,255,255,.6);
+        border-top-color:#fff;
+        border-radius:50%;
+        animation:spin .8s linear infinite;
+        display:inline-block;
+      "
+    ></span>
+  </span>
+</button>
+
     </div>
   </div>
 `).join("");
@@ -762,8 +791,19 @@ function fecharClone(){
 }
 
 function removerIngrediente(index){
-  ingredientes.splice(index,1);
-  render();
+  const btn = document.getElementById("btnDel-" + index);
+  const icon = document.getElementById("iconDel-" + index);
+  const spin = document.getElementById("spinDel-" + index);
+
+  if (btn) btn.disabled = true;
+  if (icon) icon.style.display = "none";
+  if (spin) spin.style.display = "flex";
+
+  // simula pequeno loading premium
+  setTimeout(() => {
+    ingredientes.splice(index, 1);
+    render();
+  }, 350);
 }
 
 
