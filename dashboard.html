@@ -224,23 +224,34 @@ iframe{
 <!-- APP -->
 <div id="app" class="app">
 
-  <aside class="sidebar">
-    <div class="icon active" onclick="openPage('home.html',this)">
-      <span class="glyph home"></span>
-    </div>
-    <div class="icon" onclick="openPage('fichatecnica.html',this)">
-      <span class="glyph doc"></span>
-    </div>
-        <div class="icon" onclick="openPage('ingredientes.html',this)">
-      <span class="glyph doc"></span>
-    </div>
-    <div class="icon" onclick="openPage('analiseficha.html',this)">
-      <span class="glyph chart"></span>
-    </div>
-    <div class="icon" onclick="openPage('cards/card3.html',this)">
-      <span class="glyph settings"></span>
-    </div>
-  </aside>
+<aside class="sidebar">
+
+  <!-- 1️⃣ DASHBOARD -->
+  <div class="icon active" onclick="openPage('dashboard.html',this)" title="Dashboard">
+    <span class="glyph home"></span>
+  </div>
+
+  <!-- 2️⃣ CADASTRO DE FICHAS TÉCNICAS -->
+  <div class="icon" onclick="openPage('fichatecnica.html',this)" title="Cadastro de Fichas Técnicas">
+    <span class="glyph doc"></span>
+  </div>
+
+  <!-- 3️⃣ CADASTRO DE INGREDIENTES -->
+  <div class="icon" onclick="openPage('ingredientes.html',this)" title="Cadastro de Ingredientes">
+    <span class="glyph doc"></span>
+  </div>
+
+  <!-- 4️⃣ ANÁLISE DE FICHAS -->
+  <div class="icon" onclick="openPage('analiseficha.html',this)" title="Análise de Fichas">
+    <span class="glyph chart"></span>
+  </div>
+
+  <!-- 5️⃣ CONFIGURAÇÕES -->
+  <div class="icon" onclick="openPage('config.html',this)" title="Configurações">
+    <span class="glyph settings"></span>
+  </div>
+
+</aside>
 
   <div class="main">
     <div class="header">
