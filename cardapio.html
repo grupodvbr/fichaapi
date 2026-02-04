@@ -67,6 +67,7 @@ body{scrollbar-width:none}
   padding-bottom:8px;
 }
 .cats::-webkit-scrollbar{height:0}
+
 .cat{
   flex:0 0 auto;
   padding:10px 14px;
@@ -242,16 +243,15 @@ const sb = supabase.createClient(
 );
 
 const CATS = [
-  { key:"", label:"✨ TODOS" },
-  { key:"PRATO PRINCIPAL", label:"🍽️ PRATOS" },
-  { key:"ENTRADA", label:"🥗 ENTRADAS" },
-  { key:"SUSHI", label:"🍣 SUSHI" },
-  { key:"DRINK", label:"🍸 DRINKS" },
-  { key:"SOBREMESA", label:"🍰 DOCES" },
-  { key:"ACOMPANHAMENTO", label:"🍟 ACOMP." },
+  { key:"", label:"TODOS" },
+  { key:"PRATO PRINCIPAL", label:"PRATO PRINCIPAL" },
+  { key:"ENTRADA", label:"ENTRADA" },
+  { key:"SOBREMESA", label:"SOBREMESA" },
+  { key:"DRINK", label:"DRINK" },
+  { key:"SUSHI", label:"SUSHI" },
+  { key:"ACOMPANHAMENTO", label:"ACOMPANHAMENTO" }
 ];
 
-let all = [];
 let page = 0;
 const PAGE_SIZE = 10;
 let catAtiva = "";
