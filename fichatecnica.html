@@ -796,6 +796,10 @@ function fecharClone(){
 }
 
 function removerIngrediente(index, btn){
+  if (removendoIndex !== null) return; // trava clique duplo
+
+  removendoIndex = index;
+
   const icon = document.getElementById("iconDel-" + index);
   const spin = document.getElementById("spinDel-" + index);
 
@@ -805,10 +809,10 @@ function removerIngrediente(index, btn){
 
   setTimeout(() => {
     ingredientes.splice(index, 1);
+    removendoIndex = null;
     render();
   }, 350);
 }
-
 
   
 
