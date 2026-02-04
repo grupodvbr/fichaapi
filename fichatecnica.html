@@ -199,6 +199,10 @@ textarea:focus{
   cursor:pointer;
   font-weight:800;
 }
+button:disabled{
+  opacity:.7;
+  cursor:not-allowed;
+}
 
 
 
@@ -480,7 +484,7 @@ listaIng.innerHTML=ingredientes.map((i,idx)=>`
       <strong>${moeda(i.custo_total)}</strong>
 <button
   id="btnDel-${idx}"
-  onclick="removerIngrediente(${idx})"
+  onclick="removerIngrediente(${idx}, this)"
   style="
     position:relative;
     background:#ef4444;
@@ -494,6 +498,7 @@ listaIng.innerHTML=ingredientes.map((i,idx)=>`
     min-height:28px;
   "
 >
+
   <span id="iconDel-${idx}">✕</span>
   <span
     id="spinDel-${idx}"
@@ -790,8 +795,7 @@ function fecharClone(){
   fichaSelecionada = null;
 }
 
-function removerIngrediente(index){
-  const btn = document.getElementById("btnDel-" + index);
+function removerIngrediente(index, btn){
   const icon = document.getElementById("iconDel-" + index);
   const spin = document.getElementById("spinDel-" + index);
 
@@ -799,13 +803,11 @@ function removerIngrediente(index){
   if (icon) icon.style.display = "none";
   if (spin) spin.style.display = "flex";
 
-  // simula pequeno loading premium
   setTimeout(() => {
     ingredientes.splice(index, 1);
     render();
   }, 350);
 }
-
 
 
   
