@@ -8,30 +8,81 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* === CSS (mantido do seu) === */
-:root{--bg:#0b0b0c;--card:#111113;--text:#fff;--muted:#a1a1aa;--gold:#d4af37;--gold-soft:rgba(212,175,55,.25);--border:#1f1f22;--radius:18px;--shadow:0 20px 60px rgba(0,0,0,.6)}
+:root{
+  --bg:#0b0b0c;
+  --card:#111113;
+  --text:#ffffff;
+  --muted:#a1a1aa;
+  --gold:#d4af37;
+  --gold-soft:rgba(212,175,55,.25);
+  --border:#1f1f22;
+  --radius:18px;
+  --shadow:0 20px 60px rgba(0,0,0,.6);
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter;background:linear-gradient(180deg,#000,#0b0b0c,#000);color:#fff;overflow-y:scroll}
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  background:linear-gradient(180deg,#000 0%, #0b0b0c 40%, #000 100%);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  overflow-y:scroll;
+}
 body::-webkit-scrollbar{width:0;height:0}
-.top{position:sticky;top:0;z-index:10;padding:14px;background:linear-gradient(180deg,rgba(0,0,0,.9),rgba(0,0,0,.6) 60%,transparent);backdrop-filter:blur(8px)}
-.search{width:100%;height:48px;border-radius:999px;border:1px solid var(--border);background:#0f0f12;color:#fff;padding:0 18px;font-weight:700}
-.cats{display:flex;gap:10px;margin-top:10px;overflow-x:auto}
+body{scrollbar-width:none}
+.top{
+  position:sticky; top:0; z-index:10;
+  background:linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.6) 60%, transparent);
+  backdrop-filter: blur(8px);
+  padding:14px 14px 6px;
+}
+.search{
+  width:100%; height:48px; border-radius:999px;
+  border:1px solid var(--border); background:#0f0f12; color:#fff;
+  padding:0 18px; font-weight:700; outline:none;
+}
+.search::placeholder{color:#777}
+.cats{display:flex; gap:10px; margin-top:10px; overflow-x:auto; padding-bottom:8px}
 .cats::-webkit-scrollbar{height:0}
-.cat{padding:10px 14px;border-radius:999px;border:1px solid var(--border);background:#0f0f12;color:#fff;font-weight:800;font-size:12px;cursor:pointer}
-.cat.active,.cat:hover{border-color:var(--gold);color:var(--gold)}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:12px 12px 80px}
-.card{background:#0f0f12;border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer}
-.thumb{width:100%;aspect-ratio:1/1;object-fit:cover}
+.cat{
+  flex:0 0 auto; padding:10px 14px; border-radius:999px;
+  border:1px solid var(--border); background:#0f0f12; color:#fff;
+  font-weight:800; font-size:12px; letter-spacing:.04em; cursor:pointer; transition:.15s ease;
+}
+.cat.active,.cat:hover{
+  border-color:var(--gold); color:var(--gold);
+  box-shadow:0 0 0 1px var(--gold-soft), 0 8px 24px rgba(212,175,55,.25);
+}
+.grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; padding:12px 12px 80px}
+.card{
+  background:linear-gradient(180deg,#0f0f12,#0a0a0c);
+  border:1px solid var(--border); border-radius:18px; overflow:hidden;
+  box-shadow:var(--shadow); transition:.18s ease; cursor:pointer;
+}
+.card:active{transform:scale(.98)}
+.thumb{width:100%; aspect-ratio:1/1; object-fit:cover; background:#000}
 .body{padding:12px}
-.name{font-weight:900;font-size:14px}
-.desc{font-size:12px;color:#9ca3af;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.price{margin-top:6px;font-weight:900;color:var(--gold)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:flex-end}
+.name{font-weight:900; letter-spacing:.02em; font-size:14px; margin:0 0 6px}
+.desc{
+  font-size:12px; color:#9ca3af; line-height:1.35;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.price{margin-top:8px; font-weight:900; color:var(--gold); font-size:15px}
+.modal{
+  position:fixed; inset:0; background:rgba(0,0,0,.8); backdrop-filter:blur(6px);
+  display:none; align-items:flex-end; justify-content:center; z-index:100;
+}
 .modal.open{display:flex}
-.modal-box{width:100%;max-width:720px;background:#000;border-radius:22px 22px 0 0;overflow:hidden}
-.modal-img{width:100%;height:260px;object-fit:cover}
+.modal-box{
+  width:100%; max-width:720px; background:linear-gradient(180deg,#0b0b0c,#000);
+  border-radius:22px 22px 0 0; overflow:hidden; border:1px solid var(--border);
+}
+.modal-img{width:100%; height:260px; object-fit:cover}
 .modal-body{padding:18px}
-.close{position:absolute;right:16px;top:10px;font-weight:900;cursor:pointer}
+.modal-title{font-size:22px; font-weight:900; letter-spacing:.02em}
+.modal-desc{margin-top:8px; color:#cbd5f5; line-height:1.45}
+.modal-price{margin-top:12px; font-size:22px; font-weight:900; color:var(--gold)}
+.close{position:absolute; right:16px; top:10px; font-size:22px; font-weight:900; color:#fff; cursor:pointer}
 @media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:1024px){.grid{grid-template-columns:repeat(4,1fr)}}
 </style>
@@ -64,123 +115,125 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-const CATS = ["", "PRATO PRINCIPAL","ENTRADA","SOBREMESA","DRINK","SUSHI","ACOMPANHAMENTO"];
-let cache = JSON.parse(localStorage.getItem("cardapio_cache") || "[]");
-let catAtiva = "";
-let termo = "";
+const CATS = [
+  { key:"", label:"TODOS" },
+  { key:"PRATO PRINCIPAL", label:"PRATO PRINCIPAL" },
+  { key:"ENTRADA", label:"ENTRADA" },
+  { key:"SOBREMESA", label:"SOBREMESA" },
+  { key:"DRINK", label:"DRINK" },
+  { key:"SUSHI", label:"SUSHI" },
+  { key:"ACOMPANHAMENTO", label:"ACOMPANHAMENTO" }
+];
+
 let page = 0;
 const PAGE_SIZE = 10;
+let catAtiva = "";
+let termo = "";
 let carregando = false;
+let fimLista = false;
+const idsCarregados = new Set();
 
 const grid = document.getElementById("grid");
 const cats = document.getElementById("cats");
 
-function moeda(v){ return "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2}); }
+function moeda(v){
+  return "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+}
 
 function renderCats(){
-  cats.innerHTML = ["TODOS",...CATS.filter(Boolean)].map(c=>`
-    <button class="cat ${c===catAtiva||(!c&&catAtiva==="")?'active':''}" data-key="${c}">
-      ${c || "TODOS"}
+  cats.innerHTML = CATS.map(c => `
+    <button class="cat ${c.key===catAtiva?'active':''}"
+      onclick="setCat('${c.key.replace(/'/g,"\\'")}')">
+      ${c.label}
     </button>
   `).join("");
-
-  // long-press 20s no TODOS
-  const btnTodos = cats.querySelector('[data-key=""]');
-  let timer=null;
-  btnTodos.onmousedown = btnTodos.ontouchstart = () => {
-    timer = setTimeout(async ()=>{
-      localStorage.removeItem("cardapio_cache");
-      cache = [];
-      await fetchAll();
-      resetAndRender();
-      alert("🔄 Cardápio atualizado do servidor.");
-    }, 20000);
-  };
-  btnTodos.onmouseup = btnTodos.ontouchend = () => clearTimeout(timer);
-
-  cats.querySelectorAll(".cat").forEach(btn=>{
-    btn.onclick = ()=>{
-      catAtiva = btn.dataset.key || "";
-      resetAndRender();
-      renderCats();
-    };
-  });
 }
 
-async function fetchAll(){
-  if (carregando) return;
-  carregando = true;
-
-  const { data, error } = await sb
-    .from("buffet")
-    .select("id, nome, descricao, preco_venda, foto_url, tipo, ativo")
-    .eq("ativo", true)
-    .order("created_at", { ascending:false });
-
-  if (error) { console.error(error); carregando=false; return; }
-
-  // dedupe por id
-  const map = {};
-  [...cache, ...(data||[])].forEach(p => map[p.id] = p);
-  cache = Object.values(map);
-
-  localStorage.setItem("cardapio_cache", JSON.stringify(cache));
-  carregando = false;
-}
-
-function resetAndRender(){
+function setCat(k){
+  catAtiva = k;
   page = 0;
+  fimLista = false;
+  idsCarregados.clear();
   grid.innerHTML = "";
+  renderCats();
   loadMore();
 }
 
-function loadMore(){
-  const base = cache
-    .filter(p => !catAtiva || p.tipo === catAtiva)
-    .filter(p => !termo || p.nome.toLowerCase().includes(termo.toLowerCase()));
-
-  const slice = base.slice(page*PAGE_SIZE, page*PAGE_SIZE + PAGE_SIZE);
-
-  slice.forEach(p=>{
-    const d = document.createElement("div");
-    d.className="card";
-    d.onclick=()=>openModal(p);
-    d.innerHTML = `
-      <img class="thumb" src="${p.foto_url||""}">
-      <div class="body">
-        <div class="name">${p.nome}</div>
-        <div class="desc">${p.descricao||""}</div>
-        <div class="price">${moeda(p.preco_venda)}</div>
-      </div>`;
-    grid.appendChild(d);
-  });
-
-  if (slice.length) page++;
-}
-
 function openModal(p){
-  mImg.src=p.foto_url||""; mName.textContent=p.nome;
-  mDesc.textContent=p.descricao||""; mPrice.textContent=moeda(p.preco_venda);
+  mImg.src = p.foto_url || "";
+  mName.textContent = p.nome;
+  mDesc.textContent = p.descricao || "";
+  mPrice.textContent = moeda(p.preco_venda);
   modal.classList.add("open");
 }
 function closeModal(){ modal.classList.remove("open"); }
 
-window.addEventListener("scroll", ()=>{
+async function loadMore(){
+  if (carregando || fimLista) return;
+  carregando = true;
+
+  const from = page * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  let q = sb
+    .from("buffet")
+    .select("id, nome, descricao, preco_venda, foto_url, tipo, ativo")
+    .eq("ativo", true)
+    .order("created_at", { ascending:false })
+    .range(from, to);
+
+  if (catAtiva) q = q.eq("tipo", catAtiva);
+  if (termo) q = q.ilike("nome", `%${termo}%`);
+
+  const { data, error } = await q;
+  carregando = false;
+  if (error) return console.error(error);
+
+  if (!data || data.length === 0) {
+    fimLista = true;
+    return;
+  }
+
+  data.forEach(p => {
+    if (idsCarregados.has(p.id)) return; // ❌ evita duplicar
+    idsCarregados.add(p.id);
+
+    const d = document.createElement("div");
+    d.className = "card";
+    d.onclick = () => openModal(p);
+    d.innerHTML = `
+      <img class="thumb" src="${p.foto_url || ""}">
+      <div class="body">
+        <div class="name">${p.nome}</div>
+        <div class="desc">${p.descricao || ""}</div>
+        <div class="price">${moeda(p.preco_venda)}</div>
+      </div>
+    `;
+    grid.appendChild(d);
+  });
+
+  page++;
+}
+
+/* Infinite scroll (com trava) */
+window.addEventListener("scroll", () => {
   if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 600) {
     loadMore();
   }
 });
 
-search.oninput = ()=>{
+/* Busca */
+search.oninput = () => {
   termo = search.value.trim();
-  resetAndRender();
+  page = 0;
+  fimLista = false;
+  idsCarregados.clear();
+  grid.innerHTML = "";
+  loadMore();
 };
 
-(async ()=>{
-  if (!cache.length) await fetchAll(); // busca do servidor só 1x
-  renderCats();
-  resetAndRender();
-})();
+renderCats();
+loadMore();
 </script>
 
 </body>
