@@ -65,6 +65,12 @@ body::-webkit-scrollbar{width:0;height:0}
 .close{position:absolute;right:16px;top:10px;font-weight:900;font-size:22px;cursor:pointer}
 @media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:1024px){.grid{grid-template-columns:repeat(4,1fr)}}
+html, body {
+  overscroll-behavior: none;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
 </style>
 </head>
 
