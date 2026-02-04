@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#111111">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -292,11 +292,42 @@ renderCats(); loadMore();
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js");
+    navigator.serviceWorker.register("./sw.js");
   });
 }
 </script>
+<script>
+let deferredPrompt;
 
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  const btn = document.createElement("button");
+  btn.innerText = "📲 Instalar Cardápio";
+  btn.style.position = "fixed";
+  btn.style.bottom = "20px";
+  btn.style.right = "20px";
+  btn.style.padding = "14px 18px";
+  btn.style.background = "#000";
+  btn.style.color = "#fff";
+  btn.style.border = "1px solid #333";
+  btn.style.borderRadius = "14px";
+  btn.style.fontWeight = "700";
+  btn.style.letterSpacing = "1px";
+  btn.style.zIndex = "9999";
+  btn.style.boxShadow = "0 12px 40px rgba(0,0,0,.5)";
+
+  document.body.appendChild(btn);
+
+  btn.onclick = async () => {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    btn.remove();
+    deferredPrompt = null;
+  };
+});
+</script>
 
 </body>
 </html>
