@@ -914,8 +914,28 @@ mBody.innerHTML = `
   <option value="">SELECIONE</option>
 </select>
 
-  <hr>
 <hr>
+<hr>
+
+<h3>Código do Varejo (Varejo Fácil)</h3>
+
+<div class="precificacao">
+  <label style="font-weight:800;font-size:13px">
+    🏷️ CÓDIGO NO VAREJO FÁCIL
+  </label>
+
+  <input
+    id="codigoVarejoInput"
+    type="text"
+    placeholder="Ex: 123456"
+    value="${p.codigo_varejo || ""}"
+    style="margin-top:8px"
+  >
+
+  <small style="color:var(--muted)">
+    Código de integração com o sistema Varejo Fácil.
+  </small>
+</div>
 
 <h3>Preço ideal</h3>
 
@@ -938,8 +958,7 @@ mBody.innerHTML = `
   </small>
 </div>
 
-
-  <h3>Precificação</h3>
+<h3>Precificação</h3>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
   <input id="markupPerc" type="number" step="0.01" placeholder="Markup (%)">
   <input id="precoVendaInput" type="number" step="0.01" placeholder="Preço de venda (R$)">
@@ -1292,7 +1311,39 @@ setTimeout(async () => {
   };
 }, 0);
 
+setTimeout(async () => {
+  const input = document.getElementById("codigoVarejoInput");
+  if (!input) return;
 
+  const valorInicial = (p.codigo_varejo || "").trim();
+
+  const { data: { user } } = await sb.auth.getUser();
+  const email = user?.email || null;
+
+  const autorizado =
+    email && EMAILS_AUTORIZADOS_PRECO_IDEAL.includes(email);
+
+  if (!autorizado) {
+    input.readOnly = true;
+    input.style.opacity = "0.6";
+    input.title =
+      "Apenas usuários autorizados podem alterar o código do varejo";
+    return;
+  }
+
+  input.onblur = async () => {
+    const novoValor = input.value.trim();
+    if (novoValor === valorInicial) return;
+
+    await sb
+      .from("buffet")
+      .update({ codigo_varejo: novoValor })
+      .eq("id", pratoAtual.id);
+
+    await carregarPratos();
+    renderLista();
+  };
+}, 0);
 setTimeout(() => {
   const mkInput = document.getElementById("markupPerc");
   const precoInput = document.getElementById("precoVendaInput");
