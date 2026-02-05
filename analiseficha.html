@@ -715,7 +715,7 @@ const nutri = {
 
 
 
-// ✅ NOVO (CORRETO)
+// ✅ NOVO (CORRETO – SUBSTITUA TODO O BLOCO DO MODAL POR ISSO)
 mBody.innerHTML = `
 <div class="modal-header">
   <h2>${p.nome}</h2>
@@ -729,7 +729,11 @@ mBody.innerHTML = `
 </div>
 
 <h3>Descrição do prato (texto do cardápio)</h3>
-<textarea id="descricaoPrato">${p.descricao || ""}</textarea>
+<textarea
+  id="descricaoPrato"
+  placeholder="Ex: Salmão grelhado com arroz japonês e molho teriyaki."
+  style="width:100%;min-height:70px;padding:14px;border-radius:14px;border:1px solid var(--border);font-size:14px;font-family:Inter,sans-serif;resize:vertical;"
+>${p.descricao || ""}</textarea>
 
 <div style="margin:14px 0">
   <label style="font-weight:800;font-size:13px">STATUS DO PRATO</label>
@@ -747,9 +751,43 @@ mBody.innerHTML = `
 <h3>Resumo financeiro</h3>
 <div class="precificacao">
   <p><b>Custo base:</b> ${moeda(cmvBase)}</p>
-  <p><b>Impostos:</b> ${moeda(totalImpostos)}</p>
+  <p><b>Impostos e custos operacionais:</b> ${moeda(totalImpostos)}</p>
   <p><b>Custo final:</b> ${moeda(cmvFinal)}</p>
+
+  ${precoVenda ? `
+    <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
+    <p><b>Lucro:</b> ${moeda(lucro)}</p>
+    <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
+  ` : ``}
 </div>
+
+<hr>
+
+<h3>Tipo do prato</h3>
+<select id="tipoPrato">
+  <option value="">SELECIONE</option>
+</select>
+
+<hr>
+
+<h3>Preço ideal</h3>
+<div class="precificacao">
+  <label style="font-weight:800;font-size:13px">💡 PREÇO IDEAL (R$)</label>
+  <input id="precoIdealInput" type="number" step="0.01" value="${p.preco_ideal || ""}" style="margin-top:8px">
+  <small style="color:var(--muted)">Valor de referência ideal (salva automaticamente).</small>
+</div>
+
+<h3>Precificação</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <input id="markupPerc" type="number" step="0.01" placeholder="Markup (%)">
+  <input id="precoVendaInput" type="number" step="0.01" placeholder="Preço de venda (R$)">
+</div>
+
+<p id="previewPreco" style="margin-top:8px;font-size:13px;font-weight:700;color:#166534"></p>
+
+<button class="btn-add" style="margin-top:10px" onclick="salvarPrecoVenda(${cmvFinal})">
+  SALVAR PREÇO DE VENDA
+</button>
 
 <hr>
 
@@ -757,10 +795,14 @@ mBody.innerHTML = `
 ${itens.map(i=>`
   <div class="ing">
     <span>
-      <b>${i.nome}</b><br>
+      <b>${i.nome} — ${moeda(i.custo_unitario)}</b><br>
       <small>${i.quantidade} ${i.unidade_uso}</small>
     </span>
     <strong>${moeda(i.custo_calculado)}</strong>
+    <div style="display:flex;gap:6px">
+      <button class="btn-icon btn-edit" onclick="editarIngrediente('${i.id}')">✏️</button>
+      <button class="btn-icon btn-delete" onclick="excluirIngrediente('${i.id}')">🗑️</button>
+    </div>
   </div>
 `).join("")}
 
@@ -779,7 +821,11 @@ ${itens.map(i=>`
 <hr>
 
 <h3>Modo de preparo</h3>
-<textarea id="modoPreparo">${p.modo_preparo || ""}</textarea>
+<textarea
+  id="modoPreparo"
+  placeholder="Descreva o modo de preparo do prato..."
+  style="width:100%;min-height:120px;padding:14px;border-radius:14px;border:1px solid var(--border);font-size:14px;font-family:Inter,sans-serif;resize:vertical;"
+>${p.modo_preparo || ""}</textarea>
 `;
 
 <div style="margin:14px 0">
