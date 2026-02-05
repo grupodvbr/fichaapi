@@ -174,141 +174,77 @@ html,body{
   color:#e6fffa;
 }
 
-/* SEÇÕES */
-.section{
-  margin-top:22px;
-  padding-top:18px;
-  border-top:1px dashed var(--border);
 
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 por linha */
-  gap: 16px 14px;
-}
-/* FORM */
-label{
-  display:block;
-  font-size:12px;
-  font-weight:900;
-  letter-spacing:.08em;
-  margin-top:14px;
-  color:#cbd5e1;
+
+
+/* GRID PADRÃO DOS FORMULÁRIOS */
+.form-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:16px 14px;
 }
 
-input, select, button{
-  width:100%;
-  padding:14px 16px;
-  border-radius:14px;
-  border:1px solid var(--border);
-  margin-top:6px;
-  background:#020617;
-  color:var(--text);
-  text-transform:uppercase;
-  outline:none;
-  transition:.15s ease;
+/* Cada campo */
+.field{
+  display:flex;
+  flex-direction:column;
 }
 
-select{appearance:none}
-
-input::placeholder{color:var(--muted)}
-input:focus, select:focus{
-  border-color:var(--primary);
-  box-shadow:0 0 0 4px var(--ring);
+/* Campos grandes */
+.field.full{
+  grid-column: 1 / -1;
 }
 
-/* BOTÃO SALVAR */
-button{
-  margin-top:26px;
-  border:none;
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  color:#042f2e;
-  font-weight:900;
-  letter-spacing:.1em;
-  box-shadow:0 14px 44px rgba(20,184,166,.45);
-  cursor:pointer;
-}
-button:hover{
-  transform:translateY(-1px);
-  box-shadow:0 18px 64px rgba(20,184,166,.6);
+/* Título da nutrição */
+.form-grid h3{
+  grid-column: 1 / -1;
 }
 
-/* TOAST */
-.toast{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  background:linear-gradient(135deg,#22c55e,#16a34a);
-  color:#042f2e;
-  padding:14px 18px;
-  border-radius:14px;
-  font-weight:900;
-  letter-spacing:.06em;
-  opacity:0;
-  transform:translateY(10px);
-  box-shadow:0 16px 44px rgba(34,197,94,.45);
-  transition:.25s ease;
-}
-.toast.show{
-  opacity:1;
-  transform:translateY(0);
-}
-
-/* RESPONSIVO */
-@media(max-width:980px){
-  .app{grid-template-columns:1fr}
-  .sidebar{
-    position:sticky;
-    top:0;
-    z-index:5;
-    border-right:none;
-    border-bottom:1px solid var(--border);
-    border-radius:0 0 22px 22px;
+/* Responsivo */
+@media(max-width: 900px){
+  .form-grid{
+    grid-template-columns: repeat(2, minmax(0,1fr));
   }
-  .card{border-radius:22px}
 }
 
-/* CARD DA LISTA (contém os cadastrados) */
-.lista{
-  max-height: 56vh;          /* altura fixa */
-  overflow-y: auto;         /* rolagem interna */
-  padding: 6px;
-  border-radius: 18px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-  border:1px solid var(--border);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-}
-
-
-
-/* RESPONSIVO PEQUENO: 1 POR LINHA */
 @media(max-width: 520px){
-  .section{
+  .form-grid{
     grid-template-columns: 1fr;
   }
 }
 
+/* GRID PADRÃO DOS FORMULÁRIOS */
+.form-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:16px 14px;
+}
 
+/* Cada campo */
+.field{
+  display:flex;
+  flex-direction:column;
+}
 
-  /* TÍTULO DA SEÇÃO OCUPA A LINHA TODA */
-.section h3{
+/* Campos grandes */
+.field.full{
   grid-column: 1 / -1;
 }
 
-/* CAMPOS GRANDES (NOME E DESCRIÇÃO) OCUPAM A LINHA TODA */
-#nome, #descricao{
+/* Título da nutrição */
+.form-grid h3{
   grid-column: 1 / -1;
 }
 
-/* RESPONSIVO: 2 POR LINHA */
+/* Responsivo */
 @media(max-width: 900px){
-  .section{
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .form-grid{
+    grid-template-columns: repeat(2, minmax(0,1fr));
   }
 }
 
-/* RESPONSIVO: 1 POR LINHA */
 @media(max-width: 520px){
-  .section{
+  .form-grid{
     grid-template-columns: 1fr;
   }
 }
@@ -332,65 +268,96 @@ button:hover{
   <div class="card">
 
     <h1 id="titulo">NOVO INGREDIENTE</h1>
+<div class="section form-grid">
 
-    <!-- DADOS BÁSICOS -->
-    <div class="section">
-      <label>NOME</label>
-      <input id="nome">
+  <div class="field full">
+    <label>NOME</label>
+    <input id="nome">
+  </div>
 
-      <label>DESCRIÇÃO</label>
-      <input id="descricao">
+  <div class="field full">
+    <label>DESCRIÇÃO</label>
+    <input id="descricao">
+  </div>
 
-      <label>UNIDADE</label>
-      <select id="unidade">
-        <option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option>
-      </select>
-    </div>
+  <div class="field">
+    <label>UNIDADE</label>
+    <select id="unidade">
+      <option>UN</option><option>KG</option><option>G</option><option>L</option><option>ML</option>
+    </select>
+  </div>
 
-    <!-- CUSTO -->
-    <div class="section">
-      <label>VALOR</label>
-      <input id="valor">
+</div>
 
-      <label>RENDIMENTO (%)</label>
-      <input id="rendimento" value="100">
-    </div>
+<div class="section form-grid">
 
-    <!-- NUTRIÇÃO -->
-    <div class="section">
-      <h3>INFORMAÇÃO NUTRICIONAL (por 100g ou 100ml)</h3>
+  <div class="field">
+    <label>VALOR</label>
+    <input id="valor">
+  </div>
 
-      <label>VALOR ENERGÉTICO (kcal)</label>
-      <input id="energia_kcal" type="number">
+  <div class="field">
+    <label>RENDIMENTO (%)</label>
+    <input id="rendimento" value="100">
+  </div>
 
-      <label>CARBOIDRATOS (g)</label>
-      <input id="carboidratos" type="number">
+</div>
 
-      <label>AÇÚCARES TOTAIS (g)</label>
-      <input id="acucares_totais" type="number">
+   <div class="section form-grid">
 
-      <label>AÇÚCARES ADICIONADOS (g)</label>
-      <input id="acucares_adicionados" type="number">
+  <h3>INFORMAÇÃO NUTRICIONAL (por 100g ou 100ml)</h3>
 
-      <label>PROTEÍNAS (g)</label>
-      <input id="proteinas" type="number">
+  <div class="field">
+    <label>VALOR ENERGÉTICO (kcal)</label>
+    <input id="energia_kcal" type="number">
+  </div>
 
-      <label>GORDURAS TOTAIS (g)</label>
-      <input id="gorduras_totais" type="number">
+  <div class="field">
+    <label>CARBOIDRATOS (g)</label>
+    <input id="carboidratos" type="number">
+  </div>
 
-      <label>GORDURAS SATURADAS (g)</label>
-      <input id="gorduras_saturadas" type="number">
+  <div class="field">
+    <label>AÇÚCARES TOTAIS (g)</label>
+    <input id="acucares_totais" type="number">
+  </div>
 
-      <label>GORDURAS TRANS (g)</label>
-      <input id="gorduras_trans" type="number">
+  <div class="field">
+    <label>AÇÚCARES ADICIONADOS (g)</label>
+    <input id="acucares_adicionados" type="number">
+  </div>
 
-      <label>FIBRA ALIMENTAR (g)</label>
-      <input id="fibra_alimentar" type="number">
+  <div class="field">
+    <label>PROTEÍNAS (g)</label>
+    <input id="proteinas" type="number">
+  </div>
 
-      <label>SÓDIO (mg)</label>
-      <input id="sodio_mg" type="number">
-    </div>
+  <div class="field">
+    <label>GORDURAS TOTAIS (g)</label>
+    <input id="gorduras_totais" type="number">
+  </div>
 
+  <div class="field">
+    <label>GORDURAS SATURADAS (g)</label>
+    <input id="gorduras_saturadas" type="number">
+  </div>
+
+  <div class="field">
+    <label>GORDURAS TRANS (g)</label>
+    <input id="gorduras_trans" type="number">
+  </div>
+
+  <div class="field">
+    <label>FIBRA ALIMENTAR (g)</label>
+    <input id="fibra_alimentar" type="number">
+  </div>
+
+  <div class="field">
+    <label>SÓDIO (mg)</label>
+    <input id="sodio_mg" type="number">
+  </div>
+
+</div>
     <button onclick="salvar()">SALVAR INGREDIENTE</button>
 
   </div>
