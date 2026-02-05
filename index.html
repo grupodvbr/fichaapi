@@ -499,6 +499,17 @@ window.addEventListener("beforeinstallprompt", (e) => {
   };
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const goFull = () => {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  };
 
+  // tenta entrar em fullscreen no primeiro toque
+  document.body.addEventListener("click", goFull, { once: true });
+});
+</script>
 </body>
 </html>
