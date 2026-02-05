@@ -9,6 +9,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+/* =========================================================
+   VARIÁVEIS
+========================================================= */
 :root{
   --primary:#2563eb;
   --primary-dark:#1e40af;
@@ -26,6 +29,7 @@
   --radius-md:14px;
   --radius-sm:8px;
 
+  --shadow-xs:0 2px 6px rgba(0,0,0,.06);
   --shadow-sm:0 6px 16px rgba(0,0,0,.08);
   --shadow-md:0 18px 40px rgba(0,0,0,.12);
   --shadow-lg:0 40px 90px rgba(0,0,0,.35);
@@ -42,7 +46,10 @@
 body{
   margin:0;
   font-family:Inter,sans-serif;
-  background:var(--bg);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #eef2ff 0%, transparent 60%),
+    radial-gradient(1200px 500px at 110% 10%, #ecfeff 0%, transparent 60%),
+    var(--bg);
   color:var(--text);
 }
 
@@ -59,7 +66,7 @@ body.modal-open{
 .filters{
   display:flex;
   gap:14px;
-  padding:22px 22px 0;
+  padding:22px 22px 8px;
   flex-wrap:wrap;
 }
 
@@ -69,15 +76,23 @@ body.modal-open{
   border-radius:999px;
   border:1px solid var(--border);
   font-size:14px;
-  font-weight:600;
+  font-weight:700;
   width:100%;
   max-width:320px;
+  background:#fff;
+  box-shadow:var(--shadow-xs);
+}
+
+.filters input:focus,
+.filters select:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(37,99,235,.18), var(--shadow-xs);
 }
 
 /* =========================================================
    GRID PRINCIPAL
 ========================================================= */
-/* DESKTOP — 6 cards por linha */
 .grid{
   display:grid;
   grid-template-columns:repeat(6, 1fr);
@@ -95,17 +110,23 @@ body.modal-open{
   overflow:hidden;
   cursor:pointer;
   transition:.18s ease;
+  border:1px solid rgba(0,0,0,.03);
 }
 
 .card:hover{
-  transform:translateY(-4px);
-  box-shadow:0 26px 60px rgba(0,0,0,.18);
+  transform:translateY(-4px) scale(1.005);
+  box-shadow:0 28px 70px rgba(0,0,0,.22);
 }
 
 .card img{
   width:100%;
   height:280px;
   object-fit:cover;
+  transition:.3s ease;
+}
+
+.card:hover img{
+  transform:scale(1.04);
 }
 
 .card-body{
@@ -113,23 +134,38 @@ body.modal-open{
 }
 
 .card-body h3{
-  margin:0 0 8px;
-  font-weight:800;
+  margin:0 0 6px;
+  font-weight:900;
   font-size:16px;
+  letter-spacing:-.01em;
 }
 
 /* =========================================================
    BADGES
 ========================================================= */
+.badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:6px;
+}
+
+.badges.primary{ margin-top:6px; }
+.badges.secondary{ margin-top:10px; }
+
 .badge{
-  display:inline-block;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
   padding:6px 12px;
   border-radius:999px;
   background:#eef2ff;
   color:#3730a3;
   font-size:12px;
-  font-weight:800;
-  margin:4px 6px 0 0;
+  font-weight:900;
+  letter-spacing:.02em;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);
+  backdrop-filter:blur(2px);
 }
 
 /* =========================================================
@@ -138,7 +174,11 @@ body.modal-open{
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(15,23,42,.65);
+  background:linear-gradient(
+    180deg,
+    rgba(15,23,42,.65),
+    rgba(15,23,42,.75)
+  );
   backdrop-filter:blur(6px);
   display:none;
   align-items:center;
@@ -147,12 +187,12 @@ body.modal-open{
 }
 
 /* =========================================================
-   MODAL BOX (SEM BALANÇAR)
+   MODAL BOX
 ========================================================= */
 .modal-box{
   background:#fff;
   width:96vw;
-  max-width:1200px;   /* ← aumenta bastante o espaço */
+  max-width:1200px;
   max-height:92vh;
   border-radius:26px;
   overflow:hidden;
@@ -160,76 +200,85 @@ body.modal-open{
   flex-direction:column;
   box-shadow:var(--shadow-lg);
   animation:modalIn .2s ease;
+  position:relative;
 }
 
-/* animação estável (SEM translate) */
 @keyframes modalIn{
-  from{
-    opacity:0;
-    transform:scale(0.96);
-  }
-  to{
-    opacity:1;
-    transform:scale(1);
-  }
+  from{ opacity:0; transform:scale(.96) }
+  to{ opacity:1; transform:scale(1) }
 }
 
 /* =========================================================
-   IMAGEM MODAL
+   HEADER DO MODAL
 ========================================================= */
+.modal-header{
+  display:grid;
+  grid-template-columns:340px 1fr;
+  gap:22px;
+  padding:22px 26px;
+  border-bottom:1px solid var(--border);
+  background:
+    radial-gradient(500px 200px at 10% -20%, #eef2ff 0%, transparent 60%),
+    #fff;
+}
+
+.modal-left{
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 20px 50px rgba(0,0,0,.28);
+  background:#000;
+}
+
 .modal-img{
   width:100%;
-  height:240px;
+  height:100%;
+  min-height:220px;
   object-fit:cover;
-  flex-shrink:0;
+  display:block;
 }
 
 /* =========================================================
-   CORPO MODAL
+   COLUNA DIREITA DO MODAL
+========================================================= */
+.modal-main{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  padding:10px 6px 18px;
+  overflow:hidden;
+}
+
+.modal-main h2{
+  margin:0;
+  font-size:34px;
+  font-weight:900;
+  letter-spacing:-.03em;
+}
+
+/* =========================================================
+   CORPO DO MODAL
 ========================================================= */
 .modal-body{
-  padding:10px 4px 24px;
+  padding:10px 4px 26px;
   overflow-y:auto;
-  max-height:calc(92vh - 220px); /* não estoura a tela */
+  max-height:calc(92vh - 220px);
+  scrollbar-gutter:stable;
 }
 
-.modal-body::-webkit-scrollbar{
-  width:8px;
-}
-
+.modal-body::-webkit-scrollbar{ width:8px }
 .modal-body::-webkit-scrollbar-thumb{
-  background:#cbd5e1;
+  background:linear-gradient(180deg,#c7d2fe,#a5b4fc);
   border-radius:8px;
 }
 
 /* =========================================================
-   BOTÃO FECHAR
+   TEXTOS DO MODAL
 ========================================================= */
-.close{
-  position:absolute;
-  top:14px;
-  right:18px;
-  font-size:26px;
-  cursor:pointer;
-  font-weight:900;
-  color:#fff;
-  z-index:10;
-  text-shadow:0 2px 10px rgba(0,0,0,.6);
-}
-
-/* =========================================================
-   TEXTOS
-========================================================= */
-.modal-body h2{
-  margin:0 0 12px;
-  font-size:26px;
-  font-weight:900;
-}
-
 .modal-body h3{
   margin:20px 0 10px;
-  font-size:16px;
+  font-size:15px;
   font-weight:900;
+  letter-spacing:.02em;
 }
 
 .modal-body p{
@@ -241,53 +290,59 @@ body.modal-open{
 .modal-body hr{
   border:none;
   height:1px;
-  background:var(--border);
+  background:linear-gradient(90deg,transparent,var(--border),transparent);
   margin:22px 0;
 }
 
 /* =========================================================
-   LISTAS / INGREDIENTES / IMPOSTOS
+   INGREDIENTES / IMPOSTOS
 ========================================================= */
 .ing{
   display:grid;
   grid-template-columns:1fr auto auto;
   gap:14px;
-  padding:12px 0;
+  padding:12px 4px;
   border-bottom:1px dashed var(--border);
   font-size:14px;
   align-items:center;
 }
 
-.ing:last-child{border-bottom:none}
+.ing:last-child{ border-bottom:none }
 
-.ing b{font-weight:800}
-.ing small{color:var(--muted)}
+.ing b{ font-weight:800 }
+.ing small{ color:var(--muted) }
 
 /* =========================================================
-   PRECIFICAÇÃO / FORMULÁRIOS
+   PRECIFICAÇÃO
 ========================================================= */
 .precificacao{
-  background:#f1f5f9;
+  background:
+    linear-gradient(180deg,#f8fafc,#eef2ff);
   border:1px solid var(--border);
   border-radius:18px;
   padding:16px;
   margin:16px 0;
+  box-shadow:var(--shadow-xs);
 }
 
+/* =========================================================
+   INPUTS / SELECTS
+========================================================= */
 input, select{
   height:44px;
   border-radius:12px;
   border:1px solid var(--border);
   padding:0 14px;
   font-size:14px;
-  font-weight:600;
+  font-weight:700;
   width:100%;
+  background:#fff;
 }
 
 input:focus, select:focus{
   outline:none;
   border-color:var(--primary);
-  box-shadow:0 0 0 3px rgba(37,99,235,.15);
+  box-shadow:0 0 0 3px rgba(37,99,235,.18);
 }
 
 input[readonly]{
@@ -303,31 +358,30 @@ button{
   cursor:pointer;
 }
 
-/* principal */
 .btn-add{
   height:44px;
   padding:0 22px;
   border-radius:14px;
   background:linear-gradient(135deg,var(--primary),var(--primary-dark));
   color:#fff;
-  font-size:13px;
+  font-size:12px;
   font-weight:900;
-  letter-spacing:.05em;
-  box-shadow:0 12px 30px rgba(37,99,235,.35);
+  letter-spacing:.12em;
+  box-shadow:0 14px 34px rgba(37,99,235,.45);
   transition:.15s ease;
 }
 
 .btn-add:hover{
   transform:translateY(-1px);
-  box-shadow:0 16px 40px rgba(37,99,235,.45);
+  box-shadow:0 20px 50px rgba(37,99,235,.55);
 }
 
-/* ícones */
 .btn-icon{
   border-radius:10px;
   padding:6px 12px;
-  font-size:14px;
-  font-weight:800;
+  font-size:13px;
+  font-weight:900;
+  box-shadow:var(--shadow-xs);
 }
 
 .btn-edit{
@@ -341,40 +395,32 @@ button{
 }
 
 /* =========================================================
-   MOBILE — 3 CARDS POR LINHA + MODAL APP STYLE
+   FECHAR MODAL
+========================================================= */
+.close{
+  position:absolute;
+  top:14px;
+  right:18px;
+  font-size:26px;
+  cursor:pointer;
+  font-weight:900;
+  color:#fff;
+  z-index:10;
+  text-shadow:0 4px 14px rgba(0,0,0,.7);
+}
+
+/* =========================================================
+   RESPONSIVO
 ========================================================= */
 @media(max-width:520px){
-
-  /* 3 cards por linha */
   .grid{
     grid-template-columns:repeat(3,1fr);
     gap:10px;
     padding:14px;
   }
 
-  .card{
-    border-radius:16px;
-  }
+  .card img{ height:110px }
 
-  .card img{
-    height:110px;
-  }
-
-  .card-body{
-    padding:10px;
-  }
-
-  .card-body h3{
-    font-size:13px;
-    line-height:1.1;
-  }
-
-  .badge{
-    font-size:10px;
-    padding:4px 8px;
-  }
-
-  /* modal estilo app */
   .modal{
     align-items:flex-end;
   }
@@ -385,13 +431,13 @@ button{
     border-radius:22px 22px 0 0;
   }
 
-  .modal-img{
-    height:180px;
+  .modal-header{
+    grid-template-columns:1fr;
   }
 
-  .modal-body{
-    padding:18px;
-  }
+  .modal-left{ height:180px }
+
+  .modal-body{ padding:18px }
 
   .close{
     top:10px;
@@ -404,84 +450,12 @@ button{
     gap:8px;
   }
 
-  .btn-add{
-    width:100%;
-  }
-}
-.badges{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin-top:6px;
+  .btn-add{ width:100% }
 }
 
-.badges.primary{
-  margin-top:4px;
-}
-
-.badges.secondary{
-  margin-top:10px;
-}
-
-.badge{
-  cursor:default;
-}
 /* =========================================================
-   HEADER DO MODAL (IMAGEM + DADOS PRINCIPAIS)
+   GRID DUPLO NO DESKTOP
 ========================================================= */
-.modal-header{
-  display:grid;
-  grid-template-columns:340px 1fr; /* imagem maior */
-  gap:22px;
-  padding:22px 26px;
-  border-bottom:1px solid var(--border);
-}
-
-.modal-left{
-  border-radius:22px;
-  overflow:hidden;
-  box-shadow:0 20px 50px rgba(0,0,0,.25);
-  background:#000;
-}
-
-.modal-img{
-  width:100%;
-  height:100%;
-  min-height:220px;
-  object-fit:cover;
-  display:block;
-}
-
-.modal-main{
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-  padding:10px 6px 18px;
-  overflow:hidden;
-}
-
-.modal-main h2{
-  margin:0;
-  font-size:34px;
-  font-weight:900;
-  letter-spacing:-.02em;
-}
-
-.modal-main .badges{
-  margin-top:12px;
-}
-
-/* MOBILE */
-@media(max-width:520px){
-  .modal-header{
-    grid-template-columns:1fr;
-  }
-
-  .modal-left{
-    height:180px;
-  }
-}
-/* Layout em 2 colunas no desktop */
 @media(min-width:1024px){
   .modal-body{
     display:grid;
@@ -494,8 +468,6 @@ button{
     grid-column:1 / -1;
   }
 }
-
-
 
 
 
