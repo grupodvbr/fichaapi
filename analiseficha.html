@@ -357,11 +357,15 @@ button{
 
 <!-- MODAL -->
 <div id="modal" class="modal" onclick="fechar()">
-  <div class="modal-box" onclick="event.stopPropagation()">
-    <span class="close" onclick="fechar()">✕</span>
-    <img id="mFoto" class="modal-img">
-    <div id="mBody" class="modal-body"></div>
-  </div>
+<div class="modal-box" onclick="event.stopPropagation()">
+  <span class="close" onclick="fechar()">✕</span>
+
+  <!-- COLUNA ESQUERDA: FOTO -->
+  <img id="mFoto" class="modal-img">
+
+  <!-- COLUNA DIREITA: CONTEÚDO -->
+  <div id="mBody" class="modal-body"></div>
+</div>
 </div>
 
 <script>
@@ -711,16 +715,190 @@ const nutri = {
 
 
 
+// ✅ NOVO (CORRETO)
 mBody.innerHTML = `
-<h2>${p.nome}</h2>
-<h3>Descrição do prato (texto do cardápio)</h3>
+<div class="modal-header">
+  <h2>${p.nome}</h2>
 
+  <div class="badges primary">
+    <span class="badge">${p.tipo || "-"}</span>
+    <span class="badge">🧾 Custo ${moeda(cmvFinal)}</span>
+    ${precoVenda ? `<span class="badge">💰 ${moeda(precoVenda)}</span>` : ``}
+    ${lucro !== null ? `<span class="badge">🟢 ${moeda(lucro)}</span>` : ``}
+  </div>
+</div>
+
+<h3>Descrição do prato (texto do cardápio)</h3>
+<textarea id="descricaoPrato">${p.descricao || ""}</textarea>
+
+<div style="margin:14px 0">
+  <label style="font-weight:800;font-size:13px">STATUS DO PRATO</label>
+  <select id="statusPrato" style="margin-top:6px">
+    <option value="true">ATIVO</option>
+    <option value="false">DESATIVADO</option>
+  </select>
+</div>
+
+<div style="margin:12px 0">
+  <label style="font-weight:800;font-size:13px">FOTO DO PRATO</label>
+  <input type="file" id="fotoPrato" accept="image/*" style="margin-top:6px">
+</div>
+
+<h3>Resumo financeiro</h3>
+<div class="precificacao">
+  <p><b>Custo base:</b> ${moeda(cmvBase)}</p>
+  <p><b>Impostos:</b> ${moeda(totalImpostos)}</p>
+  <p><b>Custo final:</b> ${moeda(cmvFinal)}</p>
+</div>
+
+<hr>
+
+<h3>Ingredientes</h3>
+${itens.map(i=>`
+  <div class="ing">
+    <span>
+      <b>${i.nome}</b><br>
+      <small>${i.quantidade} ${i.unidade_uso}</small>
+    </span>
+    <strong>${moeda(i.custo_calculado)}</strong>
+  </div>
+`).join("")}
+
+<hr>
+
+<h3>Tabela Nutricional (por prato)</h3>
+<div class="precificacao">
+  <p>🔥 Calorias: <b>${nutri.calorias.toFixed(1)} kcal</b></p>
+  <p>🥩 Proteínas: <b>${nutri.proteinas.toFixed(1)} g</b></p>
+  <p>🍞 Carboidratos: <b>${nutri.carboidratos.toFixed(1)} g</b></p>
+  <p>🧈 Gorduras: <b>${nutri.gorduras.toFixed(1)} g</b></p>
+  <p>🌾 Fibras: <b>${nutri.fibras.toFixed(1)} g</b></p>
+  <p>🧂 Sódio: <b>${nutri.sodio.toFixed(1)} mg</b></p>
+</div>
+
+<hr>
+
+<h3>Modo de preparo</h3>
+<textarea id="modoPreparo">${p.modo_preparo || ""}</textarea>
+`;
+
+<div style="margin:14px 0">
+  <label style="font-weight:800;font-size:13px">
+    STATUS DO PRATO
+  </label>
+
+  <select id="statusPrato" style="margin-top:6px">
+    <option value="true">ATIVO</option>
+    <option value="false">DESATIVADO</option>
+  </select>
+</div>
+
+<div style="margin:12px 0">
+  <label style="font-weight:800;font-size:13px">
+    FOTO DO PRATO
+  </label>
+
+  <input
+    type="file"
+    id="fotoPrato"
+    accept="image/*"
+    style="margin-top:6px"
+  >
+</div>
+
+<h3>Resumo financeiro</h3>
+
+<div class="precificacao">
+  <p><b>Custo base:</b> ${moeda(cmvBase)}</p>
+  <p><b>Impostos e custos operacionais:</b> ${moeda(totalImpostos)}</p>
+  <p><b>Custo final:</b> ${moeda(cmvFinal)}</p>
+
+  ${precoVenda ? `
+    <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
+    <p><b>Lucro:</b> ${moeda(lucro)}</p>
+    <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
+  ` : ``}
+</div>
+
+<hr>
+
+<h3>Tipo do prato</h3>
+<select id="tipoPrato">
+  <option value="">SELECIONE</option>
+</select>
+
+<hr>
+
+<h3>Preço ideal</h3>
+
+<div class="precificacao">
+  <label style="font-weight:800;font-size:13px">💡 PREÇO IDEAL (R$)</label>
+  <input
+    id="precoIdealInput"
+    type="number"
+    step="0.01"
+    placeholder="Ex: 29.90"
+    value="${p.preco_ideal || ""}"
+    style="margin-top:8px"
+  >
+  <small style="color:var(--muted)">
+    Valor de referência ideal (salva automaticamente).
+  </small>
+</div>
+
+<h3>Precificação</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <input id="markupPerc" type="number" step="0.01" placeholder="Markup (%)">
+  <input id="precoVendaInput" type="number" step="0.01" placeholder="Preço de venda (R$)">
+</div>
+
+<p id="previewPreco" style="margin-top:8px;font-size:13px;font-weight:700;color:#166534"></p>
+
+<button class="btn-add" style="margin-top:10px"
+  onclick="salvarPrecoVenda(${cmvFinal})">
+  SALVAR PREÇO DE VENDA
+</button>
+
+<hr>
+
+<h3>Ingredientes</h3>
+${itens.map(i=>`
+  <div class="ing">
+    <span>
+      <b>${i.nome} — ${moeda(i.custo_unitario)}</b><br>
+      <small>${i.quantidade} ${i.unidade_uso}</small>
+    </span>
+
+    <strong>${moeda(i.custo_calculado)}</strong>
+
+    <div style="display:flex;gap:6px">
+      <button class="btn-icon btn-edit" onclick="editarIngrediente('${i.id}')">✏️</button>
+      <button class="btn-icon btn-delete" onclick="excluirIngrediente('${i.id}')">🗑️</button>
+    </div>
+  </div>
+`).join("")}
+
+<hr>
+
+<h3>Tabela Nutricional (por prato)</h3>
+<div class="precificacao">
+  <p>🔥 Calorias: <b>${nutri.calorias.toFixed(1)} kcal</b></p>
+  <p>🥩 Proteínas: <b>${nutri.proteinas.toFixed(1)} g</b></p>
+  <p>🍞 Carboidratos: <b>${nutri.carboidratos.toFixed(1)} g</b></p>
+  <p>🧈 Gorduras: <b>${nutri.gorduras.toFixed(1)} g</b></p>
+  <p>🌾 Fibras: <b>${nutri.fibras.toFixed(1)} g</b></p>
+  <p>🧂 Sódio: <b>${nutri.sodio.toFixed(1)} mg</b></p>
+</div>
+
+<hr>
+
+<h3>Modo de preparo</h3>
 <textarea
-  id="descricaoPrato"
-  placeholder="Ex: Salmão grelhado com arroz japonês e molho teriyaki."
+  id="modoPreparo"
+  placeholder="Descreva o modo de preparo do prato..."
   style="
     width:100%;
-    min-height:70px;
+    min-height:120px;
     padding:14px;
     border-radius:14px;
     border:1px solid var(--border);
@@ -728,7 +906,8 @@ mBody.innerHTML = `
     font-family:Inter,sans-serif;
     resize:vertical;
   "
->${p.descricao || ""}</textarea>
+>${p.modo_preparo || ""}</textarea>
+`;
 
 <div style="margin:14px 0">
   <label style="font-weight:800;font-size:13px">
@@ -754,12 +933,23 @@ mBody.innerHTML = `
     >
   </div>
 
-  <p><b>CUSTO BASE:</b> ${moeda(cmvBase)}</p>
-  <p><b>IMPOSTOS E CUSTOS OPERACIONAIS:</b> ${moeda(totalImpostos)}</p>
-  <p><b>CUSTO FINAL:</b> ${moeda(cmvFinal)}</p>
+<h3>Resumo financeiro</h3>
 
-  <hr>
-  <h3>Tipo do prato</h3>
+<div class="precificacao">
+  <p><b>Custo base:</b> ${moeda(cmvBase)}</p>
+  <p><b>Impostos e custos operacionais:</b> ${moeda(totalImpostos)}</p>
+  <p><b>Custo final:</b> ${moeda(cmvFinal)}</p>
+
+  ${precoVenda ? `
+    <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
+    <p><b>Lucro:</b> ${moeda(lucro)}</p>
+    <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
+  ` : ``}
+</div>
+
+<hr>
+
+<h3>Tipo do prato</h3>
 
 <select id="tipoPrato">
   <option value="">SELECIONE</option>
