@@ -262,6 +262,18 @@ button:hover{
   }
   .card{border-radius:22px}
 }
+
+/* CARD DA LISTA (contém os cadastrados) */
+.lista{
+  max-height: 56vh;          /* altura fixa */
+  overflow-y: auto;         /* rolagem interna */
+  padding: 6px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+  border:1px solid var(--border);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+}
 </style>
 </head>
 
@@ -377,19 +389,72 @@ function moeda(el){
 }
 moeda(valor);
 
-async function carregar(){
-  const { data } = await sb.from("produtos").select("*").order("nome");
-  lista.innerHTML=(data||[]).map(i=>`
-    <div class="item ${atual?.id===i.id?'active':''}" onclick="editar('${i.id}')">${i.nome}</div>
-  `).join("");
-}
-carregar();
+let pagina = 0;
+const LIMITE = 20;
+let carregando = false;
+let fim = false;
 
-busca.oninput=async()=>{
-  const q=busca.value.toLowerCase();
-  const {data}=await sb.from("produtos").select("*");
-  lista.innerHTML=(data||[]).filter(i=>i.nome?.toLowerCase().includes(q))
-    .map(i=>`<div class="item" onclick="editar('${i.id}')">${i.nome}</div>`).join("");
+async function carregar(reset=false){
+  if(carregando || fim) return;
+  carregando = true;
+
+  if(reset){
+    pagina = 0;
+    fim = false;
+    lista.innerHTML = "";
+  }
+
+  const { data } = await sb
+    .from("produtos")
+    .select("*")
+    .order("id", { ascending: false })  // últimos primeiro
+    .range(pagina*LIMITE, (pagina+1)*LIMITE - 1);
+
+  if(!data || data.length === 0){
+    fim = true;
+    carregando = false;
+    return;
+  }
+
+  lista.insertAdjacentHTML("beforeend",
+    data.map(i=>`
+      <div class="item ${atual?.id===i.id?'active':''}" onclick="editar('${i.id}')">
+        ${i.nome}
+      </div>
+    `).join("")
+  );
+
+  pagina++;
+  carregando = false;
+}
+
+carregar(true);
+
+lista.addEventListener("scroll", ()=>{
+  const pertoDoFim =
+    lista.scrollTop + lista.clientHeight
+    >= lista.scrollHeight - 40;
+
+  if(pertoDoFim){
+    carregar();
+  }
+});
+
+busca.oninput = async ()=>{
+  const q = busca.value.trim().toLowerCase();
+  if(!q){
+    carregar(true);
+    return;
+  }
+
+  const { data } = await sb
+    .from("produtos")
+    .select("*")
+    .ilike("nome", `%${q}%`);
+
+  lista.innerHTML = (data||[]).map(i=>`
+    <div class="item" onclick="editar('${i.id}')">${i.nome}</div>
+  `).join("");
 };
 
 async function editar(id){
@@ -439,8 +504,7 @@ async function salvar(){
   }
 
   toast("SALVO COM SUCESSO");
-  carregar();
-}
+carregar(true);}
 </script>
 
 </body>
