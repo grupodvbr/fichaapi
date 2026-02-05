@@ -19,78 +19,155 @@
 }
 
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
-
-h1{
-  padding:18px 22px;
+body{
   margin:0;
-  font-size:18px;
+  font-family:Inter,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* HEADER */
+.header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 18px;
   background:#020617;
   border-bottom:1px solid var(--grid);
 }
+.header h1{
+  margin:0;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:.02em;
+}
 
-.table-wrap{overflow:auto;height:calc(100vh - 60px)}
-table{border-collapse:collapse;width:100%;min-width:1300px;font-size:13px}
-thead th{position:sticky;top:0;background:#020617;z-index:2}
-th,td{border:1px solid var(--grid);padding:8px 10px;white-space:nowrap}
-tbody tr:hover{background:#020617;cursor:pointer}
+/* TABELA */
+.table-wrap{ overflow:auto; height:calc(100vh - 60px); }
+table{ border-collapse:collapse; width:100%; min-width:1400px; font-size:13px; }
+thead th{ position:sticky; top:0; background:#020617; z-index:2; }
+th,td{ border:1px solid var(--grid); padding:8px 10px; white-space:nowrap; }
+tbody tr:hover{ background:#020617; cursor:pointer; }
 
 input{
-  width:80px;background:#020617;border:1px solid #1e293b;color:#e5e7eb;
-  padding:4px 6px;border-radius:6px;font-weight:700
+  width:90px;
+  background:#020617;
+  border:1px solid #1e293b;
+  color:#e5e7eb;
+  padding:4px 6px;
+  border-radius:6px;
+  font-weight:700;
 }
-input:focus{outline:none;border-color:#22c55e}
+input:focus{ outline:none; border-color:#22c55e; }
 
-.bad{color:#ef4444;font-weight:800}
-.good{color:#22c55e;font-weight:800}
+.bad{ color:#ef4444; font-weight:900; }
+.good{ color:#22c55e; font-weight:900; }
 
 /* MODAL */
 .modal{
-  position:fixed; inset:0; background:rgba(0,0,0,.7);
-  display:none; align-items:center; justify-content:center;
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.75);
   backdrop-filter: blur(6px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999; /* 🔥 garante ficar acima da tabela */
 }
+
 .modal-box{
   position:relative;
   background:#020617;
   border-radius:22px;
-  max-width:1100px; width:92vw; max-height:92vh;
-  overflow:auto; 
+  max-width:1100px;
+  width:92vw;
+  max-height:92vh;
+  overflow:auto;
   border:1px solid #1e293b;
-  box-shadow:0 30px 80px rgba(0,0,0,.6);
+  box-shadow:0 30px 90px rgba(0,0,0,.6);
 }
+
 /* scrollbar invisível */
-.modal-box::-webkit-scrollbar{ width:0; height:0 }
-.modal-box{ scrollbar-width:none }
+.modal-box::-webkit-scrollbar{ width:0; height:0; }
+.modal-box{ scrollbar-width:none; }
 
 .modal-header{
-  display:grid; grid-template-columns:360px 1fr; gap:18px;
+  display:grid;
+  grid-template-columns:360px 1fr;
+  gap:18px;
   padding:18px;
+  border-bottom:1px solid #1e293b;
 }
+
 .modal-header img{
-  width:100%; height:100%; min-height:220px;
-  object-fit:cover; border-radius:16px;
+  width:100%;
+  height:100%;
+  min-height:220px;
+  object-fit:cover;
+  border-radius:16px;
   box-shadow:0 12px 40px rgba(0,0,0,.6);
 }
-.modal-body{ padding:0 18px 18px }
+
+.modal-info h2{
+  margin:0 0 6px;
+  font-size:26px;
+  font-weight:900;
+}
+
+.modal-info p{
+  margin:6px 0;
+  color:var(--muted);
+  font-size:14px;
+}
+
+.modal-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+.badge{
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  background:#0b1220;
+  border:1px solid #1e293b;
+}
+
+.modal-body{ padding:16px 18px 22px; }
 
 .ing{
-  display:grid; grid-template-columns:1fr auto; gap:10px;
-  padding:10px 0; border-bottom:1px dashed #1e293b;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px dashed #1e293b;
+  font-size:14px;
 }
 
 .close{
-  position:absolute; top:14px; right:16px;
-  cursor:pointer; font-weight:900; font-size:22px;
-  background:#020617; border:1px solid #1e293b;
-  padding:6px 10px; border-radius:10px;
+  position:absolute;
+  top:12px;
+  right:14px;
+  cursor:pointer;
+  font-weight:900;
+  font-size:22px;
+  background:#020617;
+  border:1px solid #1e293b;
+  padding:6px 10px;
+  border-radius:10px;
 }
-.close:hover{ background:#0b1220 }
+.close:hover{ background:#0b1220; }
 </style>
 </head>
 
 <body>
-<h1>📊 Excel de Precificação • CMV</h1>
+
+<div class="header">
+  <h1>📊 Excel de Precificação • CMV</h1>
+</div>
 
 <div class="table-wrap">
 <table id="tabela">
@@ -133,8 +210,13 @@ let pratos = [];
 
 async function carregarCache(){
   cacheCMV = {};
-  const { data: itens } = await sb.from("buffet_itens").select("buffet_id, custo_calculado, nome, quantidade, unidade_uso");
-  const { data: impostos } = await sb.from("impostos").select("buffet_id, modalidade, valor");
+  const { data: itens } = await sb
+    .from("buffet_itens")
+    .select("buffet_id, custo_calculado, nome, quantidade, unidade_uso");
+
+  const { data: impostos } = await sb
+    .from("impostos")
+    .select("buffet_id, modalidade, valor");
 
   (itens||[]).forEach(i=>{
     cacheCMV[i.buffet_id] ??= { base:0, impostos:[], itens:[] };
@@ -162,6 +244,7 @@ function render(){
   pratos.forEach(p=>{
     const d = cacheCMV[p.id] || { base:0, impostos:[], itens:[] };
     let imp = 0;
+
     d.impostos.forEach(i=>{
       if(i.modalidade==="FIXO") imp+=Number(i.valor);
       if(i.modalidade==="PERCENTUAL") imp+=(d.base*i.valor)/100;
@@ -220,14 +303,16 @@ function abrirModal(p, d, custo, cmv, lucro, margem){
   modal.style.display="flex";
 
   modalHeader.innerHTML = `
-    <img src="${p.foto_url||'https://placehold.co/600x400?text=Sem+Foto'}">
-    <div>
+    <img src="${p.foto_url||'https://placehold.co/800x400?text=Sem+Foto'}">
+    <div class="modal-info">
       <h2>${p.nome}</h2>
-      <p style="color:var(--muted)">${p.tipo||""}</p>
-      <p><b>Venda:</b> ${moeda(p.preco_venda)}</p>
-      <p><b>Custo Final:</b> ${moeda(custo)}</p>
-      <p><b>Lucro:</b> ${moeda(lucro)}</p>
-      <p><b>Margem:</b> ${margem.toFixed(1)}%</p>
+      <p>${p.tipo||""}</p>
+      <div class="modal-badges">
+        <span class="badge">💰 Venda ${moeda(p.preco_venda)}</span>
+        <span class="badge">🧾 Custo ${moeda(custo)}</span>
+        <span class="badge">📈 Margem ${margem.toFixed(1)}%</span>
+        <span class="badge">📊 CMV ${cmv.toFixed(1)}%</span>
+      </div>
     </div>
   `;
 
@@ -240,7 +325,7 @@ function abrirModal(p, d, custo, cmv, lucro, margem){
       </div>
     `).join("")}
 
-    <h3 style="margin-top:16px">Descrição</h3>
+    <h3 style="margin-top:18px">Descrição</h3>
     <p>${p.descricao||"-"}</p>
 
     <h3>Modo de preparo</h3>
