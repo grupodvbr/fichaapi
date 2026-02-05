@@ -766,55 +766,57 @@ async function abrirModal(p){
   pratoAtual = p;
   modal.style.display = "flex";
   document.body.style.overflow = "hidden";
-mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  await carregarTipos();
+
+  // foto com fallback
+  mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";
+
   /* INGREDIENTES */
-const { data: itens } = await sb
-  .from("buffet_itens")
-  .select(`
-    id,
-    nome,
-    quantidade,
-    unidade_uso,
-    custo_unitario,
-    custo_calculado,
-    produto:produtos (
-      energia_kcal,
-      carboidratos,
-      proteinas,
-      gorduras_totais,
-      fibra_alimentar,
-      sodio_mg
-    )
-  `)
-  .eq("buffet_id", p.id);
+  const { data: itens } = await sb
+    .from("buffet_itens")
+    .select(`
+      id,
+      nome,
+      quantidade,
+      unidade_uso,
+      custo_unitario,
+      custo_calculado,
+      produto:produtos (
+        energia_kcal,
+        carboidratos,
+        proteinas,
+        gorduras_totais,
+        fibra_alimentar,
+        sodio_mg
+      )
+    `)
+    .eq("buffet_id", p.id);
 
-// ===============================
-// CALCULO FICHA NUTRICIONAL
-// ===============================
-const nutri = {
-  calorias: 0,
-  carboidratos: 0,
-  proteinas: 0,
-  gorduras: 0,
-  fibras: 0,
-  sodio: 0
-};
+  // ===============================
+  // CALCULO FICHA NUTRICIONAL
+  // ===============================
+  const nutri = {
+    calorias: 0,
+    carboidratos: 0,
+    proteinas: 0,
+    gorduras: 0,
+    fibras: 0,
+    sodio: 0
+  };
 
-(itens || []).forEach(i => {
-  const qtd = Number(i.quantidade || 0);
-  const prod = i.produto;
-  if (!prod) return;
+  (itens || []).forEach(i => {
+    const qtd = Number(i.quantidade || 0);
+    const prod = i.produto;
+    if (!prod) return;
 
-  nutri.calorias     += Number(prod.energia_kcal || 0) * qtd;
-  nutri.carboidratos += Number(prod.carboidratos || 0) * qtd;
-  nutri.proteinas    += Number(prod.proteinas || 0) * qtd;
-  nutri.gorduras     += Number(prod.gorduras_totais || 0) * qtd;
-  nutri.fibras       += Number(prod.fibra_alimentar || 0) * qtd;
-  nutri.sodio        += Number(prod.sodio_mg || 0) * qtd;
-});
+    nutri.calorias     += Number(prod.energia_kcal || 0) * qtd;
+    nutri.carboidratos += Number(prod.carboidratos || 0) * qtd;
+    nutri.proteinas    += Number(prod.proteinas || 0) * qtd;
+    nutri.gorduras     += Number(prod.gorduras_totais || 0) * qtd;
+    nutri.fibras       += Number(prod.fibra_alimentar || 0) * qtd;
+    nutri.sodio        += Number(prod.sodio_mg || 0) * qtd;
+  });
 
-
-  const cmvBase = itens.reduce(
+  const cmvBase = (itens || []).reduce(
     (s,i)=>s + Number(i.custo_calculado||0),0
   );
 
@@ -838,27 +840,148 @@ const nutri = {
   const lucro = precoVenda ? precoVenda - cmvFinal : 0;
   const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
 
-mHeader.innerHTML = `
-  <h2>${p.nome}</h2>
+  // HEADER DO MODAL
+  mHeader.innerHTML = `
+    <h2>${p.nome}</h2>
+    <div class="badges primary">
+      <span class="badge">${p.tipo || "-"}</span>
+      <span class="badge" style="background:#dcfce7;color:#166534">
+        💰 Venda ${moeda(precoVenda)}
+      </span>
+      <span class="badge" style="background:#eef2ff;color:#3730a3">
+        🧾 Custo ${moeda(cmvFinal)}
+      </span>
+      <span class="badge" style="
+        background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
+        color:${margem < 30 ? '#991b1b' : '#166534'}">
+        📈 Margem ${margem.toFixed(1)}%
+      </span>
+    </div>
+  `;
 
-  <div class="badges primary">
-    <span class="badge">${p.tipo || "-"}</span>
+  // CORPO DO MODAL
+  mBody.innerHTML = `
+    <h3>Descrição do prato (texto do cardápio)</h3>
+    <textarea id="descricaoPrato"
+      placeholder="Ex: Salmão grelhado com arroz japonês e molho teriyaki."
+      style="width:100%;min-height:70px;padding:14px;border-radius:14px;border:1px solid var(--border);font-size:14px;font-family:Inter,sans-serif;resize:vertical;"
+    >${p.descricao || ""}</textarea>
 
-    <span class="badge" style="background:#dcfce7;color:#166534">
-      💰 Venda ${moeda(precoVenda)}
-    </span>
+    <div style="margin:14px 0">
+      <label style="font-weight:800;font-size:13px">STATUS DO PRATO</label>
+      <select id="statusPrato" style="margin-top:6px">
+        <option value="true">ATIVO</option>
+        <option value="false">DESATIVADO</option>
+      </select>
+    </div>
 
-    <span class="badge" style="background:#eef2ff;color:#3730a3">
-      🧾 Custo ${moeda(cmvFinal)}
-    </span>
+    <div style="margin:12px 0">
+      <label style="font-weight:800;font-size:13px">FOTO DO PRATO</label>
+      <input type="file" id="fotoPrato" accept="image/*" style="margin-top:6px">
+    </div>
 
-    <span class="badge" style="
-      background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
-      color:${margem < 30 ? '#991b1b' : '#166534'}">
-      📈 Margem ${margem.toFixed(1)}%
-    </span>
-  </div>
-`;
+    <p><b>CUSTO BASE:</b> ${moeda(cmvBase)}</p>
+    <p><b>IMPOSTOS E CUSTOS OPERACIONAIS:</b> ${moeda(totalImpostos)}</p>
+    <p><b>CUSTO FINAL:</b> ${moeda(cmvFinal)}</p>
+
+    <hr>
+    <h3>Tipo do prato</h3>
+    <select id="tipoPrato"><option value="">SELECIONE</option></select>
+
+    <hr><hr>
+
+    <h3>Preço ideal</h3>
+    <div class="precificacao">
+      <label style="font-weight:800;font-size:13px">💡 PREÇO IDEAL (R$)</label>
+      <input id="precoIdealInput" type="number" step="0.01" value="${p.preco_ideal || ""}" style="margin-top:8px">
+      <small style="color:var(--muted)">Valor de referência ideal (salva automaticamente).</small>
+    </div>
+
+    <h3>Precificação</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <input id="markupPerc" type="number" step="0.01" placeholder="Markup (%)">
+      <input id="precoVendaInput" type="number" step="0.01" placeholder="Preço de venda (R$)">
+    </div>
+    <p id="previewPreco" style="margin-top:8px;font-size:13px;font-weight:700;color:#166534"></p>
+
+    <button class="btn-add" style="margin-top:10px" onclick="salvarPrecoVenda(${cmvFinal})">
+      SALVAR PREÇO DE VENDA
+    </button>
+
+    <hr>
+    <h3>Ingredientes</h3>
+    ${(itens||[]).map(i=>`
+      <div class="ing">
+        <span>
+          <b>${i.nome} — ${moeda(i.custo_unitario)}</b><br>
+          <small>${i.quantidade} ${i.unidade_uso}</small>
+        </span>
+        <strong>${moeda(i.custo_calculado)}</strong>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn-icon btn-edit" onclick="editarIngrediente('${i.id}')">✏️</button>
+          <button class="btn-icon btn-delete" onclick="excluirIngrediente('${i.id}')">🗑️</button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+
+  // 🔁 AGORA O SELECT EXISTE → CARREGA TIPOS
+  await carregarTipos();
+
+  // seta tipo atual + salva mudança
+  const selectTipo = document.getElementById("tipoPrato");
+  if (selectTipo) {
+    selectTipo.value = p.tipo || "";
+    selectTipo.onchange = async () => {
+      const tipo = selectTipo.value;
+      if (!tipo) return;
+
+      await sb.from("buffet").update({ tipo }).eq("id", pratoAtual.id);
+      await carregarPratos();
+      renderLista();
+    };
+  }
+
+  // STATUS
+  const statusSelect = document.getElementById("statusPrato");
+  if (statusSelect) {
+    statusSelect.value = p.ativo === false ? "false" : "true";
+    statusSelect.onchange = async () => {
+      const ativo = statusSelect.value === "true";
+      await sb.from("buffet").update({ ativo }).eq("id", pratoAtual.id);
+      await carregarPratos();
+      renderLista();
+    };
+  }
+
+  // UPLOAD FOTO
+  const inputFoto = document.getElementById("fotoPrato");
+  if (inputFoto) {
+    inputFoto.onchange = async () => {
+      const file = inputFoto.files[0];
+      if (!file) return;
+
+      const ext = file.name.split(".").pop();
+      const fileName = `${pratoAtual.id}.${ext}`;
+
+      const { error: uploadError } = await sb.storage
+        .from("buffet")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) return alert("Erro ao enviar imagem");
+
+      const { data } = sb.storage.from("buffet").getPublicUrl(fileName);
+      const fotoUrl = data.publicUrl;
+
+      await sb.from("buffet").update({ foto_url: fotoUrl }).eq("id", pratoAtual.id);
+      mFoto.src = fotoUrl;
+
+      await carregarPratos();
+      renderLista();
+    };
+  }
+}
+
 
 
 mBody.innerHTML = `
@@ -1119,6 +1242,12 @@ setTimeout(() => {
     renderLista();
   };
 }, 0);
+
+
+
+
+
+   
 setTimeout(() => {
   const inputFoto = document.getElementById("fotoPrato");
   if (!inputFoto) return;
