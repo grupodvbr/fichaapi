@@ -10,54 +10,68 @@
 <style>
 :root{
   --bg:#0b0b0c; --card:#0f0f12; --text:#fff; --muted:#9ca3af;
-  --gold:#d4af37; --border:#1f1f22; --radius:16px;
+  --gold:#d4af37; --border:#1f1f22; --danger:#dc2626;
 }
 *{box-sizing:border-box}
-body{margin:0;background:#000;color:#fff;font-family:Inter}
-.header{position:sticky;top:0;padding:14px 18px;background:#000;border-bottom:1px solid var(--border)}
+body{margin:0;background:linear-gradient(180deg,#000,#0b0b0c);color:#fff;font-family:Inter}
+.header{position:sticky;top:0;padding:14px 18px;background:#000;border-bottom:1px solid var(--border);z-index:10}
 .header h1{margin:0;font-size:18px;font-weight:900}
-.container{max-width:1100px;margin:0 auto;padding:16px;display:grid;gap:16px}
+.container{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-columns:360px 1fr;gap:16px}
+@media(max-width:900px){.container{grid-template-columns:1fr}}
 
-.form{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:16px;
-  display:grid;
-  gap:12px;
+.panel{
+  background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px;
+  display:grid;gap:12px
 }
-.form h2{margin:0 0 8px;font-size:14px;letter-spacing:.4px;color:var(--gold)}
+.panel h2{margin:0 0 4px;font-size:13px;color:var(--gold);letter-spacing:.6px}
 
-.row{display:grid;grid-template-columns:1fr 120px;gap:10px}
 label{font-size:12px;color:var(--muted)}
 input,select,button{
-  height:46px;border-radius:12px;border:1px solid var(--border);
+  height:44px;border-radius:12px;border:1px solid var(--border);
   background:#0b0b0c;color:#fff;padding:0 12px
 }
-button.primary{border-color:var(--gold);color:var(--gold);font-weight:800;cursor:pointer}
+button.primary{border-color:var(--gold);color:var(--gold);font-weight:900;cursor:pointer}
+button.primary:hover{box-shadow:0 0 0 2px rgba(212,175,55,.15) inset}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
 .days{display:flex;gap:8px;flex-wrap:wrap}
 .day{
   padding:8px 12px;border:1px solid var(--border);border-radius:999px;
-  font-size:12px;cursor:pointer;color:#fff
+  font-size:12px;cursor:pointer;color:#fff;user-select:none
 }
-.day.active{border-color:var(--gold);color:var(--gold)}
+.day.active{border-color:var(--gold);color:var(--gold);background:rgba(212,175,55,.08)}
 
 .preview{
-  height:160px;border-radius:14px;border:1px dashed var(--border);
+  width:100%;height:200px;border-radius:14px;border:1px dashed var(--border);
   display:grid;place-items:center;overflow:hidden;background:#000
 }
-.preview img,.preview video{width:100%;height:100%;object-fit:cover}
+.preview img,.preview video{width:100%;height:100%;object-fit:contain}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.card{background:#0f0f12;border:1px solid var(--border);border-radius:16px;overflow:hidden}
-.card img,.card video{width:100%;aspect-ratio:1/1;object-fit:cover}
-.card .meta{display:flex;justify-content:space-between;align-items:center;padding:10px}
-.badge{font-size:10px;border:1px solid var(--border);padding:4px 8px;border-radius:999px}
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px
+}
+.card{
+  background:#0f0f12;border:1px solid var(--border);border-radius:16px;overflow:hidden;
+  display:grid;grid-template-rows:auto 1fr auto
+}
+.media{
+  width:100%;height:220px;background:#000;display:grid;place-items:center
+}
+.media img,.media video{max-width:100%;max-height:100%;object-fit:contain}
+.meta{padding:10px;display:grid;gap:6px}
+.badge{
+  display:inline-block;font-size:10px;font-weight:900;border:1px solid var(--border);
+  padding:4px 8px;border-radius:999px
+}
 .badge.on{border-color:var(--gold);color:var(--gold)}
-.actions{display:flex;gap:6px}
-.actions button{padding:6px 10px;font-size:12px}
-.danger{border-color:#dc2626;color:#dc2626}
+.badge.off{border-color:#444;color:#aaa}
+.info{font-size:12px;color:#cbd5f5}
+.actions{display:flex;gap:8px;padding:10px}
+.actions button{flex:1}
+.actions .danger{border-color:var(--danger);color:var(--danger)}
+.actions .toggle.on{border-color:var(--gold);color:var(--gold)}
+.actions .toggle.off{border-color:#555;color:#aaa}
 </style>
 </head>
 <body>
@@ -66,7 +80,8 @@ button.primary{border-color:var(--gold);color:var(--gold);font-weight:800;cursor
 
 <div class="container">
 
-  <div class="form">
+  <!-- PAINEL DE UPLOAD -->
+  <div class="panel">
     <h2>NOVA PROMOÇÃO</h2>
 
     <label>Arquivo (imagem ou vídeo)</label>
@@ -82,8 +97,10 @@ button.primary{border-color:var(--gold);color:var(--gold);font-weight:800;cursor
       </div>
       <div>
         <label>Horário</label>
-        <input id="hora_inicio" type="time" value="00:00">
-        <input id="hora_fim" type="time" value="23:59">
+        <div class="row">
+          <input id="hora_inicio" type="time" value="00:00">
+          <input id="hora_fim" type="time" value="23:59">
+        </div>
       </div>
     </div>
 
@@ -98,17 +115,24 @@ button.primary{border-color:var(--gold);color:var(--gold);font-weight:800;cursor
       <div class="day" data-v="7">Dom</div>
     </div>
 
-    <div class="preview" id="preview">Preview</div>
+    <div class="preview" id="preview">Pré-visualização</div>
 
     <button class="primary" onclick="addPromo()">📤 Upload & Salvar</button>
   </div>
 
-  <div class="grid" id="grid"></div>
+  <!-- GALERIA -->
+  <div>
+    <div class="grid" id="grid"></div>
+  </div>
 
 </div>
 
 <script>
-const sb = supabase.createClient("https://dxkszikemntfusfyrzos.supabase.co","sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed");
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+);
+
 const fileInput = document.getElementById("file");
 const tipoInput = document.getElementById("tipo");
 const horaInicioInput = document.getElementById("hora_inicio");
@@ -130,21 +154,42 @@ fileInput.onchange = () => {
   const f = fileInput.files[0];
   if(!f) return;
   preview.innerHTML = f.type.startsWith("video")
-    ? `<video src="${URL.createObjectURL(f)}" autoplay muted loop></video>`
+    ? `<video src="${URL.createObjectURL(f)}" autoplay muted loop playsinline></video>`
     : `<img src="${URL.createObjectURL(f)}">`;
 };
 
+const diasLabel = d => ({1:"Seg",2:"Ter",3:"Qua",4:"Qui",5:"Sex",6:"Sáb",7:"Dom"}[d] || d);
+
 async function load(){
-  const { data } = await sb.from("promocoes").select("*").order("created_at",{ascending:false});
+  const { data, error } = await sb
+    .from("promocoes")
+    .select("*")
+    .order("created_at",{ascending:false});
+
+  if(error){ console.error(error); return; }
+
   grid.innerHTML = (data||[]).map(p=>`
     <div class="card">
-      ${p.tipo==="VIDEO" ? `<video src="${p.url}" muted autoplay loop></video>` : `<img src="${p.url}">`}
+      <div class="media">
+        ${p.tipo==="VIDEO"
+          ? `<video src="${p.url}" muted autoplay loop playsinline></video>`
+          : `<img src="${p.url}">`
+        }
+      </div>
       <div class="meta">
-        <span class="badge ${p.ativo?'on':''}">${p.tipo} • ${p.ativo?'ON':'OFF'}</span>
-        <div class="actions">
-          <button onclick="toggle('${p.id}',${p.ativo})">${p.ativo?'Off':'On'}</button>
-          <button class="danger" onclick="delPromo('${p.id}','${p.url}')">Excluir</button>
+        <div>
+          <span class="badge ${p.ativo?'on':'off'}">${p.tipo} • ${p.ativo?'ON':'OFF'}</span>
         </div>
+        <div class="info">
+          📅 ${ (p.dias_semana||[]).map(diasLabel).join(", ") || "—" }<br/>
+          ⏰ ${p.hora_inicio} → ${p.hora_fim}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="toggle ${p.ativo?'on':'off'}" onclick="toggle('${p.id}', ${p.ativo})">
+          ${p.ativo ? 'Desativar' : 'Ativar'}
+        </button>
+        <button class="danger" onclick="delPromo('${p.id}', '${p.url}')">Excluir</button>
       </div>
     </div>
   `).join("");
@@ -157,36 +202,47 @@ async function addPromo(){
 
   const ext = f.name.split(".").pop();
   const path = `promocoes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-  await sb.storage.from("promocoes").upload(path, f);
 
-  const { data } = sb.storage.from("promocoes").getPublicUrl(path);
+  const { error: upErr } = await sb.storage.from("promocoes").upload(path, f, { upsert:false });
+  if(upErr){ console.error(upErr); return alert("Erro no upload"); }
 
-  await sb.from("promocoes").insert({
-    url: data.publicUrl,
+  const { data: urlData } = sb.storage.from("promocoes").getPublicUrl(path);
+
+  const { error } = await sb.from("promocoes").insert({
+    url: urlData.publicUrl,
     tipo: tipoInput.value,
     dias_semana: diasSel,
     hora_inicio: horaInicioInput.value,
     hora_fim: horaFimInput.value,
-    ativo:true
+    ativo: true
   });
 
+  if(error){ console.error(error); return alert("Erro ao salvar no banco"); }
+
   fileInput.value = "";
-  preview.innerHTML = "Preview";
+  preview.innerHTML = "Pré-visualização";
   diasSel = [];
   document.querySelectorAll(".day").forEach(d=>d.classList.remove("active"));
   load();
 }
 
 async function toggle(id, ativo){
-  await sb.from("promocoes").update({ativo:!ativo}).eq("id",id);
+  const { error } = await sb.from("promocoes").update({ ativo: !ativo }).eq("id", id);
+  if(error){ console.error(error); return alert("Erro ao atualizar"); }
   load();
 }
 
 async function delPromo(id, url){
-  if(!confirm("Excluir mídia?")) return;
+  if(!confirm("Excluir mídia? Isso remove do Storage também.")) return;
+
   const path = url.split("/storage/v1/object/public/promocoes/")[1];
-  if(path) await sb.storage.from("promocoes").remove([path]);
-  await sb.from("promocoes").delete().eq("id",id);
+  if(path){
+    await sb.storage.from("promocoes").remove([path]);
+  }
+
+  const { error } = await sb.from("promocoes").delete().eq("id", id);
+  if(error){ console.error(error); return alert("Erro ao excluir"); }
+
   load();
 }
 
