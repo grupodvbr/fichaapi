@@ -358,40 +358,44 @@ button{
   cursor:pointer;
 }
 
+/* BOTÕES */
 .btn-add{
   height:44px;
-  padding:0 22px;
-  border-radius:14px;
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  padding:0 18px;
+  border-radius:10px;
+  background:#0f172a;
   color:#fff;
   font-size:12px;
-  font-weight:900;
-  letter-spacing:.12em;
-  box-shadow:0 14px 34px rgba(37,99,235,.45);
+  font-weight:800;
+  letter-spacing:.08em;
+  box-shadow:0 6px 16px rgba(15,23,42,.25);
   transition:.15s ease;
 }
 
 .btn-add:hover{
   transform:translateY(-1px);
-  box-shadow:0 20px 50px rgba(37,99,235,.55);
+  box-shadow:0 10px 26px rgba(15,23,42,.35);
 }
 
+/* botões pequenos */
 .btn-icon{
-  border-radius:10px;
-  padding:6px 12px;
+  border-radius:8px;
+  padding:6px 10px;
   font-size:13px;
-  font-weight:900;
-  box-shadow:var(--shadow-xs);
+  font-weight:800;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
 }
 
 .btn-edit{
-  background:#e0f2fe;
-  color:#0369a1;
+  background:#f1f5f9;
+  color:#0f172a;
+  border:1px solid var(--border);
 }
 
 .btn-delete{
   background:#fee2e2;
   color:#991b1b;
+  border:1px solid #fecaca;
 }
 
 /* =========================================================
@@ -453,24 +457,27 @@ button{
   .btn-add{ width:100% }
 }
 
-/* =========================================================
-   GRID DUPLO NO DESKTOP
-========================================================= */
-@media(min-width:1024px){
-  .modal-body{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:28px;
-  }
 
-  .modal-body > h3,
-  .modal-body > hr{
-    grid-column:1 / -1;
-  }
+/* Blocos visuais no modal */
+.modal-body > h3{
+  margin-top:28px;
+  padding-bottom:6px;
+  border-bottom:1px solid var(--border);
 }
 
+.precificacao{
+  background:#f8fafc;
+  border-radius:14px;
+  padding:14px;
+}
 
-
+.ing{
+  background:#fff;
+  border-radius:10px;
+  padding:10px;
+  border:1px solid var(--border);
+  margin-bottom:8px;
+}
 
 
 
@@ -1005,8 +1012,8 @@ ${p.preco_ideal ? `
 
       <strong>${moeda(i.custo_calculado)}</strong>
 
-      <div style="display:flex;gap:6px">
-        <button class="btn-icon btn-edit"
+<div style="display:flex;gap:6px;align-items:center">
+<button class="btn-icon btn-edit"
           onclick="editarIngrediente('${i.id}')">✏️</button>
         <button class="btn-icon btn-delete"
           onclick="excluirIngrediente('${i.id}')">🗑️</button>
