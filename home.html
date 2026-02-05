@@ -11,6 +11,7 @@
 <style>
 :root{
   --bg:#0b1220;
+  --bg-2:#020617;
   --card:#020617;
   --grid:#1e293b;
   --text:#e5e7eb;
@@ -18,71 +19,181 @@
   --accent:#22c55e;
   --danger:#ef4444;
   --gold:#f59e0b;
+  --radius:18px;
+  --shadow:0 20px 60px rgba(0,0,0,.45);
+  --glow:0 0 0 rgba(34,197,94,0);
 }
+
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Inter,sans-serif;
-  background:radial-gradient(1200px 600px at 10% -10%, #0b1220 0%, #020617 60%);
   color:var(--text);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #0b1220 0%, #020617 60%),
+    linear-gradient(180deg,#020617,#020617);
+  min-height:100vh;
 }
+
+/* HEADER */
 .header{
   padding:22px 26px;
   border-bottom:1px solid var(--grid);
   background:linear-gradient(180deg,#020617,#020617cc);
+  position:sticky;
+  top:0;
+  z-index:10;
+  backdrop-filter: blur(6px);
 }
-.header h1{margin:0;font-size:24px;font-weight:900}
-.header small{color:var(--muted)}
-.container{padding:22px 24px}
+.header h1{
+  margin:0;
+  font-size:24px;
+  font-weight:900;
+  letter-spacing:.2px;
+}
+.header small{
+  color:var(--muted);
+  font-weight:600;
+}
+
+/* CONTAINER */
+.container{
+  padding:22px 24px 40px;
+  max-width:1400px;
+  margin:0 auto;
+}
+
+/* GRID KPIs */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:16px;
-  margin-bottom:22px;
+  margin-bottom:26px;
 }
+
+/* CARD */
 .card{
   position:relative;
-  background:linear-gradient(180deg,#020617,#020617cc);
+  background:
+    linear-gradient(180deg,#020617,#020617cc);
   border:1px solid var(--grid);
-  border-radius:18px;
-  padding:18px 16px 16px;
-  box-shadow:0 20px 60px rgba(0,0,0,.45);
+  border-radius:var(--radius);
+  padding:18px 18px 16px;
+  box-shadow:var(--shadow);
   overflow:hidden;
+  transition:.25s ease;
+}
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(120px 60px at 0% 0%, rgba(255,255,255,.06), transparent 40%),
+    radial-gradient(180px 80px at 100% 0%, rgba(34,197,94,.08), transparent 45%);
+  pointer-events:none;
 }
 .card::after{
   content:"";
-  position:absolute; inset:auto -40% -60% -40%;
+  position:absolute;
+  inset:auto -40% -60% -40%;
   height:140px;
   background:radial-gradient(closest-side,rgba(34,197,94,.18),transparent);
   pointer-events:none;
 }
-.card small{color:var(--muted);font-weight:700;letter-spacing:.3px}
-.card b{font-size:34px;font-weight:900;color:var(--accent)}
-.card .sub{font-size:12px;color:var(--muted)}
-.card.warn b{color:var(--gold)}
-.card.danger b{color:var(--danger)}
+
+.card:hover{
+  transform:translateY(-4px);
+  border-color:#2b3b55;
+  box-shadow:0 28px 80px rgba(0,0,0,.6);
+}
+
+/* TEXTO DO CARD */
+.card small{
+  color:var(--muted);
+  font-weight:700;
+  letter-spacing:.4px;
+  text-transform:uppercase;
+  font-size:11px;
+}
+.card b{
+  display:block;
+  margin-top:4px;
+  font-size:34px;
+  font-weight:900;
+  letter-spacing:.5px;
+  color:var(--accent);
+}
+.card .sub{
+  margin-top:2px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* VARIAÇÕES */
+.card.warn b{ color:var(--gold); }
+.card.danger b{ color:var(--danger); }
+
+/* SECTIONS */
 .section{
-  margin-top:18px;
+  margin-top:22px;
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
   gap:18px;
 }
+
+/* PANELS */
 .panel{
   background:linear-gradient(180deg,#020617,#020617cc);
   border:1px solid var(--grid);
-  border-radius:18px;
-  padding:16px;
+  border-radius:var(--radius);
+  padding:16px 16px 18px;
+  box-shadow:var(--shadow);
+  transition:.2s ease;
 }
-.panel h3{margin:0 0 10px;font-size:15px;color:#cbd5f5}
+.panel:hover{
+  border-color:#2b3b55;
+}
+.panel h3{
+  margin:0 0 10px;
+  font-size:14px;
+  color:#cbd5f5;
+  font-weight:800;
+  letter-spacing:.3px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+/* BADGES */
 .badge{
   display:inline-block;
-  padding:6px 10px;
+  padding:6px 12px;
   border-radius:999px;
   font-size:12px;
   font-weight:800;
   border:1px solid var(--grid);
   background:#0b1220;
   margin:4px 6px 0 0;
+  transition:.15s ease;
+}
+.badge:hover{
+  border-color:#3b82f6;
+  color:#bfdbfe;
+}
+
+/* CANVAS */
+canvas{
+  max-width:100%;
+  background:transparent;
+}
+
+/* RESPONSIVO */
+@media (max-width: 720px){
+  .header h1{font-size:20px}
+  .card b{font-size:28px}
+  .container{padding:16px}
+  .panel{padding:14px}
 }
 </style>
 </head>
