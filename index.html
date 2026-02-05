@@ -160,7 +160,70 @@ html, body {
   background:linear-gradient(90deg, transparent, rgba(212,175,55,.6), transparent);
   opacity:.6;
 }
+/* PROMOÇÕES */
+.promo-wrap{
+  padding:14px 12px 4px;
+}
 
+.promo-card{
+  background:linear-gradient(180deg,#0f0f12,#000);
+  border:1px solid var(--gold-soft);
+  border-radius:28px;
+  padding:14px;
+  box-shadow:0 25px 80px rgba(212,175,55,.08);
+}
+
+.promo-title{
+  font-weight:900;
+  letter-spacing:1px;
+  color:var(--gold);
+  margin-bottom:10px;
+}
+
+.promo-slider{
+  position:relative;
+  width:100%;
+  height:180px;
+  overflow:hidden;
+  border-radius:22px;
+  border:1px solid #1f1f22;
+  background:#000;
+}
+
+.promo-item{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition:.6s ease;
+}
+
+.promo-item.active{ opacity:1 }
+
+.promo-item img,
+.promo-item video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:22px;
+}
+
+.promo-dots{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin-top:10px;
+}
+
+.promo-dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#333;
+}
+
+.promo-dot.active{
+  background:var(--gold);
+}
 </style>
 </head>
 
@@ -171,7 +234,16 @@ html, body {
   <div id="cats" class="cats"></div>
   <div id="subcats" class="cats subcats" style="display:none"></div>
 </div>
+<!-- PROMOÇÕES DO DIA -->
+<div id="promoWrap" class="promo-wrap" style="display:none">
+  <div class="promo-card">
+    <div class="promo-title">🔥 Promoções do Dia</div>
 
+    <div class="promo-slider" id="promoSlider"></div>
+
+    <div class="promo-dots" id="promoDots"></div>
+  </div>
+</div>
 
 <div id="grid" class="grid"></div>
 
@@ -223,6 +295,68 @@ const subcats=document.getElementById("subcats");
 
 const moeda=v=>"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
+
+
+const promoWrap = document.getElementById("promoWrap");
+const promoSlider = document.getElementById("promoSlider");
+const promoDots = document.getElementById("promoDots");
+
+let promoIndex = 0;
+let promos = [];
+let promoTimer = null;
+
+async function loadPromos(){
+  const { data, error } = await sb
+    .from("promocoes")
+    .select("url,tipo,ativo")
+    .eq("ativo", true)
+    .order("created_at", { ascending:false });
+
+  if(error){ console.error(error); return; }
+  promos = data || [];
+
+  if(!promos.length){
+    promoWrap.style.display = "none";
+    return;
+  }
+
+  promoSlider.innerHTML = promos.map((p,i)=>`
+    <div class="promo-item ${i===0?'active':''}">
+      ${
+        p.tipo === "VIDEO"
+          ? `<video src="${p.url}" autoplay muted loop playsinline></video>`
+          : `<img src="${p.url}">`
+      }
+    </div>
+  `).join("");
+
+  promoDots.innerHTML = promos.map((_,i)=>`
+    <div class="promo-dot ${i===0?'active':''}"></div>
+  `).join("");
+
+  startPromoLoop();
+}
+
+function startPromoLoop(){
+  clearInterval(promoTimer);
+  promoTimer = setInterval(()=>{
+    promoIndex = (promoIndex + 1) % promos.length;
+
+    document.querySelectorAll(".promo-item").forEach((el,i)=>{
+      el.classList.toggle("active", i === promoIndex);
+    });
+
+    document.querySelectorAll(".promo-dot").forEach((el,i)=>{
+      el.classList.toggle("active", i === promoIndex);
+    });
+
+  }, 4000);
+}
+
+
+
+
+  
 function renderCats(){
   cats.innerHTML = GROUPS.map(g => {
     if(!g.sub){
@@ -265,6 +399,14 @@ function setCat(k){
   fimLista = false;
   idsCarregados.clear();
   grid.innerHTML = "";
+
+  if(!k){
+    promoWrap.style.display = "block";
+    loadPromos();
+  }else{
+    promoWrap.style.display = "none";
+  }
+
   renderCats();
   loadMore();
 }
@@ -288,6 +430,9 @@ async function loadMore(){
 window.addEventListener("scroll",()=>{ if((innerHeight+scrollY)>=document.body.offsetHeight-600) loadMore();});
 search.oninput=()=>{ termo=search.value.trim(); page=0; fimLista=false; idsCarregados.clear(); grid.innerHTML=""; loadMore(); };
 renderCats(); loadMore();
+
+promoWrap.style.display = "block";
+loadPromos();
 </script>
 <script>
 if ("serviceWorker" in navigator) {
