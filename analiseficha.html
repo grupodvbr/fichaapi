@@ -31,9 +31,7 @@
   --shadow-lg:0 40px 90px rgba(0,0,0,.35);
 }
 
-/* =========================================================
-   RESET / BASE
-========================================================= */
+/* RESET */
 *{
   box-sizing:border-box;
   -webkit-font-smoothing:antialiased;
@@ -46,16 +44,7 @@ body{
   color:var(--text);
 }
 
-/* trava scroll quando modal aberto */
-body.modal-open{
-  overflow:hidden;
-  position:fixed;
-  width:100%;
-}
-
-/* =========================================================
-   FILTROS
-========================================================= */
+/* FILTROS */
 .filters{
   display:flex;
   gap:14px;
@@ -74,39 +63,29 @@ body.modal-open{
   max-width:320px;
 }
 
-/* =========================================================
-   GRID PRINCIPAL
-========================================================= */
+/* GRID */
 .grid{
   display:grid;
   gap:22px;
   padding:22px;
 }
 
-/* DESKTOP GRANDE → 6 por linha */
-@media (min-width: 1600px){
-  .grid{
-    grid-template-columns:repeat(6,1fr);
-  }
+/* DESKTOP GRANDE */
+@media (min-width:1600px){
+  .grid{ grid-template-columns:repeat(6,1fr); }
 }
 
-/* NOTEBOOK / DESKTOP MÉDIO → 4 por linha */
-@media (min-width: 1200px) and (max-width: 1599px){
-  .grid{
-    grid-template-columns:repeat(4,1fr);
-  }
+/* NOTEBOOK */
+@media (min-width:1200px) and (max-width:1599px){
+  .grid{ grid-template-columns:repeat(4,1fr); }
 }
 
-/* TABLET → 2 por linha */
-@media (min-width: 700px) and (max-width: 1199px){
-  .grid{
-    grid-template-columns:repeat(2,1fr);
-  }
+/* TABLET */
+@media (min-width:700px) and (max-width:1199px){
+  .grid{ grid-template-columns:repeat(2,1fr); }
 }
 
-/* =========================================================
-   CARD
-========================================================= */
+/* CARD */
 .card{
   background:var(--card);
   border-radius:22px;
@@ -114,6 +93,9 @@ body.modal-open{
   overflow:hidden;
   cursor:pointer;
   transition:.18s ease;
+  display:flex;
+  flex-direction:column;
+  height:100%;
 }
 
 .card:hover{
@@ -129,6 +111,7 @@ body.modal-open{
 
 .card-body{
   padding:18px;
+  flex:1;
 }
 
 .card-body h3{
@@ -137,9 +120,17 @@ body.modal-open{
   font-size:16px;
 }
 
-/* =========================================================
-   BADGES
-========================================================= */
+/* BADGES */
+.badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:6px;
+}
+
+.badges.primary{ margin-top:4px; }
+.badges.secondary{ margin-top:10px; }
+
 .badge{
   display:inline-block;
   padding:6px 12px;
@@ -148,12 +139,10 @@ body.modal-open{
   color:#3730a3;
   font-size:12px;
   font-weight:800;
-  margin:4px 6px 0 0;
+  cursor:default;
 }
 
-/* =========================================================
-   MODAL OVERLAY
-========================================================= */
+/* MODAL OVERLAY */
 .modal{
   position:fixed;
   inset:0;
@@ -165,85 +154,64 @@ body.modal-open{
   z-index:100;
 }
 
-/* =========================================================
-   MODAL BOX (SEM BALANÇAR)
-========================================================= */
+/* MODAL BOX PREMIUM */
 .modal-box{
   background:#fff;
   width:100%;
-  max-width:880px;
+  max-width:1200px;
   max-height:92vh;
   border-radius:26px;
   overflow:hidden;
-  display:flex;
-  flex-direction:column;
+  display:grid;
+  grid-template-columns:420px 1fr; /* FOTO | CONTEÚDO */
   box-shadow:var(--shadow-lg);
   animation:modalIn .2s ease;
 }
 
-/* animação estável (SEM translate) */
+/* ANIMAÇÃO */
 @keyframes modalIn{
-  from{
-    opacity:0;
-    transform:scale(0.96);
-  }
-  to{
-    opacity:1;
-    transform:scale(1);
-  }
+  from{ opacity:0; transform:scale(.96); }
+  to{ opacity:1; transform:scale(1); }
 }
 
-/* =========================================================
-   IMAGEM MODAL
-========================================================= */
+/* IMAGEM MODAL */
 .modal-img{
   width:100%;
-  height:240px;
+  height:100%;
   object-fit:cover;
-  flex-shrink:0;
+  background:#000;
 }
 
-/* =========================================================
-   CORPO MODAL
-========================================================= */
+/* CORPO MODAL */
 .modal-body{
   padding:26px;
   overflow-y:auto;
 }
 
-.modal-body::-webkit-scrollbar{
-  width:8px;
-}
-
+.modal-body::-webkit-scrollbar{ width:8px; }
 .modal-body::-webkit-scrollbar-thumb{
   background:#cbd5e1;
   border-radius:8px;
 }
 
-/* =========================================================
-   BOTÃO FECHAR
-========================================================= */
-.close{
-  position:absolute;
-  top:14px;
-  right:18px;
-  font-size:26px;
-  cursor:pointer;
-  font-weight:900;
-  color:#fff;
-  z-index:10;
-  text-shadow:0 2px 10px rgba(0,0,0,.6);
+/* HEADER FIXO DO MODAL (RESUMO) */
+.modal-header{
+  position:sticky;
+  top:0;
+  background:#fff;
+  padding-bottom:12px;
+  z-index:2;
+  border-bottom:1px solid var(--border);
+  margin-bottom:16px;
 }
 
-/* =========================================================
-   TEXTOS
-========================================================= */
-.modal-body h2{
-  margin:0 0 12px;
-  font-size:26px;
+.modal-header h2{
+  margin:0 0 10px;
+  font-size:28px;
   font-weight:900;
 }
 
+/* TEXTOS */
 .modal-body h3{
   margin:20px 0 10px;
   font-size:16px;
@@ -263,9 +231,7 @@ body.modal-open{
   margin:22px 0;
 }
 
-/* =========================================================
-   LISTAS / INGREDIENTES / IMPOSTOS
-========================================================= */
+/* LISTAS */
 .ing{
   display:grid;
   grid-template-columns:1fr auto auto;
@@ -276,14 +242,9 @@ body.modal-open{
   align-items:center;
 }
 
-.ing:last-child{border-bottom:none}
+.ing:last-child{ border-bottom:none; }
 
-.ing b{font-weight:800}
-.ing small{color:var(--muted)}
-
-/* =========================================================
-   PRECIFICAÇÃO / FORMULÁRIOS
-========================================================= */
+/* PRECIFICAÇÃO */
 .precificacao{
   background:#f1f5f9;
   border:1px solid var(--border);
@@ -308,20 +269,15 @@ input:focus, select:focus{
   box-shadow:0 0 0 3px rgba(37,99,235,.15);
 }
 
-input[readonly]{
-  background:#e5e7eb;
-}
+input[readonly]{ background:#e5e7eb; }
 
-/* =========================================================
-   BOTÕES
-========================================================= */
+/* BOTÕES */
 button{
   font-family:Inter,sans-serif;
   border:none;
   cursor:pointer;
 }
 
-/* principal */
 .btn-add{
   height:44px;
   padding:0 22px;
@@ -340,7 +296,6 @@ button{
   box-shadow:0 16px 40px rgba(37,99,235,.45);
 }
 
-/* ícones */
 .btn-icon{
   border-radius:10px;
   padding:6px 12px;
@@ -348,101 +303,42 @@ button{
   font-weight:800;
 }
 
-.btn-edit{
-  background:#e0f2fe;
-  color:#0369a1;
+.btn-edit{ background:#e0f2fe; color:#0369a1; }
+.btn-delete{ background:#fee2e2; color:#991b1b; }
+
+/* FECHAR */
+.close{
+  position:absolute;
+  top:14px;
+  right:18px;
+  font-size:26px;
+  cursor:pointer;
+  font-weight:900;
+  color:#fff;
+  z-index:10;
+  text-shadow:0 2px 10px rgba(0,0,0,.6);
 }
 
-.btn-delete{
-  background:#fee2e2;
-  color:#991b1b;
+/* MOBILE */
+@media(max-width:900px){
+  .modal-box{
+    grid-template-columns:1fr;
+  }
+  .modal-img{ height:220px; }
 }
 
-/* =========================================================
-   MOBILE — 3 CARDS POR LINHA + MODAL APP STYLE
-========================================================= */
 @media(max-width:520px){
-
-  /* 3 cards por linha */
   .grid{
     grid-template-columns:repeat(3,1fr);
     gap:10px;
     padding:14px;
   }
-
-  .card{
-    border-radius:16px;
-  }
-
-  .card img{
-    height:110px;
-  }
-
-  .card-body{
-    padding:10px;
-  }
-
-  .card-body h3{
-    font-size:13px;
-    line-height:1.1;
-  }
-
-  .badge{
-    font-size:10px;
-    padding:4px 8px;
-  }
-
-  /* modal estilo app */
-  .modal{
-    align-items:flex-end;
-  }
-
+  .card img{ height:120px; }
+  .modal{ align-items:flex-end; }
   .modal-box{
-    max-width:100%;
     height:92vh;
     border-radius:22px 22px 0 0;
   }
-
-  .modal-img{
-    height:180px;
-  }
-
-  .modal-body{
-    padding:18px;
-  }
-
-  .close{
-    top:10px;
-    right:14px;
-    font-size:22px;
-  }
-
-  .ing{
-    grid-template-columns:1fr auto;
-    gap:8px;
-  }
-
-  .btn-add{
-    width:100%;
-  }
-}
-.badges{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin-top:6px;
-}
-
-.badges.primary{
-  margin-top:4px;
-}
-
-.badges.secondary{
-  margin-top:10px;
-}
-
-.badge{
-  cursor:default;
 }
 
 
