@@ -224,6 +224,12 @@ html, body {
 .promo-dot.active{
   background:var(--gold);
 }
+html, body {
+  overscroll-behavior: none;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
 </style>
 </head>
 
@@ -510,6 +516,37 @@ document.addEventListener("DOMContentLoaded", () => {
   // tenta entrar em fullscreen no primeiro toque
   document.body.addEventListener("click", goFull, { once: true });
 });
+</script>
+<script>
+function requestFull(){
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
+
+document.addEventListener("click", () => {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    requestFull();
+  }
+});
+
+// se o usuário tentar sair do fullscreen, força voltar
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    setTimeout(requestFull, 300);
+  }
+});
+document.addEventListener("webkitfullscreenchange", () => {
+  if (!document.webkitFullscreenElement) {
+    setTimeout(requestFull, 300);
+  }
+});
+</script>
+<script>
+history.pushState(null, "", location.href);
+window.onpopstate = function () {
+  history.go(1);
+};
 </script>
 </body>
 </html>
