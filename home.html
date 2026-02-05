@@ -2,112 +2,120 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<title>CMV • Home</title>
+<title>CMV • Home Premium</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
-  --bg:#0f172a;
+  --bg:#0b1220;
   --card:#020617;
   --grid:#1e293b;
   --text:#e5e7eb;
   --muted:#94a3b8;
   --accent:#22c55e;
   --danger:#ef4444;
+  --gold:#f59e0b;
 }
 
 *{box-sizing:border-box}
 body{
   margin:0;
   font-family:Inter,sans-serif;
-  background:var(--bg);
+  background:radial-gradient(1200px 600px at 10% -10%, #0b1220 0%, #020617 60%);
   color:var(--text);
 }
 
 .header{
-  padding:18px 22px;
-  font-size:22px;
-  font-weight:900;
+  padding:22px 26px;
   border-bottom:1px solid var(--grid);
-  background:#020617;
+  background:linear-gradient(180deg,#020617,#020617cc);
 }
+.header h1{margin:0;font-size:24px;font-weight:900}
+.header small{color:var(--muted)}
+
+.container{padding:22px 24px}
 
 .grid{
-  padding:22px;
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:18px;
+  gap:16px;
+  margin-bottom:22px;
 }
 
 .card{
+  position:relative;
   background:linear-gradient(180deg,#020617,#020617cc);
   border:1px solid var(--grid);
   border-radius:18px;
-  padding:18px;
-  box-shadow:0 12px 40px rgba(0,0,0,.4);
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+  padding:18px 16px 16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+  overflow:hidden;
 }
 
-.card small{
-  color:var(--muted);
-  font-weight:700;
-  letter-spacing:.3px;
+.card::after{
+  content:"";
+  position:absolute; inset:auto -40% -60% -40%;
+  height:140px;
+  background:radial-gradient(closest-side,rgba(34,197,94,.18),transparent);
+  pointer-events:none;
 }
 
-.card b{
-  font-size:34px;
-  font-weight:900;
-  color:var(--accent);
-}
+.card small{color:var(--muted);font-weight:700;letter-spacing:.3px}
+.card b{font-size:34px;font-weight:900;color:var(--accent)}
+.card .sub{font-size:12px;color:var(--muted)}
 
+.card.warn b{color:var(--gold)}
 .card.danger b{color:var(--danger)}
-.card .sub{font-size:13px;color:var(--muted)}
+
+.section{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:18px;
+}
+
+.panel{
+  background:linear-gradient(180deg,#020617,#020617cc);
+  border:1px solid var(--grid);
+  border-radius:18px;
+  padding:16px;
+}
+
+.panel h3{margin:0 0 10px;font-size:15px;color:#cbd5f5}
 </style>
 </head>
 <body>
 
-<div class="header">📊 Home • Visão Geral CMV</div>
+<div class="header">
+  <h1>📊 Home • Visão Geral CMV</h1>
+  <small id="atualizadoEm">Atualizando…</small>
+</div>
 
-<div class="grid">
-  <div class="card">
-    <small>Fichas técnicas</small>
-    <b id="kpiFichas">—</b>
-    <div class="sub">Total de pratos cadastrados</div>
+<div class="container">
+
+  <div class="grid">
+    <div class="card"><small>Fichas técnicas</small><b id="kpiFichas">—</b><div class="sub">Total cadastradas</div></div>
+    <div class="card"><small>Ingredientes</small><b id="kpiIngredientes">—</b><div class="sub">No sistema</div></div>
+    <div class="card warn"><small>Ingrediente mais usado</small><b id="kpiIngredienteTop">—</b><div class="sub" id="kpiIngredienteTopQtd">—</div></div>
+    <div class="card"><small>CMV médio</small><b id="kpiCmvMedio">—%</b><div class="sub">Saudável &lt; 35%</div></div>
+    <div class="card"><small>Impostos ativos</small><b id="kpiImpostos">—</b><div class="sub">Regras fiscais</div></div>
+    <div class="card danger"><small>Sem preço de venda</small><b id="kpiSemPreco">—</b><div class="sub">Fichas sem preço</div></div>
   </div>
 
-  <div class="card">
-    <small>Ingredientes</small>
-    <b id="kpiIngredientes">—</b>
-    <div class="sub">Ingredientes no sistema</div>
+  <div class="section">
+    <div class="panel">
+      <h3>📊 CMV médio por tipo</h3>
+      <canvas id="graficoCmvTipo" height="180"></canvas>
+    </div>
+    <div class="panel">
+      <h3>🥇 Top 5 ingredientes mais usados</h3>
+      <canvas id="graficoTopIngredientes" height="180"></canvas>
+    </div>
   </div>
 
-  <div class="card">
-    <small>Ingrediente mais usado</small>
-    <b id="kpiIngredienteTop">—</b>
-    <div class="sub" id="kpiIngredienteTopQtd">—</div>
-  </div>
-
-  <div class="card">
-    <small>CMV médio</small>
-    <b id="kpiCmvMedio">—%</b>
-    <div class="sub">Média das fichas</div>
-  </div>
-
-  <div class="card">
-    <small>Impostos cadastrados</small>
-    <b id="kpiImpostos">—</b>
-    <div class="sub">Regras fiscais</div>
-  </div>
-
-  <div class="card danger">
-    <small>Sem preço de venda</small>
-    <b id="kpiSemPreco">—</b>
-    <div class="sub">Fichas sem preço</div>
-  </div>
 </div>
 
 <script>
@@ -116,7 +124,10 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-async function carregarKPIs(){
+async function carregarHome(){
+  document.getElementById("atualizadoEm").textContent =
+    "Atualizado em " + new Date().toLocaleString("pt-BR");
+
   const [{ count: fichas }, { count: ingredientes }, { count: impostos }] = await Promise.all([
     sb.from("buffet").select("*", { count:"exact", head:true }),
     sb.from("ingredientes").select("*", { count:"exact", head:true }),
@@ -127,51 +138,68 @@ async function carregarKPIs(){
   document.getElementById("kpiIngredientes").textContent = ingredientes || 0;
   document.getElementById("kpiImpostos").textContent = impostos || 0;
 
-  // fichas sem preço
   const { data: semPreco } = await sb.from("buffet").select("id").or("preco_venda.is.null,preco_venda.eq.0");
   document.getElementById("kpiSemPreco").textContent = semPreco?.length || 0;
 
-  // ingrediente mais usado
-  const { data: itens } = await sb.from("buffet_itens").select("ingrediente_id, ingredientes(nome)");
-  const mapa = {};
+  const { data: itens } = await sb.from("buffet_itens").select("buffet_id, ingredientes(nome)");
+  const uso = {};
   (itens||[]).forEach(i=>{
     const nome = i.ingredientes?.nome || "—";
-    mapa[nome] = (mapa[nome]||0)+1;
+    uso[nome] = (uso[nome]||0)+1;
   });
-
-  const top = Object.entries(mapa).sort((a,b)=>b[1]-a[1])[0];
-  if(top){
-    document.getElementById("kpiIngredienteTop").textContent = top[0];
-    document.getElementById("kpiIngredienteTopQtd").textContent = `Usado em ${top[1]} fichas`;
-  }else{
-    document.getElementById("kpiIngredienteTop").textContent = "—";
-    document.getElementById("kpiIngredienteTopQtd").textContent = "Sem dados";
+  const top = Object.entries(uso).sort((a,b)=>b[1]-a[1]);
+  if(top[0]){
+    document.getElementById("kpiIngredienteTop").textContent = top[0][0];
+    document.getElementById("kpiIngredienteTopQtd").textContent = `Usado em ${top[0][1]} fichas`;
   }
 
-  // CMV médio (simples)
-  const { data: buffet } = await sb.from("buffet").select("preco_venda,id");
+  const { data: buffet } = await sb.from("buffet").select("id,tipo,preco_venda");
   const { data: itensCMV } = await sb.from("buffet_itens").select("buffet_id,custo_calculado");
 
-  const mapaCusto = {};
+  const custoPorFicha = {};
   (itensCMV||[]).forEach(i=>{
-    mapaCusto[i.buffet_id] ??= 0;
-    mapaCusto[i.buffet_id] += Number(i.custo_calculado||0);
+    custoPorFicha[i.buffet_id] ??= 0;
+    custoPorFicha[i.buffet_id] += Number(i.custo_calculado||0);
   });
 
-  let soma = 0, qtd = 0;
+  const cmvPorTipo = {};
+  const qtdPorTipo = {};
+  let somaCMV=0, qtdCMV=0;
+
   (buffet||[]).forEach(b=>{
-    const custo = mapaCusto[b.id] || 0;
+    const custo = custoPorFicha[b.id]||0;
     const preco = Number(b.preco_venda||0);
     if(preco>0){
-      soma += (custo/preco)*100;
-      qtd++;
+      const cmv = (custo/preco)*100;
+      somaCMV+=cmv; qtdCMV++;
+      cmvPorTipo[b.tipo] = (cmvPorTipo[b.tipo]||0) + cmv;
+      qtdPorTipo[b.tipo] = (qtdPorTipo[b.tipo]||0) + 1;
     }
   });
 
-  document.getElementById("kpiCmvMedio").textContent = qtd ? (soma/qtd).toFixed(1) : "0.0";
+  document.getElementById("kpiCmvMedio").textContent =
+    qtdCMV ? (somaCMV/qtdCMV).toFixed(1) : "0.0";
+
+  new Chart(document.getElementById("graficoCmvTipo"),{
+    type:"bar",
+    data:{
+      labels:Object.keys(cmvPorTipo),
+      datasets:[{ data:Object.keys(cmvPorTipo).map(k=>(cmvPorTipo[k]/qtdPorTipo[k]).toFixed(1)) }]
+    },
+    options:{ plugins:{legend:{display:false}} }
+  });
+
+  new Chart(document.getElementById("graficoTopIngredientes"),{
+    type:"bar",
+    data:{
+      labels: top.slice(0,5).map(i=>i[0]),
+      datasets:[{ data: top.slice(0,5).map(i=>i[1]) }]
+    },
+    options:{ plugins:{legend:{display:false}} }
+  });
 }
 
-carregarKPIs();
+carregarHome();
 </script>
 </body>
 </html>
