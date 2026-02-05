@@ -344,10 +344,13 @@ promoSlider.innerHTML = promos.map((p,i)=>`
 }
 function startPromoLoop(){
   clearInterval(promoTimer);
-  promoTimer = setInterval(()=>{
+
+  const items = document.querySelectorAll(".promo-item");
+
+  function showNext(){
     promoIndex = (promoIndex + 1) % promos.length;
 
-    document.querySelectorAll(".promo-item").forEach((el,i)=>{
+    items.forEach((el,i)=>{
       el.classList.toggle("active", i === promoIndex);
     });
 
@@ -355,7 +358,27 @@ function startPromoLoop(){
       el.classList.toggle("active", i === promoIndex);
     });
 
-  }, 4000);
+    playCurrent();
+  }
+
+  function playCurrent(){
+    const current = items[promoIndex];
+    const video = current.querySelector("video");
+
+    if(video){
+      video.currentTime = 0;
+      video.play();
+
+      video.onended = () => {
+        showNext();
+      };
+
+    } else {
+      promoTimer = setTimeout(showNext, 4000); // tempo da imagem
+    }
+  }
+
+  playCurrent();
 }
 
 
