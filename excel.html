@@ -149,7 +149,11 @@ const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
-
+function normalizarCodigo(valor) {
+  return String(valor || "")
+    .replace(/\D/g, "")   // remove letras e símbolos
+    .replace(/^0+/, "");  // remove zeros à esquerda
+}
 const moeda = v => "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
 let cacheCMV = {};
@@ -264,9 +268,8 @@ async function precificarValor(input, custo, id){
 function abrirModal(p, d, custo, cmv, lucro, margem){
   modal.style.display="flex";
 
-  const codigo = (p.codigo_varejo || "").trim();
-  const vendasProduto = vendasExcel.filter(v => v.codigo === codigo);
-
+const codigo = normalizarCodigo(p.codigo_varejo);
+const vendasProduto = vendasExcel.filter(v => v.codigo === codigo);
 function normalizarData(valor) {
   if (!valor) return "Sem data";
 
@@ -401,19 +404,21 @@ document.getElementById("importExcel").addEventListener("change", async (e) => {
   const ws = wb.Sheets[wb.SheetNames[0]];
   const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
-  // Esperado: colunas = codigo_varejo | data | quantidade | valor_total
   vendasExcel = json.map(r => ({
-codigo: String(
-  r.codigo_varejo ||
-  r.CODIGO ||
-  r["Código"] ||
-  r["Cod. Produto"] ||
-  r["Código do Produto"] ||
-  ""
-).trim().padStart(13, "0"),    data: r.data || r.DATA,
-    quantidade: Number(r.quantidade || r.QTD || 0),
-    valor: Number(r.valor_total || r.VALOR || 0)
-  }));
+  codigo: normalizarCodigo(
+    r.codigo_varejo ||
+    r.CODIGO ||
+    r["Código"] ||
+    r["Cod. Produto"] ||
+    r["Código do Produto"] ||
+    ""
+  ),
+  data: r.data || r.DATA,
+  quantidade: Number(r.quantidade || r.QTD || 0),
+  valor: Number(r.valor_total || r.VALOR || 0)
+}));
+
+console.table(vendasExcel.slice(0, 10)); // debug
 
   localStorage.setItem("vendas_excel", JSON.stringify(vendasExcel));
   alert("📊 Excel de vendas importado com sucesso!");
