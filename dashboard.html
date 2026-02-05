@@ -201,6 +201,21 @@ iframe{
   border:0;
   background:#fff;
 }
+
+/* GLYPH EXCLUSIVO PARA INGREDIENTES */
+.glyph.box::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border:3px solid #00a6a0;
+  border-radius:4px;
+}
+.glyph.box::after{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border-top:3px solid #00a6a0;
+}
 </style>
 </head>
 
@@ -238,8 +253,7 @@ iframe{
 
   <!-- 3️⃣ CADASTRO DE INGREDIENTES -->
   <div class="icon" onclick="openPage('ingredientes.html',this)" title="Cadastro de Ingredientes">
-    <span class="glyph doc"></span>
-  </div>
+<span class="glyph box"></span>  </div>
 
   <!-- 4️⃣ ANÁLISE DE FICHAS -->
   <div class="icon" onclick="openPage('analiseficha.html',this)" title="Análise de Fichas">
@@ -254,10 +268,10 @@ iframe{
 </aside>
 
   <div class="main">
-    <div class="header">
-      CB SYSTEMS® - FICHA TÉCNICA
-      <button class="logout" onclick="logout()">Sair</button>
-    </div>
+<div class="header">
+  <span id="pageTitle">CB SYSTEMS® - Dashboard</span>
+  <button class="logout" onclick="logout()">Sair</button>
+</div>
     <iframe id="frame" src=""></iframe>
   </div>
 
@@ -273,8 +287,7 @@ async function check(){
   const { data } = await sb.auth.getSession();
   if(data.session){
     loginBox(false);
-    openPage("home.html",document.querySelector(".icon"));
-  }
+openPage("dashboard.html", document.querySelector(".icon"));  }
 }
 check();
 
@@ -289,8 +302,7 @@ async function login(){
   await sb.auth.getSession();
 
   loginBox(false);
-  openPage("home.html",document.querySelector(".icon"));
-}
+openPage("dashboard.html", document.querySelector(".icon"));}
 
 async function logout(){
   await sb.auth.signOut();
@@ -302,10 +314,21 @@ function loginBox(show){
   document.getElementById("app").style.display = show?"none":"grid";
 }
 
-function openPage(page,el){
+function openPage(page, el){
   document.getElementById("frame").src = page;
   document.querySelectorAll(".icon").forEach(i=>i.classList.remove("active"));
   el.classList.add("active");
+
+  const titles = {
+    "dashboard.html": "CB SYSTEMS® - Dashboard",
+    "fichatecnica.html": "CB SYSTEMS® - Fichas Técnicas",
+    "ingredientes.html": "CB SYSTEMS® - Ingredientes",
+    "analiseficha.html": "CB SYSTEMS® - Análise de Fichas",
+    "config.html": "CB SYSTEMS® - Configurações"
+  };
+
+  document.getElementById("pageTitle").innerText =
+    titles[page] || "CB SYSTEMS®";
 }
 </script>
 <script>
