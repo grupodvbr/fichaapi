@@ -7,274 +7,203 @@
 <meta name="theme-color" content="#00c2b8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 :root{
-  --primary:#00c2b8;
-  --primary-dark:#00a6a0;
-  --primary-soft:#dff6f5;
-  --bg:#ecf7f7;
-  --white:#ffffff;
+  --bg:#0b1220; --card:#020617; --grid:#1e293b;
+  --text:#e5e7eb; --muted:#94a3b8;
+  --accent:#22c55e; --gold:#f59e0b; --danger:#ef4444;
+  --radius:22px; --shadow:0 30px 90px rgba(0,0,0,.55);
 }
-
-  
-/* RESET */
-*{margin:0;padding:0;box-sizing:border-box}
+*{box-sizing:border-box}
 html,body{
-  width:100%;
-  height:100%;
-  font-family:Inter,Arial,sans-serif;
-  background:var(--bg);
+  margin:0; width:100%; height:100%;
+  font-family:Inter,system-ui,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #0b1220 0%, #020617 60%);
   overflow:hidden;
 }
 
-/* LOGIN */
-.login{
-  position:fixed;
-  inset:0;
-  background:linear-gradient(180deg,var(--primary),var(--primary-dark));
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
+/* HERO LOGIN */
+.login-hero{
+  position:fixed; inset:0;
+  display:grid; place-items:center;
+}
+.hero-wrap{
+  max-width:1200px; width:100%;
+  padding:40px 22px;
+  display:grid; grid-template-columns:1.1fr .9fr; gap:28px; align-items:center;
+}
+.hero-copy h1{
+  font-size:44px; line-height:1.05; letter-spacing:-.02em; margin:0 0 10px;
+}
+.hero-copy p{color:var(--muted); max-width:560px}
+.hero-cta{margin-top:18px; display:flex; gap:12px; flex-wrap:wrap}
+.btn{
+  border-radius:999px; padding:14px 20px; font-weight:900; letter-spacing:.06em;
+  border:1px solid var(--grid); background:#0b1220; color:#fff; cursor:pointer;
+}
+.btn.primary{
+  border:none; color:#022c22;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  box-shadow:0 16px 44px rgba(34,197,94,.45);
+}
+.price{
+  margin-top:12px; display:flex; gap:12px; flex-wrap:wrap
+}
+.price .pill{
+  background:#020617; border:1px solid var(--grid);
+  border-radius:16px; padding:10px 14px; font-weight:900;
+}
+.price strong{color:var(--gold)}
+
+.mockup{
+  position:relative; background:linear-gradient(180deg,#0b1220,#020617);
+  border:1px solid var(--grid); border-radius:26px; padding:18px;
+  box-shadow:var(--shadow);
+}
+.mockup .screen{
+  border:1px solid var(--grid); border-radius:18px; padding:14px;
+  background:#020617; min-height:240px;
+  display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+}
+.kpi{background:#020617;border:1px solid var(--grid);border-radius:14px;padding:12px}
+.kpi small{color:var(--muted);font-weight:800;font-size:11px}
+.kpi b{display:block;margin-top:6px;font-size:20px;font-weight:900;color:var(--accent)}
+.mockup .mini{
+  position:absolute; right:-22px; bottom:-16px; width:150px;
+  background:#020617; border-radius:18px; border:1px solid var(--grid);
+  box-shadow:0 20px 60px rgba(0,0,0,.6); padding:8px;
+}
+.mini .thumb{height:170px;border-radius:12px;background:linear-gradient(180deg,#111,#000)}
+
+@media(max-width:900px){
+  .hero-wrap{grid-template-columns:1fr}
+  .hero-copy h1{font-size:34px}
 }
 
-.login-box{
-  background:#fff;
-  width:100%;
-  max-width:420px;
-  padding:32px;
-  border-radius:28px;
-  box-shadow:0 40px 90px rgba(0,0,0,.25);
+/* MODAL LOGIN */
+.modal{
+  position:fixed; inset:0; display:none; place-items:center;
+  background:rgba(2,6,23,.7); backdrop-filter: blur(8px); z-index:999;
 }
-
-.login-box h1{
-  font-size:22px;
-  font-weight:800;
-  margin-bottom:18px;
+.modal.open{display:grid}
+.modal-box{
+  width:100%; max-width:420px;
+  background:#020617; border:1px solid var(--grid);
+  border-radius:26px; padding:26px; box-shadow:var(--shadow); position:relative;
 }
-
-.login-box label{
-  font-size:13px;
-  font-weight:700;
-  margin-top:14px;
-  display:block;
+.modal-box h2{margin:0 0 8px; font-weight:900}
+.modal-box p{color:var(--muted); margin:0 0 12px}
+.field label{font-size:12px; font-weight:800; letter-spacing:.08em; color:#cbd5f5}
+.field input{
+  width:100%; margin-top:6px; padding:14px 16px;
+  border-radius:14px; border:1px solid var(--grid);
+  background:#0b1220; color:#fff; outline:none;
 }
-
-.login-box input{
-  width:100%;
-  padding:14px 16px;
-  border-radius:16px;
-  border:1px solid #cbd5e1;
-  margin-top:6px;
-}
-
-.login-box button{
-  width:100%;
-  margin-top:22px;
-  padding:14px;
-  border-radius:18px;
-  border:none;
-  background:linear-gradient(180deg,#2563eb,#1e40af);
-  color:#fff;
-  font-weight:800;
-  cursor:pointer;
+.actions{margin-top:16px; display:flex; gap:10px}
+.close{
+  position:absolute; right:14px; top:12px; cursor:pointer; font-weight:900; opacity:.8
 }
 
 /* APP */
-.app{
-  display:grid;
-  grid-template-columns:88px 1fr;
-  height:100vh;
-  display:none;
-}
-
-/* SIDEBAR */
+.app{display:grid; grid-template-columns:88px 1fr; height:100vh; display:none}
 .sidebar{
-  background:linear-gradient(180deg,var(--primary),var(--primary-dark));
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:22px 0;
-  gap:18px;
+  background:linear-gradient(180deg,#00c2b8,#00a6a0);
+  display:flex; flex-direction:column; align-items:center; padding:22px 0; gap:18px
 }
-
-.icon{
-  width:48px;
-  height:48px;
-  border-radius:16px;
-  background:rgba(255,255,255,.35);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  transition:.2s;
-}
-
+.icon{width:48px;height:48px;border-radius:16px;background:rgba(255,255,255,.35);display:grid;place-items:center;cursor:pointer;transition:.2s}
 .icon:hover{transform:scale(1.08)}
-.icon.active{
-  background:#fff;
-  box-shadow:0 0 0 4px rgba(255,255,255,.55);
-}
-
-/* GLYPHS */
+.icon.active{background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.55)}
 .glyph{width:22px;height:22px;position:relative}
-.glyph.home::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:#00a6a0;
-  clip-path:polygon(50% 0,100% 40%,100% 100%,0 100%,0 40%);
-  border-radius:4px;
-}
-.glyph.doc::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:#00a6a0;
-  border-radius:4px;
-}
-.glyph.doc::after{
-  content:"";
-  position:absolute;
-  top:4px;
-  left:4px;
-  right:4px;
-  height:3px;
-  background:#e6f7f7;
-  box-shadow:0 6px 0 #e6f7f7,0 12px 0 #e6f7f7;
-}
-.glyph.chart::before{
-  content:"";
-  position:absolute;
-  bottom:0;
-  left:0;
-  width:5px;
-  height:14px;
-  background:#00a6a0;
-  box-shadow:8px -6px 0 #00a6a0,16px -2px 0 #00a6a0;
-}
-.glyph.settings{
-  border:3px solid #00a6a0;
-  border-radius:50%;
-}
-.glyph.settings::after{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border:2px solid #00a6a0;
-  border-radius:50%;
-}
+.glyph.home::before{content:"";position:absolute;inset:0;background:#00a6a0;clip-path:polygon(50% 0,100% 40%,100% 100%,0 100%,0 40%);border-radius:4px}
+.glyph.doc::before{content:"";position:absolute;inset:0;background:#00a6a0;border-radius:4px}
+.glyph.doc::after{content:"";position:absolute;top:4px;left:4px;right:4px;height:3px;background:#e6f7f7;box-shadow:0 6px 0 #e6f7f7,0 12px 0 #e6f7f7}
+.glyph.chart::before{content:"";position:absolute;bottom:0;left:0;width:5px;height:14px;background:#00a6a0;box-shadow:8px -6px 0 #00a6a0,16px -2px 0 #00a6a0}
+.glyph.settings{border:3px solid #00a6a0;border-radius:50%}
+.glyph.settings::after{content:"";position:absolute;inset:6px;border:2px solid #00a6a0;border-radius:50%}
+.glyph.box::before{content:"";position:absolute;inset:0;border:3px solid #00a6a0;border-radius:4px}
+.glyph.box::after{content:"";position:absolute;inset:6px;border-top:3px solid #00a6a0}
 
-/* MAIN */
-.main{
-  display:flex;
-  flex-direction:column;
-  height:100%;
-}
-.header{
-  height:68px;
-  background:var(--primary-soft);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 30px;
-  font-weight:800;
-}
-.logout{
-  background:#ef4444;
-  border:none;
-  padding:8px 14px;
-  border-radius:12px;
-  color:#fff;
-  font-weight:700;
-  cursor:pointer;
-}
-iframe{
-  flex:1;
-  width:100%;
-  border:0;
-  background:#fff;
-}
-
-/* GLYPH EXCLUSIVO PARA INGREDIENTES */
-.glyph.box::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border:3px solid #00a6a0;
-  border-radius:4px;
-}
-.glyph.box::after{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-top:3px solid #00a6a0;
-}
+.main{display:flex;flex-direction:column;height:100%}
+.header{height:68px;background:#dff6f5;display:flex;align-items:center;justify-content:space-between;padding:0 30px;font-weight:800}
+.logout{background:#ef4444;border:none;padding:8px 14px;border-radius:12px;color:#fff;font-weight:700;cursor:pointer}
+iframe{flex:1;width:100%;border:0;background:#fff}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="login" class="login">
-  <div class="login-box">
-    <h1>🔐 Acesso ao Sistema</h1>
+<!-- HERO (ANTES DO LOGIN) -->
+<section id="loginHero" class="login-hero">
+  <div class="hero-wrap">
+    <div class="hero-copy">
+      <h1>Sistema de Ficha Técnica & CMV</h1>
+      <p>Controle o custo real de cada prato, ajuste preços e aumente sua margem com dashboards e cardápio digital.</p>
+      <div class="price">
+        <div class="pill">Implantação: <strong>R$ 200,00</strong></div>
+        <div class="pill">Mensalidade: <strong>R$ 149/mês</strong></div>
+      </div>
+      <div class="hero-cta">
+        <a class="btn primary" href="https://wa.me/5599999999999" target="_blank">Solicitar informações</a>
+        <button class="btn" onclick="openLogin()">Entrar no sistema</button>
+      </div>
+    </div>
 
-    <label>Email</label>
-    <input id="email" type="email">
+    <div class="mockup">
+      <div class="screen">
+        <div class="kpi"><small>CMV Médio</small><b>28.4%</b></div>
+        <div class="kpi"><small>Produto Top</small><b>LASANHA</b></div>
+        <div class="kpi"><small>Lucro</small><b>R$ 12.430</b></div>
+      </div>
+      <div class="mini"><div class="thumb"></div></div>
+    </div>
+  </div>
+</section>
 
-    <label>Senha</label>
-    <input id="senha" type="password">
-
-    <button onclick="login()">Entrar</button>
+<!-- MODAL LOGIN -->
+<div id="modalLogin" class="modal">
+  <div class="modal-box">
+    <span class="close" onclick="closeLogin()">✕</span>
+    <h2>Entrar no sistema</h2>
+    <p>Use seu e-mail e senha para acessar.</p>
+    <div class="field">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="seu@email.com">
+    </div>
+    <div class="field" style="margin-top:10px">
+      <label>Senha</label>
+      <input id="senha" type="password" placeholder="••••••••">
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="login()">Entrar</button>
+      <button class="btn" onclick="closeLogin()">Cancelar</button>
+    </div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app" class="app">
-
-<aside class="sidebar">
-
-  <!-- 1️⃣ DASHBOARD -->
-  <div class="icon active" onclick="openPage('home.html',this)" title="Home">
-    <span class="glyph home"></span>
-  </div>
-
-  <!-- 2️⃣ CADASTRO DE FICHAS TÉCNICAS -->
-  <div class="icon" onclick="openPage('fichatecnica.html',this)" title="Cadastro de Fichas Técnicas">
-    <span class="glyph doc"></span>
-  </div>
-
-  <!-- 3️⃣ CADASTRO DE INGREDIENTES -->
-  <div class="icon" onclick="openPage('ingredientes.html',this)" title="Cadastro de Ingredientes">
-<span class="glyph box"></span>  </div>
-
-  <!-- 4️⃣ ANÁLISE DE FICHAS -->
-  <div class="icon" onclick="openPage('analiseficha.html',this)" title="Análise de Fichas">
-    <span class="glyph chart"></span>
-  </div>
-
-  <!-- 5️⃣ CONFIGURAÇÕES -->
-  <div class="icon" onclick="openPage('config.html',this)" title="Configurações">
-    <span class="glyph settings"></span>
-  </div>
-
-</aside>
+  <aside class="sidebar">
+    <div class="icon active" onclick="openPage('home.html',this)" title="Home"><span class="glyph home"></span></div>
+    <div class="icon" onclick="openPage('fichatecnica.html',this)" title="Fichas"><span class="glyph doc"></span></div>
+    <div class="icon" onclick="openPage('ingredientes.html',this)" title="Ingredientes"><span class="glyph box"></span></div>
+    <div class="icon" onclick="openPage('analiseficha.html',this)" title="Análises"><span class="glyph chart"></span></div>
+    <div class="icon" onclick="openPage('config.html',this)" title="Configurações"><span class="glyph settings"></span></div>
+  </aside>
 
   <div class="main">
-<div class="header">
-  <span id="pageTitle">CB SYSTEMS® - Dashboard</span>
-  <button class="logout" onclick="logout()">Sair</button>
-</div>
+    <div class="header">
+      <span id="pageTitle">CB SYSTEMS® - Dashboard</span>
+      <button class="logout" onclick="logout()">Sair</button>
+    </div>
     <iframe id="frame" src=""></iframe>
   </div>
-
 </div>
 
 <script>
@@ -286,39 +215,38 @@ const sb = supabase.createClient(
 async function check(){
   const { data } = await sb.auth.getSession();
   if(data.session){
-    loginBox(false);
-openPage("home.html", document.querySelector(".icon"));  }
+    showApp();
+    openPage("home.html", document.querySelector(".icon"));
+  }
 }
 check();
 
+function openLogin(){ document.getElementById("modalLogin").classList.add("open"); }
+function closeLogin(){ document.getElementById("modalLogin").classList.remove("open"); }
+
 async function login(){
-  const { error } = await sb.auth.signInWithPassword({
-    email: email.value,
-    password: senha.value
-  });
+  const { error } = await sb.auth.signInWithPassword({ email: email.value, password: senha.value });
   if(error){ alert(error.message); return; }
-
-  // 🔐 garante que a sessão está pronta
   await sb.auth.getSession();
-
-  loginBox(false);
-openPage("home.html", document.querySelector(".icon"));}
+  closeLogin();
+  showApp();
+  openPage("home.html", document.querySelector(".icon"));
+}
 
 async function logout(){
   await sb.auth.signOut();
   location.reload();
 }
 
-function loginBox(show){
-  document.getElementById("login").style.display = show?"flex":"none";
-  document.getElementById("app").style.display = show?"none":"grid";
+function showApp(){
+  document.getElementById("loginHero").style.display = "none";
+  document.getElementById("app").style.display = "grid";
 }
 
 function openPage(page, el){
   document.getElementById("frame").src = page;
   document.querySelectorAll(".icon").forEach(i=>i.classList.remove("active"));
   el.classList.add("active");
-
   const titles = {
     "home.html": "CB SYSTEMS® - Dashboard",
     "fichatecnica.html": "CB SYSTEMS® - Fichas Técnicas",
@@ -326,19 +254,7 @@ function openPage(page, el){
     "analiseficha.html": "CB SYSTEMS® - Análise de Fichas",
     "config.html": "CB SYSTEMS® - Configurações"
   };
-
-  document.getElementById("pageTitle").innerText =
-    titles[page] || "CB SYSTEMS®";
-}
-</script>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then(() => console.log("✅ PWA ativo"))
-      .catch(err => console.error("❌ Erro no SW:", err));
-  });
+  document.getElementById("pageTitle").innerText = titles[page] || "CB SYSTEMS®";
 }
 </script>
 
