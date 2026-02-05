@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Galeria de Promoções • Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --bg:#0b0b0c; --card:#111113; --text:#fff; --muted:#9ca3af;
+  --gold:#d4af37; --border:#1f1f22; --radius:18px; --shadow:0 20px 60px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#000,#0b0b0c);color:#fff;font-family:Inter}
+.header{position:sticky;top:0;z-index:10;padding:16px;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.header h1{margin:0;font-size:18px;font-weight:900;letter-spacing:.5px}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.uploader{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-bottom:14px}
+.uploader input,.uploader select{height:46px;border-radius:12px;border:1px solid var(--border);background:#0f0f12;color:#fff;padding:0 12px}
+.uploader button{height:46px;border-radius:12px;border:1px solid var(--gold);background:#000;color:var(--gold);font-weight:900;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.card{background:#0f0f12;border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#000}
+.card video.thumb{object-fit:cover}
+.meta{display:flex;justify-content:space-between;align-items:center;padding:10px}
+.badge{font-size:10px;font-weight:900;border:1px solid var(--border);padding:4px 8px;border-radius:999px}
+.badge.on{border-color:var(--gold);color:var(--gold)}
+.actions{display:flex;gap:6px}
+.actions button{background:transparent;border:1px solid var(--border);color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer}
+.actions button.danger{border-color:#dc2626;color:#dc2626}
+.actions button:hover{border-color:var(--gold);color:var(--gold)}
+.footer-note{opacity:.6;font-size:12px;margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🖼️ Galeria de Promoções (Banners & Vídeos)</h1>
+</div>
+
+<div class="wrap">
+  <div class="uploader">
+    <input id="url" placeholder="URL do banner ou vídeo (Storage Supabase)" />
+    <select id="tipo">
+      <option value="IMG">IMG</option>
+      <option value="VIDEO">VIDEO</option>
+    </select>
+    <button onclick="addPromo()">Adicionar</button>
+  </div>
+
+  <div id="grid" class="grid"></div>
+  <div class="footer-note">* Upload do arquivo é feito no Storage do Supabase. Aqui você só organiza as URLs.</div>
+</div>
+
+<script>
+const sb = supabase.createClient("https://dxkszikemntfusfyrzos.supabase.co","sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed");
+
+const grid = document.getElementById("grid");
+const urlInput = document.getElementById("url");
+const tipoInput = document.getElementById("tipo");
+
+async function load(){
+  const { data, error } = await sb
+    .from("promocoes")
+    .select("*")
+    .order("created_at", { ascending:false });
+
+  if(error){ console.error(error); return; }
+
+  grid.innerHTML = data.map(p => `
+    <div class="card">
+      ${p.tipo === "VIDEO"
+        ? `<video class="thumb" src="${p.url}" muted autoplay loop playsinline></video>`
+        : `<img class="thumb" src="${p.url}">`
+      }
+      <div class="meta">
+        <span class="badge ${p.ativo?'on':''}">${p.tipo} • ${p.ativo?'ATIVO':'OFF'}</span>
+        <div class="actions">
+          <button onclick="toggle('${p.id}', ${p.ativo})">${p.ativo?'Desativar':'Ativar'}</button>
+          <button class="danger" onclick="del('${p.id}')">Excluir</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function addPromo(){
+  const url = urlInput.value.trim();
+  const tipo = tipoInput.value;
+  if(!url) return alert("Informe a URL do arquivo");
+
+  const { error } = await sb.from("promocoes").insert({ url, tipo, ativo:true });
+  if(error){ alert("Erro ao salvar"); console.error(error); return; }
+
+  urlInput.value = "";
+  load();
+}
+
+async function toggle(id, ativo){
+  const { error } = await sb.from("promocoes").update({ ativo: !ativo }).eq("id", id);
+  if(error){ alert("Erro ao atualizar"); console.error(error); return; }
+  load();
+}
+
+async function del(id){
+  if(!confirm("Excluir esta promoção?")) return;
+  const { error } = await sb.from("promocoes").delete().eq("id", id);
+  if(error){ alert("Erro ao excluir"); console.error(error); return; }
+  load();
+}
+
+load();
+</script>
+
+</body>
+</html>
