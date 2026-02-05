@@ -405,10 +405,15 @@ document.getElementById("importExcel").addEventListener("change", async (e) => {
   const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
 vendasExcel = json.map(r => ({
-  codigo: normalizarCodigo(r["Código"] || r.CODIGO || ""),
-  data: r["Data"] || r.DATA || "",               // se existir coluna Data
+  codigo: normalizarCodigo(r["Código"] || r.Codigo || r.CODIGO || ""),
   quantidade: Number(r["Quantidade"] || 0),
-  valor: Number(r["Faturamento"] || 0)
+  valor: Number(
+    String(r["Faturamento"] || 0)
+      .replace("R$", "")
+      .replace(".", "")
+      .replace(",", ".")
+  ),
+  data: extrairDataDoTitulo(json)
 }));
 
 console.table(vendasExcel.slice(0, 10)); // debug
@@ -417,6 +422,23 @@ console.table(vendasExcel.slice(0, 10)); // debug
   localStorage.setItem("vendas_excel", JSON.stringify(vendasExcel));
   alert("📊 Excel de vendas importado com sucesso!");
 });
+
+
+
+
+  function extrairDataDoTitulo(json) {
+  const linhaComData = Object.values(json[0] || {}).find(v =>
+    typeof v === "string" && v.includes("Data:")
+  );
+
+  if (!linhaComData) return new Date().toISOString().slice(0, 10);
+
+  const m = linhaComData.match(/(\d{2}\/\d{2}\/\d{4})/);
+  if (!m) return new Date().toISOString().slice(0, 10);
+
+  const [d, mth, y] = m[1].split("/");
+  return `${y}-${mth}-${d}`;
+}
 </script>
 </body>
 </html>
