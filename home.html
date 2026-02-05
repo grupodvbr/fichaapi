@@ -10,7 +10,7 @@
 
 <style>
 :root{
-  --bg:#0b1220; --bg-2:#020617; --card:#020617; --grid:#1e293b;
+  --bg:#0b1220; --card:#020617; --grid:#1e293b;
   --text:#e5e7eb; --muted:#94a3b8; --accent:#22c55e;
   --danger:#ef4444; --gold:#f59e0b; --radius:18px;
   --shadow:0 20px 60px rgba(0,0,0,.45);
@@ -24,9 +24,7 @@ body{
 }
 .header{padding:22px 26px; border-bottom:1px solid var(--grid);
   background:linear-gradient(180deg,#020617,#020617cc);
-  position:sticky; top:0; z-index:10; backdrop-filter: blur(6px)}
-.header h1{margin:0;font-size:24px;font-weight:900}
-.header small{color:var(--muted)}
+  position:sticky; top:0; z-index:10}
 .container{padding:22px 24px 40px; max-width:1400px; margin:0 auto}
 .filters{display:flex; gap:10px; align-items:center; margin-bottom:14px}
 .select{background:#020617;color:#e5e7eb;border:1px solid var(--grid);
@@ -35,8 +33,7 @@ body{
   gap:16px; margin-bottom:26px}
 .card{background:linear-gradient(180deg,#020617,#020617cc);
   border:1px solid var(--grid); border-radius:var(--radius);
-  padding:18px; box-shadow:var(--shadow); transition:.25s}
-.card:hover{transform:translateY(-4px); border-color:#2b3b55}
+  padding:18px; box-shadow:var(--shadow)}
 .card small{color:var(--muted); font-weight:800; text-transform:uppercase; font-size:11px}
 .card b{display:block; margin-top:6px; font-size:34px; font-weight:900; color:var(--accent)}
 .card .sub{font-size:12px; color:var(--muted)}
@@ -46,7 +43,7 @@ body{
 .panel{background:linear-gradient(180deg,#020617,#020617cc);
   border:1px solid var(--grid); border-radius:var(--radius);
   padding:16px; box-shadow:var(--shadow)}
-.panel h3{margin:0 0 10px; font-size:14px; color:#cbd5f5; font-weight:900}
+.panel h3{margin:0 0 10px; font-size:14px; font-weight:900}
 .badge{display:inline-block; padding:6px 12px; border-radius:999px;
   font-size:12px; font-weight:800; border:1px solid var(--grid);
   background:#0b1220; margin:4px 6px 0 0}
@@ -68,7 +65,7 @@ body{
   </div>
 
   <div class="grid">
-    <div class="card"><small>Fichas técnicas</small><b id="kpiFichas">—</b><div class="sub">Total</div></div>
+    <div class="card"><small>Fichas</small><b id="kpiFichas">—</b><div class="sub">Total</div></div>
     <div class="card"><small>Ingredientes</small><b id="kpiIngredientes">—</b><div class="sub">No sistema</div></div>
     <div class="card warn"><small>Ingrediente top</small><b id="kpiIngredienteTop">—</b><div class="sub" id="kpiIngredienteTopQtd">—</div></div>
     <div class="card"><small>CMV médio</small><b id="kpiCmvMedio">—%</b><div class="sub">&lt; 35% ideal</div></div>
@@ -79,9 +76,9 @@ body{
   </div>
 
   <div class="section">
-    <div class="panel"><h3>📊 CMV médio por tipo</h3><canvas id="graficoCmvTipo" height="180"></canvas></div>
-    <div class="panel"><h3>🥇 Top 5 ingredientes</h3><canvas id="graficoTopIngredientes" height="180"></canvas></div>
-    <div class="panel"><h3>🚨 CMV mais alto</h3><div id="listaCmvAlto"></div></div>
+    <div class="panel"><h3>📊 CMV por tipo</h3><canvas id="graficoCmvTipo" height="180"></canvas></div>
+    <div class="panel"><h3>🥇 Ingredientes</h3><canvas id="graficoTopIngredientes" height="180"></canvas></div>
+    <div class="panel"><h3>🚨 CMV alto</h3><div id="listaCmvAlto"></div></div>
     <div class="panel"><h3>💎 Mais lucrativos</h3><div id="listaMaisLucrativas"></div></div>
   </div>
 </div>
@@ -95,81 +92,84 @@ const moeda = v => "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionD
 let chartTipo=null, chartIng=null;
 
 async function carregarTipos(){
-  const { data } = await sb.from("buffet").select("tipo");
+  const { data, error } = await sb.from("buffet").select("tipo");
+  console.log("Tipos:", data, error);
   const tipos = [...new Set((data||[]).map(i=>i.tipo).filter(Boolean))].sort();
   filtroTipo.innerHTML = `<option value="">Todos os tipos</option>` +
     tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
 }
 
 async function carregarHome(){
-  atualizadoEm.textContent = "Atualizado em " + new Date().toLocaleString("pt-BR");
-  const tipo = filtroTipo.value;
+  try{
+    atualizadoEm.textContent = "Atualizado em " + new Date().toLocaleString("pt-BR");
+    const tipo = filtroTipo.value;
 
-  const q = sb.from("buffet").select("id,nome,tipo,preco_venda");
-  const { data: buffet } = tipo ? await q.eq("tipo", tipo) : await q;
+    const q = sb.from("buffet").select("id,nome,tipo,preco_venda");
+    const { data: buffet, error: e1 } = tipo ? await q.eq("tipo", tipo) : await q;
+    console.log("Buffet:", buffet, e1);
 
-  const { data: itens } = await sb.from("buffet_itens").select("buffet_id,custo_calculado, ingredientes(nome)");
-  const { count: ingredientes } = await sb.from("ingredientes").select("*",{count:"exact",head:true});
+    const { data: itens, error: e2 } =
+      await sb.from("buffet_itens").select("buffet_id,custo_calculado, ingredientes(nome)");
+    console.log("Itens:", itens, e2);
 
-  kpiFichas.textContent = buffet?.length||0;
-  kpiIngredientes.textContent = ingredientes||0;
+    const { count: ingredientes } =
+      await sb.from("ingredientes").select("*",{count:"exact",head:true});
 
-  const custoPorFicha={}, uso={};
-  (itens||[]).forEach(i=>{
-    custoPorFicha[i.buffet_id]=(custoPorFicha[i.buffet_id]||0)+Number(i.custo_calculado||0);
-    const n=i.ingredientes?.nome||"—"; uso[n]=(uso[n]||0)+1;
-  });
+    kpiFichas.textContent = buffet?.length||0;
+    kpiIngredientes.textContent = ingredientes||0;
 
-  const topIng = Object.entries(uso).sort((a,b)=>b[1]-a[1]);
-  if(topIng[0]){
-    kpiIngredienteTop.textContent=topIng[0][0];
-    kpiIngredienteTopQtd.textContent=`Usado ${topIng[0][1]}x`;
-  } else {
-    kpiIngredienteTop.textContent="—"; kpiIngredienteTopQtd.textContent="—";
-  }
+    const custoPorFicha={}, uso={};
+    (itens||[]).forEach(i=>{
+      custoPorFicha[i.buffet_id]=(custoPorFicha[i.buffet_id]||0)+Number(i.custo_calculado||0);
+      const n=i.ingredientes?.nome||"—"; uso[n]=(uso[n]||0)+1;
+    });
 
-  let somaCMV=0,qtd=0,precoT=0,custoT=0,lucroT=0,cmvAlto=0;
-  const rankingCmv=[], rankingLucro=[], cmvTipo={}, qtdTipo={};
+    const topIng = Object.entries(uso).sort((a,b)=>b[1]-a[1]);
+    kpiIngredienteTop.textContent = topIng[0]?.[0] || "—";
+    kpiIngredienteTopQtd.textContent = topIng[0] ? `Usado ${topIng[0][1]}x` : "—";
 
-  (buffet||[]).forEach(b=>{
-    const custo=custoPorFicha[b.id]||0, preco=Number(b.preco_venda||0);
-    if(preco>0){
-      const cmv=(custo/preco)*100, lucro=preco-custo;
-      somaCMV+=cmv; qtd++; precoT+=preco; custoT+=custo; lucroT+=lucro;
-      if(cmv>35) cmvAlto++;
-      cmvTipo[b.tipo]=(cmvTipo[b.tipo]||0)+cmv;
-      qtdTipo[b.tipo]=(qtdTipo[b.tipo]||0)+1;
-      rankingCmv.push({nome:b.nome,cmv}); rankingLucro.push({nome:b.nome,lucro});
-    }
-  });
+    let somaCMV=0,qtd=0,precoT=0,custoT=0,lucroT=0,cmvAlto=0;
+    const rankingCmv=[], rankingLucro=[], cmvTipo={}, qtdTipo={};
 
-  kpiCmvMedio.textContent=(somaCMV/qtd||0).toFixed(1);
-  kpiPrecoMedio.textContent=moeda(precoT/qtd||0);
-  kpiCustoMedio.textContent=moeda(custoT/qtd||0);
-  kpiLucroTotal.textContent=moeda(lucroT);
-  kpiCmvAlto.textContent=cmvAlto;
+    (buffet||[]).forEach(b=>{
+      const custo=custoPorFicha[b.id]||0, preco=Number(b.preco_venda||0);
+      if(preco>0){
+        const cmv=(custo/preco)*100, lucro=preco-custo;
+        somaCMV+=cmv; qtd++; precoT+=preco; custoT+=custo; lucroT+=lucro;
+        if(cmv>35) cmvAlto++;
+        cmvTipo[b.tipo]=(cmvTipo[b.tipo]||0)+cmv;
+        qtdTipo[b.tipo]=(qtdTipo[b.tipo]||0)+1;
+        rankingCmv.push({nome:b.nome,cmv}); rankingLucro.push({nome:b.nome,lucro});
+      }
+    });
 
-  chartTipo?.destroy();
-  chartTipo = new Chart(graficoCmvTipo,{
-    type:"bar",
-    data:{labels:Object.keys(cmvTipo),
+    kpiCmvMedio.textContent=(somaCMV/qtd||0).toFixed(1);
+    kpiPrecoMedio.textContent=moeda(precoT/qtd||0);
+    kpiCustoMedio.textContent=moeda(custoT/qtd||0);
+    kpiLucroTotal.textContent=moeda(lucroT);
+    kpiCmvAlto.textContent=cmvAlto;
+
+    chartTipo?.destroy();
+    chartTipo = new Chart(graficoCmvTipo,{type:"bar",
+      data:{labels:Object.keys(cmvTipo),
       datasets:[{data:Object.keys(cmvTipo).map(k=>(cmvTipo[k]/qtdTipo[k]).toFixed(1))}]},
-    options:{plugins:{legend:{display:false}}}
-  });
+      options:{plugins:{legend:{display:false}}}});
 
-  chartIng?.destroy();
-  chartIng = new Chart(graficoTopIngredientes,{
-    type:"bar",
-    data:{labels:topIng.slice(0,5).map(i=>i[0]),
+    chartIng?.destroy();
+    chartIng = new Chart(graficoTopIngredientes,{type:"bar",
+      data:{labels:topIng.slice(0,5).map(i=>i[0]),
       datasets:[{data:topIng.slice(0,5).map(i=>i[1])}]},
-    options:{plugins:{legend:{display:false}}}
-  });
+      options:{plugins:{legend:{display:false}}}});
 
-  listaCmvAlto.innerHTML = rankingCmv.sort((a,b)=>b.cmv-a.cmv).slice(0,5)
-    .map(i=>`<span class="badge">${i.nome} — ${i.cmv.toFixed(1)}%</span>`).join("") || "—";
+    listaCmvAlto.innerHTML = rankingCmv.sort((a,b)=>b.cmv-a.cmv).slice(0,5)
+      .map(i=>`<span class="badge">${i.nome} — ${i.cmv.toFixed(1)}%</span>`).join("") || "—";
 
-  listaMaisLucrativas.innerHTML = rankingLucro.sort((a,b)=>b.lucro-a.lucro).slice(0,5)
-    .map(i=>`<span class="badge">${i.nome} — ${moeda(i.lucro)}</span>`).join("") || "—";
+    listaMaisLucrativas.innerHTML = rankingLucro.sort((a,b)=>b.lucro-a.lucro).slice(0,5)
+      .map(i=>`<span class="badge">${i.nome} — ${moeda(i.lucro)}</span>`).join("") || "—";
+  }catch(err){
+    console.error("Erro geral:", err);
+    alert("Erro ao carregar dados. Veja o console (F12).");
+  }
 }
 
 filtroTipo.onchange = carregarHome;
