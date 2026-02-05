@@ -9,7 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-/* ====== TEMA PREMIUM ====== */
 :root{
   --bg:#0b1220; --bg-2:#020617; --card:#020617; --grid:#1e293b;
   --text:#e5e7eb; --muted:#94a3b8; --accent:#22c55e;
@@ -88,21 +87,27 @@ body{
 </div>
 
 <script>
-const sb = supabase.createClient("https://dxkszikemntfusfyrzos.supabase.co","sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed");
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+);
 const moeda = v => "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-let chartTipo, chartIng;
+let chartTipo=null, chartIng=null;
 
 async function carregarTipos(){
   const { data } = await sb.from("buffet").select("tipo");
   const tipos = [...new Set((data||[]).map(i=>i.tipo).filter(Boolean))].sort();
-  filtroTipo.innerHTML = `<option value="">Todos os tipos</option>` + tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
+  filtroTipo.innerHTML = `<option value="">Todos os tipos</option>` +
+    tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
 }
 
 async function carregarHome(){
   atualizadoEm.textContent = "Atualizado em " + new Date().toLocaleString("pt-BR");
   const tipo = filtroTipo.value;
+
   const q = sb.from("buffet").select("id,nome,tipo,preco_venda");
   const { data: buffet } = tipo ? await q.eq("tipo", tipo) : await q;
+
   const { data: itens } = await sb.from("buffet_itens").select("buffet_id,custo_calculado, ingredientes(nome)");
   const { count: ingredientes } = await sb.from("ingredientes").select("*",{count:"exact",head:true});
 
@@ -116,7 +121,12 @@ async function carregarHome(){
   });
 
   const topIng = Object.entries(uso).sort((a,b)=>b[1]-a[1]);
-  if(topIng[0]){ kpiIngredienteTop.textContent=topIng[0][0]; kpiIngredienteTopQtd.textContent=`Usado ${topIng[0][1]}x`; }
+  if(topIng[0]){
+    kpiIngredienteTop.textContent=topIng[0][0];
+    kpiIngredienteTopQtd.textContent=`Usado ${topIng[0][1]}x`;
+  } else {
+    kpiIngredienteTop.textContent="—"; kpiIngredienteTopQtd.textContent="—";
+  }
 
   let somaCMV=0,qtd=0,precoT=0,custoT=0,lucroT=0,cmvAlto=0;
   const rankingCmv=[], rankingLucro=[], cmvTipo={}, qtdTipo={};
@@ -140,24 +150,29 @@ async function carregarHome(){
   kpiCmvAlto.textContent=cmvAlto;
 
   chartTipo?.destroy();
-  chartTipo = new Chart(graficoCmvTipo,{type:"bar",
-    data:{labels:Object.keys(cmvTipo),datasets:[{data:Object.keys(cmvTipo).map(k=>(cmvTipo[k]/qtdTipo[k]).toFixed(1))}]},
-    options:{plugins:{legend:{display:false}}}});
+  chartTipo = new Chart(graficoCmvTipo,{
+    type:"bar",
+    data:{labels:Object.keys(cmvTipo),
+      datasets:[{data:Object.keys(cmvTipo).map(k=>(cmvTipo[k]/qtdTipo[k]).toFixed(1))}]},
+    options:{plugins:{legend:{display:false}}}
+  });
 
   chartIng?.destroy();
-  chartIng = new Chart(graficoTopIngredientes,{type:"bar",
-    data:{labels:topIng.slice(0,5).map(i=>i[0]),datasets:[{data:topIng.slice(0,5).map(i=>i[1])}]},
-    options:{plugins:{legend:{display:false}}}});
+  chartIng = new Chart(graficoTopIngredientes,{
+    type:"bar",
+    data:{labels:topIng.slice(0,5).map(i=>i[0]),
+      datasets:[{data:topIng.slice(0,5).map(i=>i[1])}]},
+    options:{plugins:{legend:{display:false}}}
+  });
 
   listaCmvAlto.innerHTML = rankingCmv.sort((a,b)=>b.cmv-a.cmv).slice(0,5)
-    .map(i=>`<span class="badge">${i.nome} — ${i.cmv.toFixed(1)}%</span>`).join("");
+    .map(i=>`<span class="badge">${i.nome} — ${i.cmv.toFixed(1)}%</span>`).join("") || "—";
 
   listaMaisLucrativas.innerHTML = rankingLucro.sort((a,b)=>b.lucro-a.lucro).slice(0,5)
-    .map(i=>`<span class="badge">${i.nome} — ${moeda(i.lucro)}</span>`).join("");
+    .map(i=>`<span class="badge">${i.nome} — ${moeda(i.lucro)}</span>`).join("") || "—";
 }
 
 filtroTipo.onchange = carregarHome;
-
 (async ()=>{ await carregarTipos(); await carregarHome(); })();
 </script>
 </body>
