@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>CMV • Excel de Precificação</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --bg:#0f172a;
+  --grid:#1e293b;
+  --card:#020617;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --accent:#22c55e;
+  --danger:#ef4444;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+h1{
+  padding:18px 22px;
+  margin:0;
+  font-size:18px;
+  background:#020617;
+  border-bottom:1px solid var(--grid);
+}
+
+.table-wrap{
+  overflow:auto;
+  height:calc(100vh - 60px);
+}
+
+table{
+  border-collapse:collapse;
+  width:100%;
+  min-width:1200px;
+  font-size:13px;
+}
+
+thead th{
+  position:sticky;
+  top:0;
+  background:#020617;
+  z-index:2;
+}
+
+th, td{
+  border:1px solid var(--grid);
+  padding:8px 10px;
+  white-space:nowrap;
+}
+
+tbody tr:hover{
+  background:#020617;
+  cursor:pointer;
+}
+
+input{
+  width:80px;
+  background:#020617;
+  border:1px solid #1e293b;
+  color:#e5e7eb;
+  padding:4px 6px;
+  border-radius:6px;
+  font-weight:700;
+}
+
+input:focus{
+  outline:none;
+  border-color:#22c55e;
+}
+
+.bad{
+  color:#ef4444;
+  font-weight:800;
+}
+
+.good{
+  color:#22c55e;
+  font-weight:800;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+.modal-box{
+  background:#020617;
+  border-radius:16px;
+  max-width:900px;
+  width:90vw;
+  max-height:90vh;
+  overflow:auto;
+  padding:18px;
+  border:1px solid #1e293b;
+}
+
+.modal-box img{
+  width:100%;
+  max-height:260px;
+  object-fit:cover;
+  border-radius:12px;
+  margin-bottom:12px;
+}
+
+.close{
+  float:right;
+  cursor:pointer;
+  font-weight:900;
+}
+</style>
+</head>
+
+<body>
+<h1>📊 Excel de Precificação • CMV</h1>
+
+<div class="table-wrap">
+<table id="tabela">
+  <thead>
+    <tr>
+      <th>Prato</th>
+      <th>Tipo</th>
+      <th>Custo Base</th>
+      <th>Custos / Impostos</th>
+      <th>Custo Final</th>
+      <th>Markup (%)</th>
+      <th>Preço Venda</th>
+      <th>CMV %</th>
+      <th>Lucro</th>
+      <th>Margem %</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+</div>
+
+<div class="modal" id="modal" onclick="fechar()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <span class="close" onclick="fechar()">✕</span>
+    <div id="modalConteudo"></div>
+  </div>
+</div>
+
+<script>
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+);
+
+const moeda = v => "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+
+let cacheCMV = {};
+let pratos = [];
+
+async function carregarCache(){
+  cacheCMV = {};
+
+  const { data: itens } = await sb.from("buffet_itens").select("buffet_id, custo_calculado");
+  const { data: impostos } = await sb.from("impostos").select("buffet_id, modalidade, valor");
+
+  (itens||[]).forEach(i=>{
+    cacheCMV[i.buffet_id] ??= { base:0, impostos:[] };
+    cacheCMV[i.buffet_id].base += Number(i.custo_calculado||0);
+  });
+
+  (impostos||[]).forEach(i=>{
+    cacheCMV[i.buffet_id] ??= { base:0, impostos:[] };
+    cacheCMV[i.buffet_id].impostos.push(i);
+  });
+}
+
+async function carregar(){
+  await carregarCache();
+  const { data } = await sb.from("buffet").select("*").order("nome");
+  pratos = data || [];
+  render();
+}
+
+function render(){
+  const tbody = document.querySelector("#tabela tbody");
+  tbody.innerHTML = "";
+
+  pratos.forEach(p=>{
+    const dados = cacheCMV[p.id] || { base:0, impostos:[] };
+    let impostos = 0;
+
+    dados.impostos.forEach(i=>{
+      if(i.modalidade==="FIXO") impostos += Number(i.valor);
+      if(i.modalidade==="PERCENTUAL") impostos += (dados.base * Number(i.valor))/100;
+    });
+
+    const custoFinal = dados.base + impostos;
+    const preco = Number(p.preco_venda||0);
+    const lucro = preco - custoFinal;
+    const cmvPerc = preco ? (custoFinal/preco)*100 : 0;
+    const margem = preco ? (lucro/preco)*100 : 0;
+
+    const tr = document.createElement("tr");
+    tr.onclick = ()=>abrirModal(p, custoFinal, cmvPerc, lucro, margem);
+
+    tr.innerHTML = `
+      <td>${p.nome}</td>
+      <td>${p.tipo||"-"}</td>
+      <td>${moeda(dados.base)}</td>
+      <td>${moeda(impostos)}</td>
+      <td>${moeda(custoFinal)}</td>
+      <td>
+        <input type="number" step="0.01" placeholder="%" 
+          oninput="precificar(this, ${custoFinal}, '${p.id}')">
+      </td>
+      <td>${moeda(preco)}</td>
+      <td class="${cmvPerc>35?'bad':'good'}">${cmvPerc.toFixed(1)}%</td>
+      <td class="${lucro<0?'bad':'good'}">${moeda(lucro)}</td>
+      <td class="${margem<30?'bad':'good'}">${margem.toFixed(1)}%</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+async function precificar(input, custoFinal, id){
+  const mk = Number(input.value||0);
+  if(mk <= 0) return;
+
+  const preco = custoFinal * (1 + mk/100);
+
+  await sb.from("buffet")
+    .update({ preco_venda: preco })
+    .eq("id", id);
+
+  await carregar();
+}
+
+function abrirModal(p, custo, cmv, lucro, margem){
+  modal.style.display = "flex";
+
+  modalConteudo.innerHTML = `
+    <img src="${p.foto_url||'https://placehold.co/800x400?text=Sem+Foto'}">
+    <h2>${p.nome}</h2>
+    <p><b>Tipo:</b> ${p.tipo||"-"}</p>
+    <p><b>Preço:</b> ${moeda(p.preco_venda)}</p>
+    <p><b>Custo Final:</b> ${moeda(custo)}</p>
+    <p><b>CMV:</b> ${cmv.toFixed(1)}%</p>
+    <p><b>Lucro:</b> ${moeda(lucro)}</p>
+    <p><b>Margem:</b> ${margem.toFixed(1)}%</p>
+    <p><b>Descrição:</b> ${p.descricao||"-"}</p>
+    <p><b>Modo de preparo:</b> ${p.modo_preparo||"-"}</p>
+  `;
+}
+
+function fechar(){
+  modal.style.display="none";
+}
+
+carregar();
+</script>
+</body>
+</html>
