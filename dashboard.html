@@ -255,6 +255,9 @@ async function check(){
   if(data.session){
     showApp();
     openPage("home.html", document.querySelector(".icon"));
+  } else {
+    document.getElementById("loginHero").style.display = "block";
+    document.getElementById("app").style.display = "none";
   }
 }
 check();
