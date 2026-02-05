@@ -19,154 +19,93 @@
 }
 
 *{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Inter,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
+body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
 
-/* HEADER */
+/* HEADER + FILTROS */
 .header{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:14px 18px;
-  background:#020617;
-  border-bottom:1px solid var(--grid);
+  display:flex; flex-wrap:wrap; gap:10px;
+  align-items:center; padding:12px 16px;
+  background:#020617; border-bottom:1px solid var(--grid);
 }
-.header h1{
-  margin:0;
-  font-size:18px;
-  font-weight:900;
-  letter-spacing:.02em;
+.header h1{margin:0;font-size:18px;font-weight:900}
+
+.filter, .search{
+  background:#020617; border:1px solid var(--grid); color:var(--text);
+  padding:6px 10px; border-radius:8px; font-weight:700;
 }
+label.chk{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
 
 /* TABELA */
-.table-wrap{ overflow:auto; height:calc(100vh - 60px); }
-table{ border-collapse:collapse; width:100%; min-width:1400px; font-size:13px; }
-thead th{ position:sticky; top:0; background:#020617; z-index:2; }
-th,td{ border:1px solid var(--grid); padding:8px 10px; white-space:nowrap; }
-tbody tr:hover{ background:#020617; cursor:pointer; }
+.table-wrap{overflow:auto;height:calc(100vh - 64px)}
+table{border-collapse:collapse;width:100%;min-width:1400px;font-size:13px}
+thead th{position:sticky;top:0;background:#020617;z-index:2}
+th,td{border:1px solid var(--grid);padding:8px 10px;white-space:nowrap}
+tbody tr:hover{background:#020617;cursor:pointer}
 
 input{
-  width:90px;
-  background:#020617;
-  border:1px solid #1e293b;
-  color:#e5e7eb;
-  padding:4px 6px;
-  border-radius:6px;
-  font-weight:700;
+  width:90px;background:#020617;border:1px solid #1e293b;color:#e5e7eb;
+  padding:4px 6px;border-radius:6px;font-weight:700
 }
-input:focus{ outline:none; border-color:#22c55e; }
+input:focus{outline:none;border-color:#22c55e}
 
-.bad{ color:#ef4444; font-weight:900; }
-.good{ color:#22c55e; font-weight:900; }
+.bad{color:#ef4444;font-weight:900}
+.good{color:#22c55e;font-weight:900}
 
 /* MODAL */
 .modal{
-  position:fixed;
-  inset:0;
-  background:rgba(2,6,23,.75);
+  position:fixed; inset:0; background:rgba(2,6,23,.75);
   backdrop-filter: blur(6px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:9999; /* 🔥 garante ficar acima da tabela */
+  display:none; align-items:center; justify-content:center;
+  z-index:9999;
 }
-
 .modal-box{
-  position:relative;
-  background:#020617;
-  border-radius:22px;
-  max-width:1100px;
-  width:92vw;
-  max-height:92vh;
-  overflow:auto;
-  border:1px solid #1e293b;
-  box-shadow:0 30px 90px rgba(0,0,0,.6);
+  position:relative; background:#020617; border-radius:22px;
+  max-width:1100px; width:92vw; max-height:92vh; overflow:auto;
+  border:1px solid #1e293b; box-shadow:0 30px 90px rgba(0,0,0,.6);
 }
-
-/* scrollbar invisível */
-.modal-box::-webkit-scrollbar{ width:0; height:0; }
-.modal-box{ scrollbar-width:none; }
+.modal-box::-webkit-scrollbar{width:0;height:0}
+.modal-box{scrollbar-width:none}
 
 .modal-header{
-  display:grid;
-  grid-template-columns:360px 1fr;
-  gap:18px;
-  padding:18px;
-  border-bottom:1px solid #1e293b;
+  display:grid; grid-template-columns:360px 1fr; gap:18px;
+  padding:18px; border-bottom:1px solid #1e293b;
 }
-
 .modal-header img{
-  width:100%;
-  height:100%;
-  min-height:220px;
-  object-fit:cover;
-  border-radius:16px;
-  box-shadow:0 12px 40px rgba(0,0,0,.6);
+  width:100%; height:100%; min-height:220px; object-fit:cover;
+  border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,.6);
 }
-
-.modal-info h2{
-  margin:0 0 6px;
-  font-size:26px;
-  font-weight:900;
-}
-
-.modal-info p{
-  margin:6px 0;
-  color:var(--muted);
-  font-size:14px;
-}
-
-.modal-badges{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:10px;
-}
-
+.modal-info h2{margin:0 0 6px;font-size:26px;font-weight:900}
+.modal-info p{margin:6px 0;color:var(--muted);font-size:14px}
+.modal-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .badge{
-  padding:6px 12px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900;
-  background:#0b1220;
-  border:1px solid #1e293b;
+  padding:6px 12px;border-radius:999px;font-size:12px;font-weight:900;
+  background:#0b1220;border:1px solid #1e293b;
 }
-
-.modal-body{ padding:16px 18px 22px; }
-
-.ing{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:10px;
-  padding:10px 0;
-  border-bottom:1px dashed #1e293b;
-  font-size:14px;
-}
-
+.modal-body{padding:16px 18px 22px}
+.ing{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 0;border-bottom:1px dashed #1e293b}
 .close{
-  position:absolute;
-  top:12px;
-  right:14px;
-  cursor:pointer;
-  font-weight:900;
-  font-size:22px;
-  background:#020617;
-  border:1px solid #1e293b;
-  padding:6px 10px;
-  border-radius:10px;
+  position:absolute; top:12px; right:14px; cursor:pointer;
+  font-weight:900; font-size:22px; background:#020617;
+  border:1px solid #1e293b; padding:6px 10px; border-radius:10px;
 }
-.close:hover{ background:#0b1220; }
+.close:hover{background:#0b1220}
 </style>
 </head>
 
 <body>
-
 <div class="header">
   <h1>📊 Excel de Precificação • CMV</h1>
+
+  <select id="filtroTipo" class="filter">
+    <option value="">Todos os tipos</option>
+  </select>
+
+  <label class="chk">
+    <input type="checkbox" id="filtroSemPreco">
+    Sem preço de venda
+  </label>
+
+  <input id="buscaNome" class="search" placeholder="Buscar prato...">
 </div>
 
 <div class="table-wrap">
@@ -210,13 +149,8 @@ let pratos = [];
 
 async function carregarCache(){
   cacheCMV = {};
-  const { data: itens } = await sb
-    .from("buffet_itens")
-    .select("buffet_id, custo_calculado, nome, quantidade, unidade_uso");
-
-  const { data: impostos } = await sb
-    .from("impostos")
-    .select("buffet_id, modalidade, valor");
+  const { data: itens } = await sb.from("buffet_itens").select("buffet_id, custo_calculado, nome, quantidade, unidade_uso");
+  const { data: impostos } = await sb.from("impostos").select("buffet_id, modalidade, valor");
 
   (itens||[]).forEach(i=>{
     cacheCMV[i.buffet_id] ??= { base:0, impostos:[], itens:[] };
@@ -230,18 +164,38 @@ async function carregarCache(){
   });
 }
 
+async function carregarTipos(){
+  const { data } = await sb.from("buffet").select("tipo");
+  const tipos = [...new Set((data||[]).map(i=>i.tipo).filter(Boolean))].sort();
+  filtroTipo.innerHTML = `<option value="">Todos os tipos</option>` +
+    tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
+}
+
 async function carregar(){
   await carregarCache();
+  await carregarTipos();
   const { data } = await sb.from("buffet").select("*").order("nome");
   pratos = data || [];
   render();
+}
+
+function aplicarFiltros(p){
+  const tipo = filtroTipo.value;
+  const semPreco = filtroSemPreco.checked;
+  const busca = (buscaNome.value||"").toLowerCase().trim();
+
+  if (tipo && p.tipo !== tipo) return false;
+  if (semPreco && Number(p.preco_venda||0) > 0) return false;
+  if (busca && !p.nome.toLowerCase().includes(busca)) return false;
+
+  return true;
 }
 
 function render(){
   const tbody = document.querySelector("#tabela tbody");
   tbody.innerHTML = "";
 
-  pratos.forEach(p=>{
+  pratos.filter(aplicarFiltros).forEach(p=>{
     const d = cacheCMV[p.id] || { base:0, impostos:[], itens:[] };
     let imp = 0;
 
@@ -334,6 +288,11 @@ function abrirModal(p, d, custo, cmv, lucro, margem){
 }
 
 function fechar(){ modal.style.display="none"; }
+
+filtroTipo.onchange = render;
+filtroSemPreco.onchange = render;
+buscaNome.oninput = render;
+
 carregar();
 </script>
 </body>
