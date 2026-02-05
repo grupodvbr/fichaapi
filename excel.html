@@ -267,10 +267,30 @@ function abrirModal(p, d, custo, cmv, lucro, margem){
   const codigo = (p.codigo_varejo || "").trim();
   const vendasProduto = vendasExcel.filter(v => v.codigo === codigo);
 
-  const vendasPorDia = {};
-  vendasProduto.forEach(v => {
-    const dia = String(v.data).slice(0,10);
-    vendasPorDia[dia] ??= 0;
+const vendasPorDia = {};
+vendasProduto.forEach(v => {
+  const dia = normalizarData(v.data);
+  vendasPorDia[dia] ??= 0;
+  vendasPorDia[dia] += v.valor;
+});
+function normalizarData(valor) {
+  if (!valor) return "Sem data";
+
+  // Se vier número do Excel (ex: 45236)
+  if (typeof valor === "number") {
+    const d = new Date(Math.round((valor - 25569) * 86400 * 1000));
+    return d.toISOString().slice(0,10);
+  }
+
+  // Se vier string BR: 05/02/2026
+  if (typeof valor === "string" && valor.includes("/")) {
+    const [dia, mes, ano] = valor.split("/");
+    return `${ano}-${mes.padStart(2,"0")}-${dia.padStart(2,"0")}`;
+  }
+
+  // ISO normal
+  return String(valor).slice(0,10);
+}    vendasPorDia[dia] ??= 0;
     vendasPorDia[dia] += v.valor;
   });
 
