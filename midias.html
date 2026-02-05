@@ -72,6 +72,35 @@ button.primary:hover{box-shadow:0 0 0 2px rgba(212,175,55,.15) inset}
 .actions .danger{border-color:var(--danger);color:var(--danger)}
 .actions .toggle.on{border-color:var(--gold);color:var(--gold)}
 .actions .toggle.off{border-color:#555;color:#aaa}
+
+
+  /* OVERLAY LOADING */
+.overlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.65);
+  backdrop-filter: blur(6px);
+  display:grid; place-items:center;
+  z-index:9999;
+}
+.overlay-box{
+  background:#0f0f12;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px 22px;
+  display:grid; gap:10px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+}
+.spinner{
+  width:36px;height:36px;border-radius:999px;
+  border:3px solid rgba(255,255,255,.2);
+  border-top-color:var(--gold);
+  animation:spin .9s linear infinite;
+  margin:0 auto;
+}
+.overlay-text{
+  font-size:12px;color:var(--muted);text-align:center;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -139,7 +168,9 @@ const horaInicioInput = document.getElementById("hora_inicio");
 const horaFimInput = document.getElementById("hora_fim");
 const preview = document.getElementById("preview");
 const grid = document.getElementById("grid");
-
+const overlay = document.getElementById("overlay");
+  const preview = document.getElementById("preview");
+const grid = document.getElementById("grid");
 let diasSel = [];
 
 document.querySelectorAll(".day").forEach(d=>{
@@ -200,53 +231,87 @@ async function addPromo(){
   if(!f) return alert("Selecione um arquivo");
   if(!diasSel.length) return alert("Selecione ao menos um dia");
 
-  const ext = f.name.split(".").pop();
-  const path = `promocoes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  overlay.style.display = "grid"; // 🔒 trava a tela
 
-  const { error: upErr } = await sb.storage.from("promocoes").upload(path, f, { upsert:false });
-  if(upErr){ console.error(upErr); return alert("Erro no upload"); }
+  try{
+    const ext = f.name.split(".").pop();
+    const path = `promocoes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
 
-  const { data: urlData } = sb.storage.from("promocoes").getPublicUrl(path);
+    const { error: upErr } = await sb.storage.from("promocoes").upload(path, f, { upsert:false });
+    if(upErr) throw upErr;
 
-  const { error } = await sb.from("promocoes").insert({
-    url: urlData.publicUrl,
-    tipo: tipoInput.value,
-    dias_semana: diasSel,
-    hora_inicio: horaInicioInput.value,
-    hora_fim: horaFimInput.value,
-    ativo: true
-  });
+    const { data: urlData } = sb.storage.from("promocoes").getPublicUrl(path);
 
-  if(error){ console.error(error); return alert("Erro ao salvar no banco"); }
+    const { error } = await sb.from("promocoes").insert({
+      url: urlData.publicUrl,
+      tipo: tipoInput.value,
+      dias_semana: diasSel,
+      hora_inicio: horaInicioInput.value,
+      hora_fim: horaFimInput.value,
+      ativo: true
+    });
+    if(error) throw error;
 
-  fileInput.value = "";
-  preview.innerHTML = "Pré-visualização";
-  diasSel = [];
-  document.querySelectorAll(".day").forEach(d=>d.classList.remove("active"));
-  load();
+    // reset UI
+    fileInput.value = "";
+    preview.innerHTML = "Pré-visualização";
+    diasSel = [];
+    document.querySelectorAll(".day").forEach(d=>d.classList.remove("active"));
+    load();
+
+  }catch(err){
+    console.error(err);
+    alert("Erro ao enviar/salvar a mídia. Veja o console.");
+  }finally{
+    overlay.style.display = "none"; // 🔓 libera a tela (semppre)
+  }
 }
-
 async function toggle(id, ativo){
-  const { error } = await sb.from("promocoes").update({ ativo: !ativo }).eq("id", id);
-  if(error){ console.error(error); return alert("Erro ao atualizar"); }
-  load();
+  overlay.style.display = "grid";
+  try{
+    const { error } = await sb.from("promocoes").update({ ativo: !ativo }).eq("id", id);
+    if(error) throw error;
+    load();
+  }catch(e){
+    console.error(e);
+    alert("Erro ao atualizar status");
+  }finally{
+    overlay.style.display = "none";
+  }
 }
 
 async function delPromo(id, url){
   if(!confirm("Excluir mídia? Isso remove do Storage também.")) return;
 
-  const path = url.split("/storage/v1/object/public/promocoes/")[1];
-  if(path){
-    await sb.storage.from("promocoes").remove([path]);
+  overlay.style.display = "grid";
+  try{
+    const path = url.split("/storage/v1/object/public/promocoes/")[1];
+    if(path) await sb.storage.from("promocoes").remove([path]);
+
+    const { error } = await sb.from("promocoes").delete().eq("id", id);
+    if(error) throw error;
+
+    load();
+  }catch(e){
+    console.error(e);
+    alert("Erro ao excluir");
+  }finally{
+    overlay.style.display = "none";
   }
-
-  const { error } = await sb.from("promocoes").delete().eq("id", id);
-  if(error){ console.error(error); return alert("Erro ao excluir"); }
-
-  load();
 }
 
 load();
 </script>
+
+  <!-- OVERLAY DE LOADING -->
+<div id="overlay" class="overlay" style="display:none">
+  <div class="overlay-box">
+    <div class="spinner"></div>
+    <div class="overlay-text">Enviando mídia…</div>
+  </div>
+</div>
 </body>
+
+
+  
 </html>
