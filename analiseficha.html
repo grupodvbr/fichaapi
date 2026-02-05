@@ -430,7 +430,59 @@ button{
 .badge{
   cursor:default;
 }
+/* =========================================================
+   HEADER DO MODAL (IMAGEM + DADOS PRINCIPAIS)
+========================================================= */
+.modal-header{
+  display:grid;
+  grid-template-columns:280px 1fr;
+  gap:18px;
+  padding:18px;
+  border-bottom:1px solid var(--border);
+}
 
+.modal-left{
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:var(--shadow-md);
+  background:#000;
+}
+
+.modal-img{
+  width:100%;
+  height:100%;
+  min-height:220px;
+  object-fit:cover;
+  display:block;
+}
+
+.modal-main{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:10px 4px;
+}
+
+.modal-main h2{
+  margin:0;
+  font-size:28px;
+  font-weight:900;
+}
+
+.modal-main .badges{
+  margin-top:12px;
+}
+
+/* MOBILE */
+@media(max-width:520px){
+  .modal-header{
+    grid-template-columns:1fr;
+  }
+
+  .modal-left{
+    height:180px;
+  }
+}
 
 </style>
 </head>
@@ -447,11 +499,21 @@ button{
 
 <!-- MODAL -->
 <div id="modal" class="modal" onclick="fechar()">
-  <div class="modal-box" onclick="event.stopPropagation()">
-    <span class="close" onclick="fechar()">✕</span>
-    <img id="mFoto" class="modal-img">
-    <div id="mBody" class="modal-body"></div>
+<div class="modal-box" onclick="event.stopPropagation()">
+  <span class="close" onclick="fechar()">✕</span>
+
+  <div class="modal-header">
+    <div class="modal-left">
+      <img id="mFoto" class="modal-img">
+    </div>
+
+    <div class="modal-main">
+      <div id="mHeader"></div>
+    </div>
   </div>
+
+  <div id="mBody" class="modal-body"></div>
+</div>
 </div>
 
 <script>
@@ -725,8 +787,7 @@ async function abrirModal(p){
   pratoAtual = p;
   modal.style.display = "flex";
   document.body.style.overflow = "hidden";
-  mFoto.src = p.foto_url || "";
-  await carregarTipos();
+mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  await carregarTipos();
   /* INGREDIENTES */
 const { data: itens } = await sb
   .from("buffet_itens")
@@ -798,11 +859,30 @@ const nutri = {
   const lucro = precoVenda ? precoVenda - cmvFinal : 0;
   const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
 
+mHeader.innerHTML = `
+  <h2>${p.nome}</h2>
 
+  <div class="badges primary">
+    <span class="badge">${p.tipo || "-"}</span>
+
+    <span class="badge" style="background:#dcfce7;color:#166534">
+      💰 Venda ${moeda(precoVenda)}
+    </span>
+
+    <span class="badge" style="background:#eef2ff;color:#3730a3">
+      🧾 Custo ${moeda(cmvFinal)}
+    </span>
+
+    <span class="badge" style="
+      background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
+      color:${margem < 30 ? '#991b1b' : '#166534'}">
+      📈 Margem ${margem.toFixed(1)}%
+    </span>
+  </div>
+`;
 
 
 mBody.innerHTML = `
-<h2>${p.nome}</h2>
 <h3>Descrição do prato (texto do cardápio)</h3>
 
 <textarea
