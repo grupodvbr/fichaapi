@@ -284,11 +284,27 @@ modalHeader.innerHTML = `
     <div class="modal-info">
       <h2>${p.nome}</h2>
       <p>${p.tipo||""}</p>
+
       <div class="modal-badges">
         <span class="badge">💰 Venda ${moeda(p.preco_venda)}</span>
         <span class="badge">🧾 Custo ${moeda(custo)}</span>
         <span class="badge">📈 Margem ${margem.toFixed(1)}%</span>
         <span class="badge">📊 CMV ${cmv.toFixed(1)}%</span>
+      </div>
+
+      <div class="modal-badges" style="margin-top:10px">
+        <span class="badge">🏷 Código cadastrado: <b>${codigo || "—"}</b></span>
+        <span class="badge">📥 Vendas encontradas: <b>${vendasProduto.length}</b></span>
+      </div>
+
+      <div class="modal-badges" style="margin-top:6px">
+        <span class="badge">📦 Códigos no Excel:</span>
+        ${
+          [...new Set(vendasExcel.map(v => v.codigo))]
+            .slice(0,5)
+            .map(c => `<span class="badge">${c || "—"}</span>`)
+            .join("")
+        }
       </div>
     </div>
 
