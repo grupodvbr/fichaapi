@@ -304,21 +304,31 @@ const promoDots = document.getElementById("promoDots");
 let promoIndex = 0;
 let promos = [];
 let promoTimer = null;
-
 async function loadPromos(){
+  const agora = new Date();
+  const dia = ((agora.getDay() + 6) % 7) + 1; // 1=Seg ... 7=Dom
+  const hora = agora.toTimeString().slice(0,5); // HH:MM
+
   const { data, error } = await sb
     .from("promocoes")
-    .select("url,tipo,ativo")
+    .select("url,tipo,ativo,dias_semana,hora_inicio,hora_fim")
     .eq("ativo", true)
     .order("created_at", { ascending:false });
 
   if(error){ console.error(error); return; }
-  promos = data || [];
 
-  if(!promos.length){
+  const filtradas = (data || []).filter(p =>
+    (p.dias_semana || []).includes(dia) &&
+    hora >= p.hora_inicio &&
+    hora <= p.hora_fim
+  );
+
+  if(!filtradas.length){
     promoWrap.style.display = "none";
     return;
   }
+
+  promos = filtradas;
 
   promoSlider.innerHTML = promos.map((p,i)=>`
     <div class="promo-item ${i===0?'active':''}">
@@ -336,7 +346,6 @@ async function loadPromos(){
 
   startPromoLoop();
 }
-
 function startPromoLoop(){
   clearInterval(promoTimer);
   promoTimer = setInterval(()=>{
@@ -401,8 +410,7 @@ function setCat(k){
   grid.innerHTML = "";
 
   if(!k){
-    promoWrap.style.display = "block";
-    loadPromos();
+
   }else{
     promoWrap.style.display = "none";
   }
