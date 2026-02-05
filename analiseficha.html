@@ -9,6 +9,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+/* =========================================================
+   VARIÁVEIS
+========================================================= */
+/* =========================================================
+   VARIÁVEIS
+========================================================= */
 :root{
   --primary:#2563eb;
   --primary-dark:#1e40af;
@@ -31,7 +37,9 @@
   --shadow-lg:0 40px 90px rgba(0,0,0,.35);
 }
 
-/* RESET */
+/* =========================================================
+   RESET / BASE
+========================================================= */
 *{
   box-sizing:border-box;
   -webkit-font-smoothing:antialiased;
@@ -44,7 +52,16 @@ body{
   color:var(--text);
 }
 
-/* FILTROS */
+/* trava scroll quando modal aberto */
+body.modal-open{
+  overflow:hidden;
+  position:fixed;
+  width:100%;
+}
+
+/* =========================================================
+   FILTROS
+========================================================= */
 .filters{
   display:flex;
   gap:14px;
@@ -63,29 +80,19 @@ body{
   max-width:320px;
 }
 
-/* GRID */
+/* =========================================================
+   GRID PRINCIPAL
+========================================================= */
 .grid{
   display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
   gap:22px;
   padding:22px;
 }
 
-/* DESKTOP GRANDE */
-@media (min-width:1600px){
-  .grid{ grid-template-columns:repeat(6,1fr); }
-}
-
-/* NOTEBOOK */
-@media (min-width:1200px) and (max-width:1599px){
-  .grid{ grid-template-columns:repeat(4,1fr); }
-}
-
-/* TABLET */
-@media (min-width:700px) and (max-width:1199px){
-  .grid{ grid-template-columns:repeat(2,1fr); }
-}
-
-/* CARD */
+/* =========================================================
+   CARD
+========================================================= */
 .card{
   background:var(--card);
   border-radius:22px;
@@ -93,9 +100,6 @@ body{
   overflow:hidden;
   cursor:pointer;
   transition:.18s ease;
-  display:flex;
-  flex-direction:column;
-  height:100%;
 }
 
 .card:hover{
@@ -105,13 +109,12 @@ body{
 
 .card img{
   width:100%;
-  height:280px;
+  height:180px;
   object-fit:cover;
 }
 
 .card-body{
   padding:18px;
-  flex:1;
 }
 
 .card-body h3{
@@ -120,17 +123,9 @@ body{
   font-size:16px;
 }
 
-/* BADGES */
-.badges{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin-top:6px;
-}
-
-.badges.primary{ margin-top:4px; }
-.badges.secondary{ margin-top:10px; }
-
+/* =========================================================
+   BADGES
+========================================================= */
 .badge{
   display:inline-block;
   padding:6px 12px;
@@ -139,10 +134,12 @@ body{
   color:#3730a3;
   font-size:12px;
   font-weight:800;
-  cursor:default;
+  margin:4px 6px 0 0;
 }
 
-/* MODAL OVERLAY */
+/* =========================================================
+   MODAL OVERLAY
+========================================================= */
 .modal{
   position:fixed;
   inset:0;
@@ -154,64 +151,85 @@ body{
   z-index:100;
 }
 
-/* MODAL BOX PREMIUM */
+/* =========================================================
+   MODAL BOX (SEM BALANÇAR)
+========================================================= */
 .modal-box{
   background:#fff;
   width:100%;
-  max-width:1200px;
+  max-width:880px;
   max-height:92vh;
   border-radius:26px;
   overflow:hidden;
-  display:grid;
-  grid-template-columns:420px 1fr; /* FOTO | CONTEÚDO */
+  display:flex;
+  flex-direction:column;
   box-shadow:var(--shadow-lg);
   animation:modalIn .2s ease;
 }
 
-/* ANIMAÇÃO */
+/* animação estável (SEM translate) */
 @keyframes modalIn{
-  from{ opacity:0; transform:scale(.96); }
-  to{ opacity:1; transform:scale(1); }
+  from{
+    opacity:0;
+    transform:scale(0.96);
+  }
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
 }
 
-/* IMAGEM MODAL */
+/* =========================================================
+   IMAGEM MODAL
+========================================================= */
 .modal-img{
   width:100%;
-  height:100%;
+  height:240px;
   object-fit:cover;
-  background:#000;
+  flex-shrink:0;
 }
 
-/* CORPO MODAL */
+/* =========================================================
+   CORPO MODAL
+========================================================= */
 .modal-body{
   padding:26px;
   overflow-y:auto;
 }
 
-.modal-body::-webkit-scrollbar{ width:8px; }
+.modal-body::-webkit-scrollbar{
+  width:8px;
+}
+
 .modal-body::-webkit-scrollbar-thumb{
   background:#cbd5e1;
   border-radius:8px;
 }
 
-/* HEADER FIXO DO MODAL (RESUMO) */
-.modal-header{
-  position:sticky;
-  top:0;
-  background:#fff;
-  padding-bottom:12px;
-  z-index:2;
-  border-bottom:1px solid var(--border);
-  margin-bottom:16px;
+/* =========================================================
+   BOTÃO FECHAR
+========================================================= */
+.close{
+  position:absolute;
+  top:14px;
+  right:18px;
+  font-size:26px;
+  cursor:pointer;
+  font-weight:900;
+  color:#fff;
+  z-index:10;
+  text-shadow:0 2px 10px rgba(0,0,0,.6);
 }
 
-.modal-header h2{
-  margin:0 0 10px;
-  font-size:28px;
+/* =========================================================
+   TEXTOS
+========================================================= */
+.modal-body h2{
+  margin:0 0 12px;
+  font-size:26px;
   font-weight:900;
 }
 
-/* TEXTOS */
 .modal-body h3{
   margin:20px 0 10px;
   font-size:16px;
@@ -231,7 +249,9 @@ body{
   margin:22px 0;
 }
 
-/* LISTAS */
+/* =========================================================
+   LISTAS / INGREDIENTES / IMPOSTOS
+========================================================= */
 .ing{
   display:grid;
   grid-template-columns:1fr auto auto;
@@ -242,9 +262,14 @@ body{
   align-items:center;
 }
 
-.ing:last-child{ border-bottom:none; }
+.ing:last-child{border-bottom:none}
 
-/* PRECIFICAÇÃO */
+.ing b{font-weight:800}
+.ing small{color:var(--muted)}
+
+/* =========================================================
+   PRECIFICAÇÃO / FORMULÁRIOS
+========================================================= */
 .precificacao{
   background:#f1f5f9;
   border:1px solid var(--border);
@@ -269,15 +294,20 @@ input:focus, select:focus{
   box-shadow:0 0 0 3px rgba(37,99,235,.15);
 }
 
-input[readonly]{ background:#e5e7eb; }
+input[readonly]{
+  background:#e5e7eb;
+}
 
-/* BOTÕES */
+/* =========================================================
+   BOTÕES
+========================================================= */
 button{
   font-family:Inter,sans-serif;
   border:none;
   cursor:pointer;
 }
 
+/* principal */
 .btn-add{
   height:44px;
   padding:0 22px;
@@ -296,6 +326,7 @@ button{
   box-shadow:0 16px 40px rgba(37,99,235,.45);
 }
 
+/* ícones */
 .btn-icon{
   border-radius:10px;
   padding:6px 12px;
@@ -303,42 +334,101 @@ button{
   font-weight:800;
 }
 
-.btn-edit{ background:#e0f2fe; color:#0369a1; }
-.btn-delete{ background:#fee2e2; color:#991b1b; }
-
-/* FECHAR */
-.close{
-  position:absolute;
-  top:14px;
-  right:18px;
-  font-size:26px;
-  cursor:pointer;
-  font-weight:900;
-  color:#fff;
-  z-index:10;
-  text-shadow:0 2px 10px rgba(0,0,0,.6);
+.btn-edit{
+  background:#e0f2fe;
+  color:#0369a1;
 }
 
-/* MOBILE */
-@media(max-width:900px){
-  .modal-box{
-    grid-template-columns:1fr;
-  }
-  .modal-img{ height:220px; }
+.btn-delete{
+  background:#fee2e2;
+  color:#991b1b;
 }
 
+/* =========================================================
+   MOBILE — 3 CARDS POR LINHA + MODAL APP STYLE
+========================================================= */
 @media(max-width:520px){
+
+  /* 3 cards por linha */
   .grid{
     grid-template-columns:repeat(3,1fr);
     gap:10px;
     padding:14px;
   }
-  .card img{ height:120px; }
-  .modal{ align-items:flex-end; }
+
+  .card{
+    border-radius:16px;
+  }
+
+  .card img{
+    height:110px;
+  }
+
+  .card-body{
+    padding:10px;
+  }
+
+  .card-body h3{
+    font-size:13px;
+    line-height:1.1;
+  }
+
+  .badge{
+    font-size:10px;
+    padding:4px 8px;
+  }
+
+  /* modal estilo app */
+  .modal{
+    align-items:flex-end;
+  }
+
   .modal-box{
+    max-width:100%;
     height:92vh;
     border-radius:22px 22px 0 0;
   }
+
+  .modal-img{
+    height:180px;
+  }
+
+  .modal-body{
+    padding:18px;
+  }
+
+  .close{
+    top:10px;
+    right:14px;
+    font-size:22px;
+  }
+
+  .ing{
+    grid-template-columns:1fr auto;
+    gap:8px;
+  }
+
+  .btn-add{
+    width:100%;
+  }
+}
+.badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:6px;
+}
+
+.badges.primary{
+  margin-top:4px;
+}
+
+.badges.secondary{
+  margin-top:10px;
+}
+
+.badge{
+  cursor:default;
 }
 
 
@@ -357,15 +447,11 @@ button{
 
 <!-- MODAL -->
 <div id="modal" class="modal" onclick="fechar()">
-<div class="modal-box" onclick="event.stopPropagation()">
-  <span class="close" onclick="fechar()">✕</span>
-
-  <!-- COLUNA ESQUERDA: FOTO -->
-  <img id="mFoto" class="modal-img">
-
-  <!-- COLUNA DIREITA: CONTEÚDO -->
-  <div id="mBody" class="modal-body"></div>
-</div>
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <span class="close" onclick="fechar()">✕</span>
+    <img id="mFoto" class="modal-img">
+    <div id="mBody" class="modal-body"></div>
+  </div>
 </div>
 
 <script>
@@ -715,86 +801,24 @@ const nutri = {
 
 
 
+mBody.innerHTML = `
+<h2>${p.nome}</h2>
+<h3>Descrição do prato (texto do cardápio)</h3>
 
-<h3>Resumo financeiro</h3>
-<div class="precificacao">
-  <p><b>Custo base:</b> ${moeda(cmvBase)}</p>
-  <p><b>Impostos e custos operacionais:</b> ${moeda(totalImpostos)}</p>
-  <p><b>Custo final:</b> ${moeda(cmvFinal)}</p>
-
-  ${precoVenda ? `
-    <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
-    <p><b>Lucro:</b> ${moeda(lucro)}</p>
-    <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
-  ` : ``}
-</div>
-
-<hr>
-
-<h3>Tipo do prato</h3>
-<select id="tipoPrato">
-  <option value="">SELECIONE</option>
-</select>
-
-<hr>
-
-<h3>Preço ideal</h3>
-<div class="precificacao">
-  <label style="font-weight:800;font-size:13px">💡 PREÇO IDEAL (R$)</label>
-  <input id="precoIdealInput" type="number" step="0.01" value="${p.preco_ideal || ""}" style="margin-top:8px">
-  <small style="color:var(--muted)">Valor de referência ideal (salva automaticamente).</small>
-</div>
-
-<h3>Precificação</h3>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-  <input id="markupPerc" type="number" step="0.01" placeholder="Markup (%)">
-  <input id="precoVendaInput" type="number" step="0.01" placeholder="Preço de venda (R$)">
-</div>
-
-<p id="previewPreco" style="margin-top:8px;font-size:13px;font-weight:700;color:#166534"></p>
-
-<button class="btn-add" style="margin-top:10px" onclick="salvarPrecoVenda(${cmvFinal})">
-  SALVAR PREÇO DE VENDA
-</button>
-
-<hr>
-
-<h3>Ingredientes</h3>
-${itens.map(i=>`
-  <div class="ing">
-    <span>
-      <b>${i.nome} — ${moeda(i.custo_unitario)}</b><br>
-      <small>${i.quantidade} ${i.unidade_uso}</small>
-    </span>
-    <strong>${moeda(i.custo_calculado)}</strong>
-    <div style="display:flex;gap:6px">
-      <button class="btn-icon btn-edit" onclick="editarIngrediente('${i.id}')">✏️</button>
-      <button class="btn-icon btn-delete" onclick="excluirIngrediente('${i.id}')">🗑️</button>
-    </div>
-  </div>
-`).join("")}
-
-<hr>
-
-<h3>Tabela Nutricional (por prato)</h3>
-<div class="precificacao">
-  <p>🔥 Calorias: <b>${nutri.calorias.toFixed(1)} kcal</b></p>
-  <p>🥩 Proteínas: <b>${nutri.proteinas.toFixed(1)} g</b></p>
-  <p>🍞 Carboidratos: <b>${nutri.carboidratos.toFixed(1)} g</b></p>
-  <p>🧈 Gorduras: <b>${nutri.gorduras.toFixed(1)} g</b></p>
-  <p>🌾 Fibras: <b>${nutri.fibras.toFixed(1)} g</b></p>
-  <p>🧂 Sódio: <b>${nutri.sodio.toFixed(1)} mg</b></p>
-</div>
-
-<hr>
-
-<h3>Modo de preparo</h3>
 <textarea
-  id="modoPreparo"
-  placeholder="Descreva o modo de preparo do prato..."
-  style="width:100%;min-height:120px;padding:14px;border-radius:14px;border:1px solid var(--border);font-size:14px;font-family:Inter,sans-serif;resize:vertical;"
->${p.modo_preparo || ""}</textarea>
-`;
+  id="descricaoPrato"
+  placeholder="Ex: Salmão grelhado com arroz japonês e molho teriyaki."
+  style="
+    width:100%;
+    min-height:70px;
+    padding:14px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    font-size:14px;
+    font-family:Inter,sans-serif;
+    resize:vertical;
+  "
+>${p.descricao || ""}</textarea>
 
 <div style="margin:14px 0">
   <label style="font-weight:800;font-size:13px">
@@ -807,38 +831,25 @@ ${itens.map(i=>`
   </select>
 </div>
 
-<div style="margin:12px 0">
-  <label style="font-weight:800;font-size:13px">
-    FOTO DO PRATO
-  </label>
+  <div style="margin:12px 0">
+    <label style="font-weight:800;font-size:13px">
+      FOTO DO PRATO
+    </label>
 
-  <input
-    type="file"
-    id="fotoPrato"
-    accept="image/*"
-    style="margin-top:6px"
-  >
-</div>
+    <input
+      type="file"
+      id="fotoPrato"
+      accept="image/*"
+      style="margin-top:6px"
+    >
+  </div>
 
+  <p><b>CUSTO BASE:</b> ${moeda(cmvBase)}</p>
+  <p><b>IMPOSTOS E CUSTOS OPERACIONAIS:</b> ${moeda(totalImpostos)}</p>
+  <p><b>CUSTO FINAL:</b> ${moeda(cmvFinal)}</p>
 
-
-<h3>Resumo financeiro</h3>
-
-<div class="precificacao">
-  <p><b>Custo base:</b> ${moeda(cmvBase)}</p>
-  <p><b>Impostos e custos operacionais:</b> ${moeda(totalImpostos)}</p>
-  <p><b>Custo final:</b> ${moeda(cmvFinal)}</p>
-
-  ${precoVenda ? `
-    <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
-    <p><b>Lucro:</b> ${moeda(lucro)}</p>
-    <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
-  ` : ``}
-</div>
-
-<hr>
-
-<h3>Tipo do prato</h3>
+  <hr>
+  <h3>Tipo do prato</h3>
 
 <select id="tipoPrato">
   <option value="">SELECIONE</option>
