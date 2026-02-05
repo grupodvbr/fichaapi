@@ -85,9 +85,29 @@ body.modal-open{
 ========================================================= */
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
   gap:22px;
   padding:22px;
+}
+
+/* DESKTOP GRANDE → 6 por linha */
+@media (min-width: 1600px){
+  .grid{
+    grid-template-columns:repeat(6,1fr);
+  }
+}
+
+/* NOTEBOOK / DESKTOP MÉDIO → 4 por linha */
+@media (min-width: 1200px) and (max-width: 1599px){
+  .grid{
+    grid-template-columns:repeat(4,1fr);
+  }
+}
+
+/* TABLET → 2 por linha */
+@media (min-width: 700px) and (max-width: 1199px){
+  .grid{
+    grid-template-columns:repeat(2,1fr);
+  }
 }
 
 /* =========================================================
