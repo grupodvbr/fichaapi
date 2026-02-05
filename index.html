@@ -437,10 +437,8 @@ async function loadMore(){
 }
 window.addEventListener("scroll",()=>{ if((innerHeight+scrollY)>=document.body.offsetHeight-600) loadMore();});
 search.oninput=()=>{ termo=search.value.trim(); page=0; fimLista=false; idsCarregados.clear(); grid.innerHTML=""; loadMore(); };
-renderCats(); loadMore();
+setCat('');
 
-promoWrap.style.display = "block";
-loadPromos();
 </script>
 <script>
 if ("serviceWorker" in navigator) {
