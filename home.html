@@ -4,100 +4,71 @@
 <meta charset="UTF-8" />
 <title>CMV • Home Premium</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-/* ====== TEMA PREMIUM ====== */
 :root{
-  --bg:#0b1220; --bg-2:#020617; --card:#020617; --grid:#1e293b;
-  --text:#e5e7eb; --muted:#94a3b8; --accent:#22c55e;
-  --danger:#ef4444; --gold:#f59e0b; --radius:18px;
-  --shadow:0 20px 60px rgba(0,0,0,.45);
+  --bg:#0b1220; --card:#020617; --grid:#1e293b;
+  --text:#e5e7eb; --muted:#94a3b8;
+  --accent:#22c55e; --danger:#ef4444; --gold:#f59e0b;
+  --radius:18px; --shadow:0 20px 60px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
 body{
   margin:0; font-family:Inter,sans-serif; color:var(--text);
-  background:radial-gradient(1200px 600px at 10% -10%, #0b1220 0%, #020617 60%),
-             linear-gradient(180deg,#020617,#020617);
-  min-height:100vh;
+  background:radial-gradient(1200px 600px at 10% -10%, #0b1220 0%, #020617 60%);
 }
-.header{
-  padding:22px 26px; border-bottom:1px solid var(--grid);
-  background:linear-gradient(180deg,#020617,#020617cc);
-  position:sticky; top:0; z-index:10; backdrop-filter: blur(6px)
-}
-.header h1{margin:0;font-size:24px;font-weight:900}
-.header small{color:var(--muted)}
-.container{padding:22px 24px 40px; max-width:1400px; margin:0 auto}
-.filters{display:flex; gap:10px; align-items:center; margin-bottom:14px}
-.select{
-  background:#020617;color:#e5e7eb;border:1px solid var(--grid);
-  border-radius:999px;padding:8px 14px;font-weight:800
-}
-.grid{
-  display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:16px; margin-bottom:26px
-}
-.card{
-  background:linear-gradient(180deg,#020617,#020617cc);
-  border:1px solid var(--grid); border-radius:var(--radius);
-  padding:18px; box-shadow:var(--shadow); transition:.25s
-}
-.card:hover{transform:translateY(-4px); border-color:#2b3b55}
-.card small{color:var(--muted); font-weight:800; text-transform:uppercase; font-size:11px}
-.card b{display:block; margin-top:6px; font-size:34px; font-weight:900; color:var(--accent)}
-.card .sub{font-size:12px; color:var(--muted)}
-.card.warn b{color:var(--gold)}
-.card.danger b{color:var(--danger)}
-.section{margin-top:22px; display:grid; grid-template-columns:repeat(2,1fr); gap:18px}
-@media(max-width:900px){ .section{grid-template-columns:1fr} }
-.panel{
-  background:linear-gradient(180deg,#020617,#020617cc);
-  border:1px solid var(--grid); border-radius:var(--radius);
-  padding:16px; box-shadow:var(--shadow)
-}
-.panel h3{margin:0 0 10px; font-size:14px; color:#cbd5f5; font-weight:900}
-.badge{
-  display:inline-block; padding:6px 12px; border-radius:999px;
-  font-size:12px; font-weight:800; border:1px solid var(--grid);
-  background:#0b1220; margin:4px 6px 0 0
-}
+.header{padding:22px 26px;border-bottom:1px solid var(--grid);background:#020617cc;position:sticky;top:0;z-index:10}
+.container{padding:22px 24px 40px;max-width:1400px;margin:auto}
+.filters{display:flex;gap:10px;margin-bottom:16px}
+.select{background:#020617;color:#fff;border:1px solid var(--grid);border-radius:999px;padding:8px 14px;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:26px}
+.card{background:#020617;border:1px solid var(--grid);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card small{color:var(--muted);font-weight:800;font-size:11px;text-transform:uppercase}
+.card b{display:block;margin-top:6px;font-size:34px;font-weight:900;color:var(--accent)}
+.card.warn b{color:var(--gold)} .card.danger b{color:var(--danger)}
+.section{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:900px){.section{grid-template-columns:1fr}}
+.panel{background:#020617;border:1px solid var(--grid);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.panel h3{margin:0 0 10px;font-size:14px;font-weight:900;color:#cbd5f5}
+.badge{display:inline-block;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid var(--grid);background:#0b1220;margin:4px}
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>📊 Home • Visão Geral CMV</h1>
-  <small id="atualizadoEm">Atualizando…</small>
+  <small id="atualizadoEm"></small>
 </div>
 
 <div class="container">
+
   <div class="filters">
     <span class="badge">Filtrar por tipo</span>
-    <select id="filtroTipo" class="select">
-      <option value="">Todos os tipos</option>
-    </select>
+    <select id="filtroTipo" class="select"></select>
   </div>
 
   <div class="grid">
-    <div class="card"><small>Fichas técnicas</small><b id="kpiFichas">—</b><div class="sub">Total</div></div>
-    <div class="card"><small>Ingredientes</small><b id="kpiIngredientes">—</b><div class="sub">No sistema</div></div>
-    <div class="card warn"><small>Ingrediente top</small><b id="kpiIngredienteTop">—</b><div class="sub" id="kpiIngredienteTopQtd">—</div></div>
-    <div class="card"><small>CMV médio</small><b id="kpiCmvMedio">—%</b><div class="sub">&lt; 35% ideal</div></div>
-    <div class="card"><small>Preço médio</small><b id="kpiPrecoMedio">—</b><div class="sub">Venda</div></div>
-    <div class="card"><small>Custo médio</small><b id="kpiCustoMedio">—</b><div class="sub">Ficha</div></div>
-    <div class="card warn"><small>Lucro total</small><b id="kpiLucroTotal">—</b><div class="sub">Potencial</div></div>
-    <div class="card danger"><small>CMV alto</small><b id="kpiCmvAlto">—</b><div class="sub">&gt; 35%</div></div>
+    <div class="card"><small>Fichas</small><b id="kpiFichas">—</b></div>
+    <div class="card"><small>Produtos</small><b id="kpiProdutos">—</b></div>
+    <div class="card warn"><small>Produto Top</small><b id="kpiProdutoTop">—</b></div>
+    <div class="card"><small>CMV Médio</small><b id="kpiCmvMedio">—%</b></div>
+    <div class="card"><small>Preço Médio</small><b id="kpiPrecoMedio">—</b></div>
+    <div class="card"><small>Custo Médio</small><b id="kpiCustoMedio">—</b></div>
+    <div class="card warn"><small>Lucro Total</small><b id="kpiLucroTotal">—</b></div>
+    <div class="card danger"><small>CMV Alto</small><b id="kpiCmvAlto">—</b></div>
   </div>
 
   <div class="section">
-    <div class="panel"><h3>📊 CMV médio por tipo</h3><canvas id="graficoCmvTipo" height="180"></canvas></div>
-    <div class="panel"><h3>🥇 Top 5 ingredientes</h3><canvas id="graficoTopIngredientes" height="180"></canvas></div>
+    <div class="panel"><h3>📊 CMV por tipo</h3><canvas id="graficoTipo"></canvas></div>
+    <div class="panel"><h3>🥇 Produtos mais usados</h3><canvas id="graficoProdutos"></canvas></div>
     <div class="panel"><h3>🚨 CMV mais alto</h3><div id="listaCmvAlto"></div></div>
-    <div class="panel"><h3>💎 Mais lucrativos</h3><div id="listaMaisLucrativas"></div></div>
+    <div class="panel"><h3>💎 Mais lucrativos</h3><div id="listaLucro"></div></div>
   </div>
+
 </div>
 
 <script>
@@ -105,53 +76,49 @@ const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
+
 const moeda = v => "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-let chartTipo=null, chartIng=null;
+let chartTipo, chartProdutos;
 
 async function carregarTipos(){
   const { data } = await sb.from("buffet").select("tipo");
-  const tipos = [...new Set((data||[]).map(i=>i.tipo).filter(Boolean))].sort();
-  filtroTipo.innerHTML =
-    `<option value="">Todos os tipos</option>` +
-    tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
+  const tipos = [...new Set(data.map(i=>i.tipo))].filter(Boolean).sort();
+  filtroTipo.innerHTML = `<option value="">Todos</option>` + tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
 }
 
 async function carregarHome(){
   atualizadoEm.textContent = "Atualizado em " + new Date().toLocaleString("pt-BR");
-  const tipo = filtroTipo.value;
 
-  const q = sb.from("buffet").select("id,nome,tipo,preco_venda");
+  const tipo = filtroTipo.value;
+  const q = sb.from("buffet").select("*");
   const { data: buffet } = tipo ? await q.eq("tipo", tipo) : await q;
 
-  const { data: itens } =
-    await sb.from("buffet_itens").select("buffet_id,custo_calculado, ingredientes(nome)");
-  const { count: ingredientes } =
-    await sb.from("ingredientes").select("*",{count:"exact",head:true});
+  const { data: itens } = await sb.from("buffet_itens").select("*");
+  const { data: produtos } = await sb.from("produtos").select("*");
 
-  kpiFichas.textContent = buffet?.length||0;
-  kpiIngredientes.textContent = ingredientes||0;
+  kpiFichas.textContent = buffet.length;
+  kpiProdutos.textContent = produtos.length;
 
-  const custoPorFicha={}, uso={};
-  (itens||[]).forEach(i=>{
-    custoPorFicha[i.buffet_id]=(custoPorFicha[i.buffet_id]||0)+Number(i.custo_calculado||0);
-    const n=i.ingredientes?.nome||"—"; uso[n]=(uso[n]||0)+1;
+  const custoFicha = {};
+  const usoProdutos = {};
+
+  itens.forEach(i=>{
+    custoFicha[i.buffet_id] = (custoFicha[i.buffet_id]||0) + Number(i.custo_calculado||0);
+    usoProdutos[i.nome] = (usoProdutos[i.nome]||0) + 1;
   });
 
-  const topIng = Object.entries(uso).sort((a,b)=>b[1]-a[1]);
-  if(topIng[0]){
-    kpiIngredienteTop.textContent = topIng[0][0];
-    kpiIngredienteTopQtd.textContent = `Usado ${topIng[0][1]}x`;
-  }
+  const topProduto = Object.entries(usoProdutos).sort((a,b)=>b[1]-a[1])[0];
+  if(topProduto) kpiProdutoTop.textContent = topProduto[0];
 
   let somaCMV=0,qtd=0,precoT=0,custoT=0,lucroT=0,cmvAlto=0;
   const rankingCmv=[], rankingLucro=[], cmvTipo={}, qtdTipo={};
 
-  (buffet||[]).forEach(b=>{
-    const custo=custoPorFicha[b.id]||0;
-    const preco=Number(b.preco_venda||0);
+  buffet.forEach(b=>{
+    const custo = custoFicha[b.id]||0;
+    const preco = Number(b.preco_venda||0);
     if(preco>0){
-      const cmv=(custo/preco)*100;
-      const lucro=preco-custo;
+      const cmv = (custo/preco)*100;
+      const lucro = preco - custo;
       somaCMV+=cmv; qtd++; precoT+=preco; custoT+=custo; lucroT+=lucro;
       if(cmv>35) cmvAlto++;
       cmvTipo[b.tipo]=(cmvTipo[b.tipo]||0)+cmv;
@@ -168,32 +135,28 @@ async function carregarHome(){
   kpiCmvAlto.textContent=cmvAlto;
 
   chartTipo?.destroy();
-  chartTipo = new Chart(graficoCmvTipo,{
-    type:"bar",
-    data:{labels:Object.keys(cmvTipo),
-      datasets:[{data:Object.keys(cmvTipo).map(k=>(cmvTipo[k]/qtdTipo[k]).toFixed(1))}]},
-    options:{plugins:{legend:{display:false}}}
-  });
+  chartTipo = new Chart(graficoTipo,{type:"bar",
+    data:{labels:Object.keys(cmvTipo),datasets:[{data:Object.keys(cmvTipo).map(k=>(cmvTipo[k]/qtdTipo[k]).toFixed(1))}]},
+    options:{plugins:{legend:{display:false}}}});
 
-  chartIng?.destroy();
-  chartIng = new Chart(graficoTopIngredientes,{
-    type:"bar",
-    data:{labels:topIng.slice(0,5).map(i=>i[0]),
-      datasets:[{data:topIng.slice(0,5).map(i=>i[1])}]},
-    options:{plugins:{legend:{display:false}}}
-  });
+  chartProdutos?.destroy();
+  chartProdutos = new Chart(graficoProdutos,{type:"bar",
+    data:{labels:Object.keys(usoProdutos).slice(0,5),datasets:[{data:Object.values(usoProdutos).slice(0,5)}]},
+    options:{plugins:{legend:{display:false}}}});
 
-  listaCmvAlto.innerHTML =
-    rankingCmv.sort((a,b)=>b.cmv-a.cmv).slice(0,5)
-      .map(i=>`<span class="badge">${i.nome} — ${i.cmv.toFixed(1)}%</span>`).join("");
+  listaCmvAlto.innerHTML = rankingCmv.sort((a,b)=>b.cmv-a.cmv).slice(0,5)
+    .map(i=>`<span class="badge">${i.nome} — ${i.cmv.toFixed(1)}%</span>`).join("");
 
-  listaMaisLucrativas.innerHTML =
-    rankingLucro.sort((a,b)=>b.lucro-a.lucro).slice(0,5)
-      .map(i=>`<span class="badge">${i.nome} — ${moeda(i.lucro)}</span>`).join("");
+  listaLucro.innerHTML = rankingLucro.sort((a,b)=>b.lucro-a.lucro).slice(0,5)
+    .map(i=>`<span class="badge">${i.nome} — ${moeda(i.lucro)}</span>`).join("");
 }
 
 filtroTipo.onchange = carregarHome;
-(async ()=>{ await carregarTipos(); await carregarHome(); })();
+
+(async ()=>{
+  await carregarTipos();
+  await carregarHome();
+})();
 </script>
 </body>
 </html>
