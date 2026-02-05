@@ -141,12 +141,29 @@ html,body{
   text-shadow: 0 0 18px rgba(34,197,94,.45);
 }
 .mockup .mini{
-  position:absolute; right:-22px; bottom:-16px; width:150px;
-  background:#020617; border-radius:18px; border:1px solid var(--grid);
-  box-shadow:0 20px 60px rgba(0,0,0,.6); padding:8px;
+  position:absolute;
+  right:-36px;
+  bottom:-26px;
+  width:180px;
+  background:linear-gradient(180deg,#0b1220,#020617);
+  border-radius:26px;
+  border:1px solid rgba(148,163,184,.25);
+  box-shadow:
+    0 40px 120px rgba(0,0,0,.8),
+    0 0 0 1px rgba(34,197,94,.25);
+  padding:10px;
 }
-.mini .thumb{height:170px;border-radius:12px;background:linear-gradient(180deg,#111,#000)}
-
+.mini .thumb{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+  border-radius:12px;
+  display:block;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.7),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+  background:#000;
+}
 @media(max-width:900px){
   .hero-wrap{grid-template-columns:1fr}
   .hero-copy h1{font-size:34px}
@@ -237,7 +254,9 @@ iframe{flex:1;width:100%;border:0;background:#fff}
   <b>R$ 12.430</b>
 </div>
       </div>
-      <div class="mini"><div class="thumb"></div></div>
+<div class="mini">
+  <img class="thumb" src="img/mockup-app.png" alt="Preview do sistema">
+</div>
     </div>
   </div>
 </section>
