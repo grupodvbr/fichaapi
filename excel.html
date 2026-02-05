@@ -19,12 +19,7 @@
 }
 
 *{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Inter,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
+body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
 
 h1{
   padding:18px 22px;
@@ -32,37 +27,25 @@ h1{
   font-size:18px;
   background:#020617;
   border-bottom:1px solid var(--grid);
+  display:flex;
+  gap:12px;
+  align-items:center;
 }
 
-.table-wrap{
-  overflow:auto;
-  height:calc(100vh - 60px);
-}
-
-table{
-  border-collapse:collapse;
-  width:100%;
-  min-width:1200px;
-  font-size:13px;
-}
-
-thead th{
-  position:sticky;
-  top:0;
+select.filter{
   background:#020617;
-  z-index:2;
-}
-
-th, td{
   border:1px solid var(--grid);
-  padding:8px 10px;
-  white-space:nowrap;
+  color:#e5e7eb;
+  padding:6px 10px;
+  border-radius:8px;
+  font-weight:700;
 }
 
-tbody tr:hover{
-  background:#020617;
-  cursor:pointer;
-}
+.table-wrap{overflow:auto;height:calc(100vh - 60px)}
+table{border-collapse:collapse;width:100%;min-width:1300px;font-size:13px}
+thead th{position:sticky;top:0;background:#020617;z-index:2}
+th,td{border:1px solid var(--grid);padding:8px 10px;white-space:nowrap}
+tbody tr:hover{background:#020617;cursor:pointer}
 
 input{
   width:80px;
@@ -73,86 +56,63 @@ input{
   border-radius:6px;
   font-weight:700;
 }
+input:focus{outline:none;border-color:#22c55e}
 
-input:focus{
-  outline:none;
-  border-color:#22c55e;
-}
-
-.bad{
-  color:#ef4444;
-  font-weight:800;
-}
-
-.good{
-  color:#22c55e;
-  font-weight:800;
-}
+.bad{color:#ef4444;font-weight:800}
+.good{color:#22c55e;font-weight:800}
 
 /* MODAL */
 .modal{
-  position:fixed;
-  inset:0;
+  position:fixed;inset:0;
   background:rgba(0,0,0,.75);
-  display:none;
-  align-items:center;
-  justify-content:center;
+  display:none;align-items:center;justify-content:center;
 }
-
 .modal-box{
-  background:#020617;
-  border-radius:16px;
-  max-width:900px;
-  width:90vw;
-  max-height:90vh;
-  overflow:auto;
-  padding:18px;
+  background:#020617;border-radius:22px;
+  max-width:1000px;width:92vw;max-height:92vh;overflow:auto;
   border:1px solid #1e293b;
 }
-
-.modal-box img{
-  width:100%;
-  max-height:260px;
-  object-fit:cover;
-  border-radius:12px;
-  margin-bottom:12px;
-}
-
-.close{
-  float:right;
-  cursor:pointer;
-  font-weight:900;
-}
+.modal-header{display:grid;grid-template-columns:320px 1fr;gap:18px;padding:18px}
+.modal-header img{width:100%;height:100%;object-fit:cover;border-radius:16px}
+.modal-body{padding:0 18px 18px}
+.ing{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px;border-bottom:1px solid #1e293b}
+.close{position:absolute;top:14px;right:16px;cursor:pointer;font-weight:900}
 </style>
 </head>
 
 <body>
-<h1>📊 Excel de Precificação • CMV</h1>
+<h1>
+  📊 Excel de Precificação • CMV
+  <select id="filtroTipo" class="filter">
+    <option value="">Todos os tipos</option>
+  </select>
+</h1>
 
 <div class="table-wrap">
 <table id="tabela">
-  <thead>
-    <tr>
-      <th>Prato</th>
-      <th>Tipo</th>
-      <th>Custo Base</th>
-      <th>Custos / Impostos</th>
-      <th>Custo Final</th>
-      <th>Markup (%)</th>
-      <th>Preço Venda</th>
-      <th>CMV %</th>
-      <th>Lucro</th>
-      <th>Margem %</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
+<thead>
+<tr>
+  <th>Prato</th>
+  <th>Tipo</th>
+  <th>Custo Base</th>
+  <th>Custos</th>
+  <th>Custo Final</th>
+  <th>Markup %</th>
+  <th>Preço (R$)</th>
+  <th>CMV %</th>
+  <th>Lucro</th>
+  <th>Margem %</th>
+</tr>
+</thead>
+<tbody></tbody>
 </table>
 </div>
 
 <div class="modal" id="modal" onclick="fechar()">
   <div class="modal-box" onclick="event.stopPropagation()">
     <span class="close" onclick="fechar()">✕</span>
-    <div id="modalConteudo"></div>
+    <div class="modal-header" id="modalHeader"></div>
+    <div class="modal-body" id="modalBody"></div>
   </div>
 </div>
 
@@ -169,23 +129,31 @@ let pratos = [];
 
 async function carregarCache(){
   cacheCMV = {};
-
-  const { data: itens } = await sb.from("buffet_itens").select("buffet_id, custo_calculado");
+  const { data: itens } = await sb.from("buffet_itens").select("buffet_id, custo_calculado, nome, quantidade, unidade_uso");
   const { data: impostos } = await sb.from("impostos").select("buffet_id, modalidade, valor");
 
   (itens||[]).forEach(i=>{
-    cacheCMV[i.buffet_id] ??= { base:0, impostos:[] };
+    cacheCMV[i.buffet_id] ??= { base:0, impostos:[], itens:[] };
     cacheCMV[i.buffet_id].base += Number(i.custo_calculado||0);
+    cacheCMV[i.buffet_id].itens.push(i);
   });
 
   (impostos||[]).forEach(i=>{
-    cacheCMV[i.buffet_id] ??= { base:0, impostos:[] };
+    cacheCMV[i.buffet_id] ??= { base:0, impostos:[], itens:[] };
     cacheCMV[i.buffet_id].impostos.push(i);
   });
 }
 
+async function carregarTipos(){
+  const { data } = await sb.from("buffet").select("tipo");
+  const tipos = [...new Set((data||[]).map(i=>i.tipo).filter(Boolean))];
+  filtroTipo.innerHTML = `<option value="">Todos os tipos</option>` +
+    tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
+}
+
 async function carregar(){
   await carregarCache();
+  await carregarTipos();
   const { data } = await sb.from("buffet").select("*").order("nome");
   pratos = data || [];
   render();
@@ -194,79 +162,100 @@ async function carregar(){
 function render(){
   const tbody = document.querySelector("#tabela tbody");
   tbody.innerHTML = "";
+  const filtro = filtroTipo.value;
 
-  pratos.forEach(p=>{
-    const dados = cacheCMV[p.id] || { base:0, impostos:[] };
-    let impostos = 0;
-
-    dados.impostos.forEach(i=>{
-      if(i.modalidade==="FIXO") impostos += Number(i.valor);
-      if(i.modalidade==="PERCENTUAL") impostos += (dados.base * Number(i.valor))/100;
+  pratos.filter(p=>!filtro || p.tipo===filtro).forEach(p=>{
+    const d = cacheCMV[p.id] || { base:0, impostos:[], itens:[] };
+    let imp = 0;
+    d.impostos.forEach(i=>{
+      if(i.modalidade==="FIXO") imp+=Number(i.valor);
+      if(i.modalidade==="PERCENTUAL") imp+=(d.base*i.valor)/100;
     });
 
-    const custoFinal = dados.base + impostos;
+    const custoFinal = d.base + imp;
     const preco = Number(p.preco_venda||0);
     const lucro = preco - custoFinal;
-    const cmvPerc = preco ? (custoFinal/preco)*100 : 0;
+    const cmv = preco ? (custoFinal/preco)*100 : 0;
     const margem = preco ? (lucro/preco)*100 : 0;
 
     const tr = document.createElement("tr");
-    tr.onclick = ()=>abrirModal(p, custoFinal, cmvPerc, lucro, margem);
+    tr.onclick = ()=>abrirModal(p, d, custoFinal, cmv, lucro, margem);
 
     tr.innerHTML = `
       <td>${p.nome}</td>
       <td>${p.tipo||"-"}</td>
-      <td>${moeda(dados.base)}</td>
-      <td>${moeda(impostos)}</td>
+      <td>${moeda(d.base)}</td>
+      <td>${moeda(imp)}</td>
       <td>${moeda(custoFinal)}</td>
       <td>
-        <input type="number" step="0.01" placeholder="%" 
-          oninput="precificar(this, ${custoFinal}, '${p.id}')">
+        <input type="number" step="0.01" placeholder="%"
+          onclick="event.stopPropagation()"
+          onblur="precificarPerc(this, ${custoFinal}, '${p.id}')">
       </td>
-      <td>${moeda(preco)}</td>
-      <td class="${cmvPerc>35?'bad':'good'}">${cmvPerc.toFixed(1)}%</td>
+      <td>
+        <input type="number" step="0.01" placeholder="R$"
+          onclick="event.stopPropagation()"
+          onblur="precificarValor(this, ${custoFinal}, '${p.id}')"
+          value="${preco?preco.toFixed(2):''}">
+      </td>
+      <td class="${cmv>35?'bad':'good'}">${cmv.toFixed(1)}%</td>
       <td class="${lucro<0?'bad':'good'}">${moeda(lucro)}</td>
       <td class="${margem<30?'bad':'good'}">${margem.toFixed(1)}%</td>
     `;
-
     tbody.appendChild(tr);
   });
 }
 
-async function precificar(input, custoFinal, id){
+async function precificarPerc(input, custo, id){
   const mk = Number(input.value||0);
-  if(mk <= 0) return;
-
-  const preco = custoFinal * (1 + mk/100);
-
-  await sb.from("buffet")
-    .update({ preco_venda: preco })
-    .eq("id", id);
-
-  await carregar();
+  if(mk<=0) return;
+  const preco = custo*(1+mk/100);
+  await sb.from("buffet").update({ preco_venda: preco }).eq("id", id);
+  carregar();
 }
 
-function abrirModal(p, custo, cmv, lucro, margem){
-  modal.style.display = "flex";
+async function precificarValor(input, custo, id){
+  const preco = Number(input.value||0);
+  if(preco<=custo) return alert("Preço inválido");
+  await sb.from("buffet").update({ preco_venda: preco }).eq("id", id);
+  carregar();
+}
 
-  modalConteudo.innerHTML = `
-    <img src="${p.foto_url||'https://placehold.co/800x400?text=Sem+Foto'}">
-    <h2>${p.nome}</h2>
-    <p><b>Tipo:</b> ${p.tipo||"-"}</p>
-    <p><b>Preço:</b> ${moeda(p.preco_venda)}</p>
-    <p><b>Custo Final:</b> ${moeda(custo)}</p>
-    <p><b>CMV:</b> ${cmv.toFixed(1)}%</p>
-    <p><b>Lucro:</b> ${moeda(lucro)}</p>
-    <p><b>Margem:</b> ${margem.toFixed(1)}%</p>
-    <p><b>Descrição:</b> ${p.descricao||"-"}</p>
-    <p><b>Modo de preparo:</b> ${p.modo_preparo||"-"}</p>
+function abrirModal(p, d, custo, cmv, lucro, margem){
+  modal.style.display="flex";
+
+  modalHeader.innerHTML = `
+    <img src="${p.foto_url||'https://placehold.co/600x400?text=Sem+Foto'}">
+    <div>
+      <h2>${p.nome}</h2>
+      <p>${p.tipo||""}</p>
+      <p><b>Venda:</b> ${moeda(p.preco_venda)}</p>
+      <p><b>Custo Final:</b> ${moeda(custo)}</p>
+      <p><b>Lucro:</b> ${moeda(lucro)}</p>
+      <p><b>Margem:</b> ${margem.toFixed(1)}%</p>
+    </div>
+  `;
+
+  modalBody.innerHTML = `
+    <h3>Ingredientes</h3>
+    ${d.itens.map(i=>`
+      <div class="ing">
+        <span>${i.nome} (${i.quantidade} ${i.unidade_uso})</span>
+        <b>${moeda(i.custo_calculado)}</b>
+      </div>
+    `).join("")}
+
+    <h3 style="margin-top:16px">Descrição</h3>
+    <p>${p.descricao||"-"}</p>
+
+    <h3>Modo de preparo</h3>
+    <p>${p.modo_preparo||"-"}</p>
   `;
 }
 
-function fechar(){
-  modal.style.display="none";
-}
+function fechar(){ modal.style.display="none"; }
 
+filtroTipo.onchange = render;
 carregar();
 </script>
 </body>
