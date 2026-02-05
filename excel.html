@@ -403,8 +403,14 @@ document.getElementById("importExcel").addEventListener("change", async (e) => {
 
   // Esperado: colunas = codigo_varejo | data | quantidade | valor_total
   vendasExcel = json.map(r => ({
-    codigo: String(r.codigo_varejo || r.CODIGO || "").trim(),
-    data: r.data || r.DATA,
+codigo: String(
+  r.codigo_varejo ||
+  r.CODIGO ||
+  r["Código"] ||
+  r["Cod. Produto"] ||
+  r["Código do Produto"] ||
+  ""
+).trim().padStart(13, "0"),    data: r.data || r.DATA,
     quantidade: Number(r.quantidade || r.QTD || 0),
     valor: Number(r.valor_total || r.VALOR || 0)
   }));
