@@ -20,9 +20,8 @@ body{margin:0;background:linear-gradient(180deg,#000,#0b0b0c);color:#fff;font-fa
 
 .uploader{
   display:grid;
-  grid-template-columns:1fr 90px 160px 110px 110px auto;
-  gap:8px;
-  margin-bottom:14px;
+  grid-template-columns:1fr 110px 160px 110px 110px auto;
+  gap:8px; margin-bottom:14px;
 }
 .uploader input,.uploader select{
   height:46px;border-radius:12px;border:1px solid var(--border);
@@ -34,15 +33,28 @@ body{margin:0;background:linear-gradient(180deg,#000,#0b0b0c);color:#fff;font-fa
   background:#000;color:var(--gold);font-weight:900;cursor:pointer
 }
 
+.preview{
+  grid-column:1 / -1;
+  display:flex; gap:10px; align-items:center;
+  padding:10px; border:1px dashed var(--border); border-radius:12px;
+}
+.preview img,.preview video{width:120px;height:80px;object-fit:cover;border-radius:10px;background:#000}
+
+.progress{
+  height:6px; background:#111; border-radius:999px; overflow:hidden; margin-top:6px;
+}
+.progress > div{
+  height:100%; width:0%; background:linear-gradient(90deg,#d4af37,#f5d76e);
+  transition:width .2s ease;
+}
+
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
 .card{background:#0f0f12;border:1px solid var(--border);border-radius:18px;overflow:hidden}
 .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#000}
 .card video.thumb{object-fit:cover}
-
 .meta{display:flex;justify-content:space-between;align-items:center;padding:10px}
 .badge{font-size:10px;font-weight:900;border:1px solid var(--border);padding:4px 8px;border-radius:999px}
 .badge.on{border-color:var(--gold);color:var(--gold)}
-
 .actions{display:flex;gap:6px}
 .actions button{
   background:transparent;border:1px solid var(--border);color:#fff;
@@ -50,7 +62,6 @@ body{margin:0;background:linear-gradient(180deg,#000,#0b0b0c);color:#fff;font-fa
 }
 .actions button.danger{border-color:#dc2626;color:#dc2626}
 .actions button:hover{border-color:var(--gold);color:var(--gold)}
-
 .footer-note{opacity:.6;font-size:12px;margin-top:10px}
 </style>
 </head>
@@ -62,7 +73,7 @@ body{margin:0;background:linear-gradient(180deg,#000,#0b0b0c);color:#fff;font-fa
 
 <div class="wrap">
   <div class="uploader">
-    <input id="url" placeholder="URL do banner ou vídeo (Storage Supabase)" />
+    <input id="file" type="file" accept="image/*,video/*" />
     <select id="tipo">
       <option value="IMG">IMG</option>
       <option value="VIDEO">VIDEO</option>
@@ -81,12 +92,15 @@ body{margin:0;background:linear-gradient(180deg,#000,#0b0b0c);color:#fff;font-fa
     <input id="hora_inicio" type="time" value="00:00" />
     <input id="hora_fim" type="time" value="23:59" />
 
-    <button onclick="addPromo()">Adicionar</button>
+    <button onclick="addPromo()">Upload & Salvar</button>
+
+    <div class="preview" id="preview" style="display:none"></div>
+    <div class="progress" id="progress" style="display:none"><div></div></div>
   </div>
 
   <div id="grid" class="grid"></div>
   <div class="footer-note">
-    * Faça upload no Storage do Supabase. Aqui você organiza URLs, dias e horários.
+    * Upload vai para o bucket <b>promocoes</b> do Supabase. Exclusão remove do Storage também.
   </div>
 </div>
 
@@ -97,18 +111,26 @@ const sb = supabase.createClient(
 );
 
 const grid = document.getElementById("grid");
-const urlInput = document.getElementById("url");
+const fileInput = document.getElementById("file");
 const tipoInput = document.getElementById("tipo");
 const diasInput = document.getElementById("dias");
 const horaInicioInput = document.getElementById("hora_inicio");
 const horaFimInput = document.getElementById("hora_fim");
+const preview = document.getElementById("preview");
+const progressBar = document.getElementById("progress");
+const progressFill = progressBar.querySelector("div");
+
+fileInput.onchange = () => {
+  const file = fileInput.files[0];
+  if(!file) return;
+  preview.style.display = "flex";
+  preview.innerHTML = file.type.startsWith("video")
+    ? `<video src="${URL.createObjectURL(file)}" muted autoplay loop></video>`
+    : `<img src="${URL.createObjectURL(file)}">`;
+};
 
 async function load(){
-  const { data, error } = await sb
-    .from("promocoes")
-    .select("*")
-    .order("created_at", { ascending:false });
-
+  const { data, error } = await sb.from("promocoes").select("*").order("created_at", { ascending:false });
   if(error){ console.error(error); return; }
 
   grid.innerHTML = (data||[]).map(p => `
@@ -118,12 +140,10 @@ async function load(){
         : `<img class="thumb" src="${p.url}">`
       }
       <div class="meta">
-        <span class="badge ${p.ativo?'on':''}">
-          ${p.tipo} • ${p.ativo?'ATIVO':'OFF'}
-        </span>
+        <span class="badge ${p.ativo?'on':''}">${p.tipo} • ${p.ativo?'ATIVO':'OFF'}</span>
         <div class="actions">
           <button onclick="toggle('${p.id}', ${p.ativo})">${p.ativo?'Desativar':'Ativar'}</button>
-          <button class="danger" onclick="del('${p.id}')">Excluir</button>
+          <button class="danger" onclick="delPromo('${p.id}', '${p.url}')">Excluir</button>
         </div>
       </div>
     </div>
@@ -131,23 +151,41 @@ async function load(){
 }
 
 async function addPromo(){
-  const url = urlInput.value.trim();
-  const tipo = tipoInput.value;
+  const file = fileInput.files[0];
+  if(!file) return alert("Selecione um arquivo");
+
   const dias = Array.from(diasInput.selectedOptions).map(o => Number(o.value));
+  if(!dias.length) return alert("Selecione os dias");
+
   const hora_inicio = horaInicioInput.value || "00:00";
   const hora_fim = horaFimInput.value || "23:59";
+  const tipo = tipoInput.value;
 
-  if(!url) return alert("Informe a URL");
-  if(!dias.length) return alert("Selecione ao menos um dia");
+  progressBar.style.display = "block";
+  progressFill.style.width = "0%";
+
+  const ext = file.name.split(".").pop();
+  const path = `promocoes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error: upErr } = await sb.storage.from("promocoes").upload(path, file, {
+    cacheControl: "3600",
+    upsert: false
+  });
+
+  if(upErr){ console.error(upErr); alert("Erro no upload"); return; }
+
+  const { data: urlData } = sb.storage.from("promocoes").getPublicUrl(path);
+  const url = urlData.publicUrl;
 
   const { error } = await sb.from("promocoes").insert({
     url, tipo, ativo:true, dias_semana:dias, hora_inicio, hora_fim
   });
 
-  if(error){ alert("Erro ao salvar"); console.error(error); return; }
+  if(error){ console.error(error); alert("Erro ao salvar no banco"); return; }
 
-  urlInput.value = "";
-  diasInput.selectedIndex = -1;
+  fileInput.value = "";
+  preview.style.display = "none";
+  progressBar.style.display = "none";
   load();
 }
 
@@ -157,10 +195,17 @@ async function toggle(id, ativo){
   load();
 }
 
-async function del(id){
-  if(!confirm("Excluir esta promoção?")) return;
+async function delPromo(id, url){
+  if(!confirm("Excluir esta mídia? Isso apaga do Storage também.")) return;
+
+  const path = url.split("/storage/v1/object/public/promocoes/")[1];
+  if(path){
+    await sb.storage.from("promocoes").remove([path]);
+  }
+
   const { error } = await sb.from("promocoes").delete().eq("id", id);
   if(error){ alert("Erro ao excluir"); console.error(error); return; }
+
   load();
 }
 
