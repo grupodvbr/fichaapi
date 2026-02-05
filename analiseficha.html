@@ -766,7 +766,7 @@ async function abrirModal(p){
   pratoAtual = p;
   modal.style.display = "flex";
   document.body.style.overflow = "hidden";
-mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  await carregarTipos();
+mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
   /* INGREDIENTES */
 const { data: itens } = await sb
   .from("buffet_itens")
@@ -1098,6 +1098,33 @@ ${p.preco_ideal ? `
 
   
 `;
+
+
+
+// 🔥 agora o select existe → carrega os tipos
+await carregarTipos();
+
+// seta o tipo atual
+const selectTipo = document.getElementById("tipoPrato");
+if (selectTipo && p.tipo) {
+  selectTipo.value = p.tipo;
+}
+
+// salva ao mudar
+if (selectTipo) {
+  selectTipo.onchange = async () => {
+    const tipo = selectTipo.value;
+    if (!tipo) return;
+
+    await sb
+      .from("buffet")
+      .update({ tipo })
+      .eq("id", pratoAtual.id);
+
+    await carregarPratos();
+    renderLista();
+  };
+}
 setTimeout(() => {
   const selectTipo = document.getElementById("tipoPrato");
   if (!selectTipo) return;
@@ -1460,7 +1487,7 @@ filtroTipo.addEventListener("change", () => {
 });
 
 
- async function carregarTipos(){
+async function carregarTipos(){
   const { data, error } = await sb
     .from("buffet")
     .select("tipo");
@@ -1470,7 +1497,6 @@ filtroTipo.addEventListener("change", () => {
     return;
   }
 
-  // remove vazios e duplicados
   const tiposUnicos = [...new Set(
     (data || [])
       .map(i => (i.tipo || "").trim())
@@ -1478,22 +1504,22 @@ filtroTipo.addEventListener("change", () => {
   )].sort();
 
   // filtro principal
-  filtroTipo.innerHTML = `<option value="">Todos os tipos</option>` +
-    tiposUnicos.map(t => `
-      <option value="${t}">${t}</option>
-    `).join("");
+  if (window.filtroTipo) {
+    filtroTipo.innerHTML = `<option value="">Todos os tipos</option>` +
+      tiposUnicos.map(t => `<option value="${t}">${t}</option>`).join("");
+  }
 
-  // select do modal (se existir no momento)
+  // select do modal
   const selectModal = document.getElementById("tipoPrato");
-  if(selectModal){
+  if (selectModal) {
     selectModal.innerHTML = `
       <option value="">SELECIONE</option>
-      ${tiposUnicos.map(t => `
-        <option value="${t}">${t}</option>
-      `).join("")}
+      ${tiposUnicos.map(t => `<option value="${t}">${t}</option>`).join("")}
     `;
   }
-}(async ()=>{
+}
+   
+   (async ()=>{
   await carregarIngredientesBase();
   await carregarPratos();
   await carregarCMVCache();
