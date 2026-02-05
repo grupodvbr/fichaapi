@@ -27,10 +27,10 @@ html,body{
   overflow:hidden;
 }
 
-/* HERO IMAGEM FULLSCREEN */
 .login-hero.hero-image{
   position:fixed; inset:0;
-  background:url("imgmockup-app.png") center center / cover no-repeat;
+  background: radial-gradient(1200px 600px at 10% -10%, #0b1220 0%, #020617 60%);
+  padding:12px;
 }
 .hero-overlay{
   width:100%; height:100%;
@@ -39,6 +39,35 @@ html,body{
     radial-gradient(800px 400px at 20% 0%, rgba(34,197,94,.15), transparent 60%);
   padding:14px 24px;
 }
+
+.hero-frame{
+  max-width: 96vw;
+  height: calc(100vh - 110px);
+  margin: 14px auto 0;
+  border-radius: 22px;
+  overflow: hidden;                 /* corta bordas da imagem */
+  box-shadow:
+    0 30px 90px rgba(0,0,0,.65),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+  background: #020617;
+  position: relative;
+}
+
+.hero-frame::before{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, rgba(2,6,23,.10), rgba(2,6,23,.25)),
+    radial-gradient(800px 400px at 20% 0%, rgba(34,197,94,.12), transparent 60%);
+  pointer-events:none;
+}
+
+.hero-image-bg{
+  position:absolute; inset:0;
+  background: url("imgmockup-app.png") center center / cover no-repeat;
+  transform: scale(1.01); /* evita “borda branca” */
+}
+  
 .hero-top{
   max-width:1400px; margin:0 auto;
   display:flex; align-items:center; justify-content:space-between; gap:20px;
@@ -138,7 +167,6 @@ iframe{flex:1;width:100%;border:0;background:#fff}
 
 <body>
 
-<!-- HERO FULLSCREEN -->
 <section id="loginHero" class="login-hero hero-image">
   <div class="hero-overlay">
     <div class="hero-top">
@@ -150,6 +178,11 @@ iframe{flex:1;width:100%;border:0;background:#fff}
         <a class="btn primary" href="https://wa.me/5577998253249" target="_blank">Solicitar orçamento</a>
         <button class="btn" onclick="openLogin()">Entrar</button>
       </div>
+    </div>
+
+    <!-- FRAME DA IMAGEM (quase tela toda, com bordas suaves) -->
+    <div class="hero-frame">
+      <div class="hero-image-bg"></div>
     </div>
   </div>
 </section>
