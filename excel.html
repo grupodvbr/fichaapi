@@ -27,18 +27,6 @@ h1{
   font-size:18px;
   background:#020617;
   border-bottom:1px solid var(--grid);
-  display:flex;
-  gap:12px;
-  align-items:center;
-}
-
-select.filter{
-  background:#020617;
-  border:1px solid var(--grid);
-  color:#e5e7eb;
-  padding:6px 10px;
-  border-radius:8px;
-  font-weight:700;
 }
 
 .table-wrap{overflow:auto;height:calc(100vh - 60px)}
@@ -48,13 +36,8 @@ th,td{border:1px solid var(--grid);padding:8px 10px;white-space:nowrap}
 tbody tr:hover{background:#020617;cursor:pointer}
 
 input{
-  width:80px;
-  background:#020617;
-  border:1px solid #1e293b;
-  color:#e5e7eb;
-  padding:4px 6px;
-  border-radius:6px;
-  font-weight:700;
+  width:80px;background:#020617;border:1px solid #1e293b;color:#e5e7eb;
+  padding:4px 6px;border-radius:6px;font-weight:700
 }
 input:focus{outline:none;border-color:#22c55e}
 
@@ -63,30 +46,51 @@ input:focus{outline:none;border-color:#22c55e}
 
 /* MODAL */
 .modal{
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.75);
-  display:none;align-items:center;justify-content:center;
+  position:fixed; inset:0; background:rgba(0,0,0,.7);
+  display:none; align-items:center; justify-content:center;
+  backdrop-filter: blur(6px);
 }
 .modal-box{
-  background:#020617;border-radius:22px;
-  max-width:1000px;width:92vw;max-height:92vh;overflow:auto;
+  position:relative;
+  background:#020617;
+  border-radius:22px;
+  max-width:1100px; width:92vw; max-height:92vh;
+  overflow:auto; 
   border:1px solid #1e293b;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
 }
-.modal-header{display:grid;grid-template-columns:320px 1fr;gap:18px;padding:18px}
-.modal-header img{width:100%;height:100%;object-fit:cover;border-radius:16px}
-.modal-body{padding:0 18px 18px}
-.ing{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px;border-bottom:1px solid #1e293b}
-.close{position:absolute;top:14px;right:16px;cursor:pointer;font-weight:900}
+/* scrollbar invisível */
+.modal-box::-webkit-scrollbar{ width:0; height:0 }
+.modal-box{ scrollbar-width:none }
+
+.modal-header{
+  display:grid; grid-template-columns:360px 1fr; gap:18px;
+  padding:18px;
+}
+.modal-header img{
+  width:100%; height:100%; min-height:220px;
+  object-fit:cover; border-radius:16px;
+  box-shadow:0 12px 40px rgba(0,0,0,.6);
+}
+.modal-body{ padding:0 18px 18px }
+
+.ing{
+  display:grid; grid-template-columns:1fr auto; gap:10px;
+  padding:10px 0; border-bottom:1px dashed #1e293b;
+}
+
+.close{
+  position:absolute; top:14px; right:16px;
+  cursor:pointer; font-weight:900; font-size:22px;
+  background:#020617; border:1px solid #1e293b;
+  padding:6px 10px; border-radius:10px;
+}
+.close:hover{ background:#0b1220 }
 </style>
 </head>
 
 <body>
-<h1>
-  📊 Excel de Precificação • CMV
-  <select id="filtroTipo" class="filter">
-    <option value="">Todos os tipos</option>
-  </select>
-</h1>
+<h1>📊 Excel de Precificação • CMV</h1>
 
 <div class="table-wrap">
 <table id="tabela">
@@ -144,16 +148,8 @@ async function carregarCache(){
   });
 }
 
-async function carregarTipos(){
-  const { data } = await sb.from("buffet").select("tipo");
-  const tipos = [...new Set((data||[]).map(i=>i.tipo).filter(Boolean))];
-  filtroTipo.innerHTML = `<option value="">Todos os tipos</option>` +
-    tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
-}
-
 async function carregar(){
   await carregarCache();
-  await carregarTipos();
   const { data } = await sb.from("buffet").select("*").order("nome");
   pratos = data || [];
   render();
@@ -162,9 +158,8 @@ async function carregar(){
 function render(){
   const tbody = document.querySelector("#tabela tbody");
   tbody.innerHTML = "";
-  const filtro = filtroTipo.value;
 
-  pratos.filter(p=>!filtro || p.tipo===filtro).forEach(p=>{
+  pratos.forEach(p=>{
     const d = cacheCMV[p.id] || { base:0, impostos:[], itens:[] };
     let imp = 0;
     d.impostos.forEach(i=>{
@@ -228,7 +223,7 @@ function abrirModal(p, d, custo, cmv, lucro, margem){
     <img src="${p.foto_url||'https://placehold.co/600x400?text=Sem+Foto'}">
     <div>
       <h2>${p.nome}</h2>
-      <p>${p.tipo||""}</p>
+      <p style="color:var(--muted)">${p.tipo||""}</p>
       <p><b>Venda:</b> ${moeda(p.preco_venda)}</p>
       <p><b>Custo Final:</b> ${moeda(custo)}</p>
       <p><b>Lucro:</b> ${moeda(lucro)}</p>
@@ -254,8 +249,6 @@ function abrirModal(p, d, custo, cmv, lucro, margem){
 }
 
 function fechar(){ modal.style.display="none"; }
-
-filtroTipo.onchange = render;
 carregar();
 </script>
 </body>
