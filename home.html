@@ -21,14 +21,14 @@ body{
   margin:0; font-family:Inter,sans-serif; color:var(--text);
   background:radial-gradient(1200px 600px at 10% -10%, #0b1220 0%, #020617 60%);
 }
-.header{padding:22px 26px;border-bottom:1px solid var(--grid);background:#020617cc;position:sticky;top:0;z-index:10}
+.header{padding:18px 24px;border-bottom:1px solid var(--grid);background:#020617cc;position:sticky;top:0;z-index:10}
 .container{padding:22px 24px 40px;max-width:1400px;margin:auto}
 .filters{display:flex;gap:10px;margin-bottom:16px}
 .select{background:#020617;color:#fff;border:1px solid var(--grid);border-radius:999px;padding:8px 14px;font-weight:800}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:26px}
 .card{background:#020617;border:1px solid var(--grid);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
 .card small{color:var(--muted);font-weight:800;font-size:11px;text-transform:uppercase}
-.card b{display:block;margin-top:6px;font-size:34px;font-weight:900;color:var(--accent)}
+.card b{display:block;margin-top:6px;font-size:32px;font-weight:900;color:var(--accent)}
 .card.warn b{color:var(--gold)} .card.danger b{color:var(--danger)}
 .section{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
 @media(max-width:900px){.section{grid-template-columns:1fr}}
@@ -40,7 +40,6 @@ body{
 <body>
 
 <div class="header">
-  <h1>📊 Home • Visão Geral CMV</h1>
   <small id="atualizadoEm"></small>
 </div>
 
@@ -82,7 +81,7 @@ let chartTipo, chartProdutos;
 
 async function carregarTipos(){
   const { data } = await sb.from("buffet").select("tipo");
-  const tipos = [...new Set(data.map(i=>i.tipo))].filter(Boolean).sort();
+  const tipos = [...new Set((data||[]).map(i=>i.tipo).filter(Boolean))].sort();
   filtroTipo.innerHTML = `<option value="">Todos</option>` + tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
 }
 
@@ -96,8 +95,8 @@ async function carregarHome(){
   const { data: itens } = await sb.from("buffet_itens").select("*");
   const { data: produtos } = await sb.from("produtos").select("*");
 
-  kpiFichas.textContent = buffet.length;
-  kpiProdutos.textContent = produtos.length;
+  kpiFichas.textContent = buffet?.length || 0;
+  kpiProdutos.textContent = produtos?.length || 0;
 
   const custoFicha = {};
   const usoProdutos = {};
@@ -135,14 +134,19 @@ async function carregarHome(){
   kpiCmvAlto.textContent=cmvAlto;
 
   chartTipo?.destroy();
-  chartTipo = new Chart(graficoTipo,{type:"bar",
+  chartTipo = new Chart(graficoTipo,{
+    type:"bar",
     data:{labels:Object.keys(cmvTipo),datasets:[{data:Object.keys(cmvTipo).map(k=>(cmvTipo[k]/qtdTipo[k]).toFixed(1))}]},
-    options:{plugins:{legend:{display:false}}}});
+    options:{plugins:{legend:{display:false}}}
+  });
 
   chartProdutos?.destroy();
-  chartProdutos = new Chart(graficoProdutos,{type:"bar",
-    data:{labels:Object.keys(usoProdutos).slice(0,5),datasets:[{data:Object.values(usoProdutos).slice(0,5)}]},
-    options:{plugins:{legend:{display:false}}}});
+  const topProdutos = Object.entries(usoProdutos).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  chartProdutos = new Chart(graficoProdutos,{
+    type:"bar",
+    data:{labels:topProdutos.map(i=>i[0]),datasets:[{data:topProdutos.map(i=>i[1])}]},
+    options:{plugins:{legend:{display:false}}}
+  });
 
   listaCmvAlto.innerHTML = rankingCmv.sort((a,b)=>b.cmv-a.cmv).slice(0,5)
     .map(i=>`<span class="badge">${i.nome} — ${i.cmv.toFixed(1)}%</span>`).join("");
