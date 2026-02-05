@@ -529,14 +529,24 @@ async function salvar(){
   };
 
   if(atual){
+    // EDITANDO
     await sb.from("produtos").update(payload).eq("id",atual.id);
+    toast("EDITADO COM SUCESSO");
   }else{
+    // NOVO CADASTRO
     const {data}=await sb.from("produtos").insert(payload).select().single();
-    atual=data;
+    toast("SALVO COM SUCESSO");
+
+    // 👉 LIMPA FORMULÁRIO APÓS SALVAR NOVO
+    atual = null;
+    titulo.textContent = "NOVO INGREDIENTE";
+    document.querySelectorAll("input").forEach(i => i.value = "");
+    unidade.value = "UN";
+    rendimento.value = 100;
   }
 
-  toast("SALVO COM SUCESSO");
-carregar(true);}
+  carregar(true);
+}
 </script>
 
 </body>
