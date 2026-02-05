@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>CMV • Excel de Precificação</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -106,6 +108,12 @@ input:focus{outline:none;border-color:#22c55e}
   </label>
 
   <input id="buscaNome" class="search" placeholder="Buscar prato...">
+
+<label class="filter" style="display:flex;align-items:center;gap:8px">
+  📥 Importar vendas
+  <input id="importExcel" type="file" accept=".xlsx,.xls" style="display:none">
+  <button id="btnImportExcel" class="filter" type="button">Selecionar Excel</button>
+</label>
 </div>
 
 <div class="table-wrap">
@@ -256,8 +264,23 @@ async function precificarValor(input, custo, id){
 function abrirModal(p, d, custo, cmv, lucro, margem){
   modal.style.display="flex";
 
-  modalHeader.innerHTML = `
-    <img src="${p.foto_url||'https://placehold.co/800x400?text=Sem+Foto'}">
+  const codigo = (p.codigo_varejo || "").trim();
+  const vendasProduto = vendasExcel.filter(v => v.codigo === codigo);
+
+  const vendasPorDia = {};
+  vendasProduto.forEach(v => {
+    const dia = String(v.data).slice(0,10);
+    vendasPorDia[dia] ??= 0;
+    vendasPorDia[dia] += v.valor;
+  });
+
+  const labels = Object.keys(vendasPorDia).sort();
+  const valores = labels.map(d => vendasPorDia[d]);
+
+modalHeader.innerHTML = `
+  <img src="${p.foto_url||'https://placehold.co/800x400?text=Sem+Foto'}">
+
+  <div>
     <div class="modal-info">
       <h2>${p.nome}</h2>
       <p>${p.tipo||""}</p>
@@ -268,8 +291,41 @@ function abrirModal(p, d, custo, cmv, lucro, margem){
         <span class="badge">📊 CMV ${cmv.toFixed(1)}%</span>
       </div>
     </div>
-  `;
 
+    <canvas id="graficoVendas" height="120" style="margin-top:14px"></canvas>
+  </div>
+`;
+setTimeout(() => {
+  const ctx = document.getElementById("graficoVendas")?.getContext("2d");
+  if (!ctx) return;
+
+  // limpa gráfico anterior (se abrir outro produto)
+  if (window._graficoVendas) {
+    window._graficoVendas.destroy();
+  }
+
+  window._graficoVendas = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Vendas (R$)",
+        data: valores,
+        borderWidth: 2,
+        tension: .35,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#94a3b8" } },
+        y: { ticks: { color: "#94a3b8" } }
+      }
+    }
+  });
+}, 50);
   modalBody.innerHTML = `
     <h3>Ingredientes</h3>
     ${d.itens.map(i=>`
@@ -294,6 +350,33 @@ filtroSemPreco.onchange = render;
 buscaNome.oninput = render;
 
 carregar();
+
+document.getElementById("btnImportExcel").onclick = () => {
+  document.getElementById("importExcel").click();
+};
+
+let vendasExcel = JSON.parse(localStorage.getItem("vendas_excel") || "[]");
+
+document.getElementById("importExcel").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const data = await file.arrayBuffer();
+  const wb = XLSX.read(data, { type: "array" });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+  // Esperado: colunas = codigo_varejo | data | quantidade | valor_total
+  vendasExcel = json.map(r => ({
+    codigo: String(r.codigo_varejo || r.CODIGO || "").trim(),
+    data: r.data || r.DATA,
+    quantidade: Number(r.quantidade || r.QTD || 0),
+    valor: Number(r.valor_total || r.VALOR || 0)
+  }));
+
+  localStorage.setItem("vendas_excel", JSON.stringify(vendasExcel));
+  alert("📊 Excel de vendas importado com sucesso!");
+});
 </script>
 </body>
 </html>
