@@ -327,22 +327,18 @@ async function loadPromos(){
     promoWrap.style.display = "none";
     return;
   }
+promos = filtradas;
+promoIndex = 0;
 
-  promos = filtradas;
-
-  promoSlider.innerHTML = promos.map((p,i)=>`
-    <div class="promo-item ${i===0?'active':''}">
-      ${
-        p.tipo === "VIDEO"
-          ? `<video src="${p.url}" autoplay muted loop playsinline></video>`
-          : `<img src="${p.url}">`
-      }
-    </div>
-  `).join("");
-
-  promoDots.innerHTML = promos.map((_,i)=>`
-    <div class="promo-dot ${i===0?'active':''}"></div>
-  `).join("");
+promoSlider.innerHTML = promos.map((p,i)=>`
+  <div class="promo-item ${i===0?'active':''}">
+    ${
+      p.tipo === "VIDEO"
+        ? `<video src="${p.url}" autoplay muted loop playsinline></video>`
+        : `<img src="${p.url}">`
+    }
+  </div>
+`).join("");
 
   startPromoLoop();
 }
@@ -410,7 +406,8 @@ function setCat(k){
   grid.innerHTML = "";
 
   if(!k){
-
+    promoWrap.style.display = "block";
+    loadPromos();
   }else{
     promoWrap.style.display = "none";
   }
