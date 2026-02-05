@@ -287,7 +287,7 @@ async function check(){
   const { data } = await sb.auth.getSession();
   if(data.session){
     loginBox(false);
-openPage("dashboard.html", document.querySelector(".icon"));  }
+openPage("home.html", document.querySelector(".icon"));  }
 }
 check();
 
@@ -302,7 +302,7 @@ async function login(){
   await sb.auth.getSession();
 
   loginBox(false);
-openPage("dashboard.html", document.querySelector(".icon"));}
+openPage("home.html", document.querySelector(".icon"));}
 
 async function logout(){
   await sb.auth.signOut();
