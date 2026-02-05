@@ -1,142 +1,177 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Home</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta charset="UTF-8" />
+<title>CMV • Home</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 :root{
-  --primary:#00c2b8;
-  --bg:#ecf7f7;
-  --card:#ffffff;
+  --bg:#0f172a;
+  --card:#020617;
+  --grid:#1e293b;
+  --text:#e5e7eb;
   --muted:#94a3b8;
-  --shadow:0 22px 60px rgba(0,0,0,.08);
+  --accent:#22c55e;
+  --danger:#ef4444;
 }
 
-*{box-sizing:border-box;margin:0;padding:0}
-
-html,body{
-  width:100%;
-  height:100%;
-  font-family:Inter,Arial,sans-serif;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,sans-serif;
   background:var(--bg);
-}
-
-.container{
-  padding:28px;
+  color:var(--text);
 }
 
 .header{
-  margin-bottom:24px;
-}
-.header h1{
+  padding:18px 22px;
   font-size:22px;
-  font-weight:800;
-}
-.header p{
-  color:var(--muted);
-  margin-top:6px;
+  font-weight:900;
+  border-bottom:1px solid var(--grid);
+  background:#020617;
 }
 
 .grid{
+  padding:22px;
   display:grid;
-  grid-template-columns:repeat(12,1fr);
-  gap:24px;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px;
 }
 
 .card{
-  background:var(--card);
-  border-radius:26px;
-  box-shadow:var(--shadow);
-  overflow:hidden;
-  min-height:240px;
+  background:linear-gradient(180deg,#020617,#020617cc);
+  border:1px solid var(--grid);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 12px 40px rgba(0,0,0,.4);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 
-.card-title{
-  padding:14px 18px;
-  font-weight:800;
-  font-size:15px;
-  background:linear-gradient(90deg,var(--primary),transparent);
+.card small{
+  color:var(--muted);
+  font-weight:700;
+  letter-spacing:.3px;
 }
 
-.card iframe{
-  width:100%;
-  height:calc(100% - 48px);
-  border:0;
+.card b{
+  font-size:34px;
+  font-weight:900;
+  color:var(--accent);
 }
 
-/* POSIÇÕES */
-.c1{grid-column:span 4}
-.c2{grid-column:span 4}
-.c3{grid-column:span 4}
-
-@media(max-width:1100px){
-  .c1,.c2,.c3{grid-column:span 12}
-}
+.card.danger b{color:var(--danger)}
+.card .sub{font-size:13px;color:var(--muted)}
 </style>
 </head>
-
 <body>
 
-<div class="container">
+<div class="header">📊 Home • Visão Geral CMV</div>
 
-  <div class="header">
-    <h1>Visão Geral</h1>
-    <p>Resumo rápido das informações</p>
+<div class="grid">
+  <div class="card">
+    <small>Fichas técnicas</small>
+    <b id="kpiFichas">—</b>
+    <div class="sub">Total de pratos cadastrados</div>
   </div>
 
-  <div class="grid">
-
-    <div class="card c1">
-      <div class="card-title">📋 Ficha Técnica</div>
-      <iframe src="cards/card1.html"></iframe>
-    </div>
-
-    <div class="card c2">
-      <div class="card-title">📊 Indicadores</div>
-      <iframe src="cards/card2.html"></iframe>
-    </div>
-
-    <div class="card c3">
-      <div class="card-title">⚠️ Riscos & Oportunidades</div>
-      <iframe src="cards/card3.html"></iframe>
-    </div>
-
-        <div class="card c1">
-      <div class="card-title">📦 Requisições</div>
-      <iframe src="cards/card4.html"></iframe>
-    </div>
-
-    <div class="card c2">
-      <div class="card-title">🛒 Vendas PDV</div>
-      <iframe src="cards/card5.html"></iframe>
-    </div>
-
-    <div class="card c3">
-      <div class="card-title">em produção</div>
-      <iframe src="cards/card.html"></iframe>
-    </div>
-            <div class="card c1">
-      <div class="card-title">em produção</div>
-      <iframe src="cards/card.html"></iframe>
-    </div>
-
-    <div class="card c2">
-      <div class="card-title">em produção</div>
-      <iframe src="cards/card.html"></iframe>
-    </div>
-
-    <div class="card c3">
-      <div class="card-title">em produção</div>
-      <iframe src="cards/card.html"></iframe>
-    </div>
-
+  <div class="card">
+    <small>Ingredientes</small>
+    <b id="kpiIngredientes">—</b>
+    <div class="sub">Ingredientes no sistema</div>
   </div>
 
+  <div class="card">
+    <small>Ingrediente mais usado</small>
+    <b id="kpiIngredienteTop">—</b>
+    <div class="sub" id="kpiIngredienteTopQtd">—</div>
+  </div>
+
+  <div class="card">
+    <small>CMV médio</small>
+    <b id="kpiCmvMedio">—%</b>
+    <div class="sub">Média das fichas</div>
+  </div>
+
+  <div class="card">
+    <small>Impostos cadastrados</small>
+    <b id="kpiImpostos">—</b>
+    <div class="sub">Regras fiscais</div>
+  </div>
+
+  <div class="card danger">
+    <small>Sem preço de venda</small>
+    <b id="kpiSemPreco">—</b>
+    <div class="sub">Fichas sem preço</div>
+  </div>
 </div>
 
+<script>
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+);
+
+async function carregarKPIs(){
+  const [{ count: fichas }, { count: ingredientes }, { count: impostos }] = await Promise.all([
+    sb.from("buffet").select("*", { count:"exact", head:true }),
+    sb.from("ingredientes").select("*", { count:"exact", head:true }),
+    sb.from("impostos").select("*", { count:"exact", head:true })
+  ]);
+
+  document.getElementById("kpiFichas").textContent = fichas || 0;
+  document.getElementById("kpiIngredientes").textContent = ingredientes || 0;
+  document.getElementById("kpiImpostos").textContent = impostos || 0;
+
+  // fichas sem preço
+  const { data: semPreco } = await sb.from("buffet").select("id").or("preco_venda.is.null,preco_venda.eq.0");
+  document.getElementById("kpiSemPreco").textContent = semPreco?.length || 0;
+
+  // ingrediente mais usado
+  const { data: itens } = await sb.from("buffet_itens").select("ingrediente_id, ingredientes(nome)");
+  const mapa = {};
+  (itens||[]).forEach(i=>{
+    const nome = i.ingredientes?.nome || "—";
+    mapa[nome] = (mapa[nome]||0)+1;
+  });
+
+  const top = Object.entries(mapa).sort((a,b)=>b[1]-a[1])[0];
+  if(top){
+    document.getElementById("kpiIngredienteTop").textContent = top[0];
+    document.getElementById("kpiIngredienteTopQtd").textContent = `Usado em ${top[1]} fichas`;
+  }else{
+    document.getElementById("kpiIngredienteTop").textContent = "—";
+    document.getElementById("kpiIngredienteTopQtd").textContent = "Sem dados";
+  }
+
+  // CMV médio (simples)
+  const { data: buffet } = await sb.from("buffet").select("preco_venda,id");
+  const { data: itensCMV } = await sb.from("buffet_itens").select("buffet_id,custo_calculado");
+
+  const mapaCusto = {};
+  (itensCMV||[]).forEach(i=>{
+    mapaCusto[i.buffet_id] ??= 0;
+    mapaCusto[i.buffet_id] += Number(i.custo_calculado||0);
+  });
+
+  let soma = 0, qtd = 0;
+  (buffet||[]).forEach(b=>{
+    const custo = mapaCusto[b.id] || 0;
+    const preco = Number(b.preco_venda||0);
+    if(preco>0){
+      soma += (custo/preco)*100;
+      qtd++;
+    }
+  });
+
+  document.getElementById("kpiCmvMedio").textContent = qtd ? (soma/qtd).toFixed(1) : "0.0";
+}
+
+carregarKPIs();
+</script>
 </body>
 </html>
