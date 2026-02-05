@@ -19,7 +19,6 @@
   --danger:#ef4444;
   --gold:#f59e0b;
 }
-
 *{box-sizing:border-box}
 body{
   margin:0;
@@ -27,7 +26,6 @@ body{
   background:radial-gradient(1200px 600px at 10% -10%, #0b1220 0%, #020617 60%);
   color:var(--text);
 }
-
 .header{
   padding:22px 26px;
   border-bottom:1px solid var(--grid);
@@ -35,16 +33,13 @@ body{
 }
 .header h1{margin:0;font-size:24px;font-weight:900}
 .header small{color:var(--muted)}
-
 .container{padding:22px 24px}
-
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:16px;
   margin-bottom:22px;
 }
-
 .card{
   position:relative;
   background:linear-gradient(180deg,#020617,#020617cc);
@@ -54,7 +49,6 @@ body{
   box-shadow:0 20px 60px rgba(0,0,0,.45);
   overflow:hidden;
 }
-
 .card::after{
   content:"";
   position:absolute; inset:auto -40% -60% -40%;
@@ -62,29 +56,34 @@ body{
   background:radial-gradient(closest-side,rgba(34,197,94,.18),transparent);
   pointer-events:none;
 }
-
 .card small{color:var(--muted);font-weight:700;letter-spacing:.3px}
 .card b{font-size:34px;font-weight:900;color:var(--accent)}
 .card .sub{font-size:12px;color:var(--muted)}
-
 .card.warn b{color:var(--gold)}
 .card.danger b{color:var(--danger)}
-
 .section{
   margin-top:18px;
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
   gap:18px;
 }
-
 .panel{
   background:linear-gradient(180deg,#020617,#020617cc);
   border:1px solid var(--grid);
   border-radius:18px;
   padding:16px;
 }
-
 .panel h3{margin:0 0 10px;font-size:15px;color:#cbd5f5}
+.badge{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  border:1px solid var(--grid);
+  background:#0b1220;
+  margin:4px 6px 0 0;
+}
 </style>
 </head>
 <body>
@@ -103,6 +102,13 @@ body{
     <div class="card"><small>CMV médio</small><b id="kpiCmvMedio">—%</b><div class="sub">Saudável &lt; 35%</div></div>
     <div class="card"><small>Impostos ativos</small><b id="kpiImpostos">—</b><div class="sub">Regras fiscais</div></div>
     <div class="card danger"><small>Sem preço de venda</small><b id="kpiSemPreco">—</b><div class="sub">Fichas sem preço</div></div>
+
+    <div class="card"><small>Preço médio</small><b id="kpiPrecoMedio">—</b><div class="sub">Preço de venda</div></div>
+    <div class="card"><small>Custo médio</small><b id="kpiCustoMedio">—</b><div class="sub">Por ficha</div></div>
+    <div class="card"><small>Lucro médio</small><b id="kpiLucroMedio">—</b><div class="sub">Por ficha</div></div>
+    <div class="card danger"><small>CMV alto</small><b id="kpiCmvAlto">—</b><div class="sub">&gt; 35%</div></div>
+    <div class="card"><small>CMV saudável</small><b id="kpiCmvOk">—</b><div class="sub">≤ 35%</div></div>
+    <div class="card warn"><small>Lucro total</small><b id="kpiLucroTotal">—</b><div class="sub">Potencial estimado</div></div>
   </div>
 
   <div class="section">
@@ -114,6 +120,14 @@ body{
       <h3>🥇 Top 5 ingredientes mais usados</h3>
       <canvas id="graficoTopIngredientes" height="180"></canvas>
     </div>
+    <div class="panel">
+      <h3>🚨 Top 5 fichas com CMV mais alto</h3>
+      <div id="listaCmvAlto"></div>
+    </div>
+    <div class="panel">
+      <h3>💎 Top 5 fichas mais lucrativas</h3>
+      <div id="listaMaisLucrativas"></div>
+    </div>
   </div>
 
 </div>
@@ -123,6 +137,8 @@ const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
+
+const moeda = v => "R$ " + Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2});
 
 async function carregarHome(){
   document.getElementById("atualizadoEm").textContent =
@@ -134,12 +150,12 @@ async function carregarHome(){
     sb.from("impostos").select("*", { count:"exact", head:true })
   ]);
 
-  document.getElementById("kpiFichas").textContent = fichas || 0;
-  document.getElementById("kpiIngredientes").textContent = ingredientes || 0;
-  document.getElementById("kpiImpostos").textContent = impostos || 0;
+  kpiFichas.textContent = fichas || 0;
+  kpiIngredientes.textContent = ingredientes || 0;
+  kpiImpostos.textContent = impostos || 0;
 
   const { data: semPreco } = await sb.from("buffet").select("id").or("preco_venda.is.null,preco_venda.eq.0");
-  document.getElementById("kpiSemPreco").textContent = semPreco?.length || 0;
+  kpiSemPreco.textContent = semPreco?.length || 0;
 
   const { data: itens } = await sb.from("buffet_itens").select("buffet_id, ingredientes(nome)");
   const uso = {};
@@ -147,13 +163,13 @@ async function carregarHome(){
     const nome = i.ingredientes?.nome || "—";
     uso[nome] = (uso[nome]||0)+1;
   });
-  const top = Object.entries(uso).sort((a,b)=>b[1]-a[1]);
-  if(top[0]){
-    document.getElementById("kpiIngredienteTop").textContent = top[0][0];
-    document.getElementById("kpiIngredienteTopQtd").textContent = `Usado em ${top[0][1]} fichas`;
+  const topIng = Object.entries(uso).sort((a,b)=>b[1]-a[1]);
+  if(topIng[0]){
+    kpiIngredienteTop.textContent = topIng[0][0];
+    kpiIngredienteTopQtd.textContent = `Usado em ${topIng[0][1]} fichas`;
   }
 
-  const { data: buffet } = await sb.from("buffet").select("id,tipo,preco_venda");
+  const { data: buffet } = await sb.from("buffet").select("id,nome,tipo,preco_venda");
   const { data: itensCMV } = await sb.from("buffet_itens").select("buffet_id,custo_calculado");
 
   const custoPorFicha = {};
@@ -162,41 +178,62 @@ async function carregarHome(){
     custoPorFicha[i.buffet_id] += Number(i.custo_calculado||0);
   });
 
-  const cmvPorTipo = {};
-  const qtdPorTipo = {};
   let somaCMV=0, qtdCMV=0;
+  let totalPreco=0, totalCusto=0, totalLucro=0;
+  let cmvAlto=0, cmvOk=0;
+
+  const cmvPorTipo={}, qtdPorTipo={};
+  const rankingCmv=[], rankingLucro=[];
 
   (buffet||[]).forEach(b=>{
     const custo = custoPorFicha[b.id]||0;
     const preco = Number(b.preco_venda||0);
     if(preco>0){
+      const lucro = preco - custo;
       const cmv = (custo/preco)*100;
+
       somaCMV+=cmv; qtdCMV++;
+      totalPreco+=preco; totalCusto+=custo; totalLucro+=lucro;
+
+      cmv > 35 ? cmvAlto++ : cmvOk++;
+
       cmvPorTipo[b.tipo] = (cmvPorTipo[b.tipo]||0) + cmv;
       qtdPorTipo[b.tipo] = (qtdPorTipo[b.tipo]||0) + 1;
+
+      rankingCmv.push({ nome:b.nome, cmv });
+      rankingLucro.push({ nome:b.nome, lucro });
     }
   });
 
-  document.getElementById("kpiCmvMedio").textContent =
-    qtdCMV ? (somaCMV/qtdCMV).toFixed(1) : "0.0";
+  kpiCmvMedio.textContent = qtdCMV ? (somaCMV/qtdCMV).toFixed(1) : "0.0";
+  kpiPrecoMedio.textContent = moeda(totalPreco/qtdCMV || 0);
+  kpiCustoMedio.textContent = moeda(totalCusto/qtdCMV || 0);
+  kpiLucroMedio.textContent = moeda(totalLucro/qtdCMV || 0);
+  kpiCmvAlto.textContent = cmvAlto;
+  kpiCmvOk.textContent = cmvOk;
+  kpiLucroTotal.textContent = moeda(totalLucro);
 
-  new Chart(document.getElementById("graficoCmvTipo"),{
+  new Chart(graficoCmvTipo,{
     type:"bar",
-    data:{
-      labels:Object.keys(cmvPorTipo),
+    data:{ labels:Object.keys(cmvPorTipo),
       datasets:[{ data:Object.keys(cmvPorTipo).map(k=>(cmvPorTipo[k]/qtdPorTipo[k]).toFixed(1)) }]
     },
     options:{ plugins:{legend:{display:false}} }
   });
 
-  new Chart(document.getElementById("graficoTopIngredientes"),{
+  new Chart(graficoTopIngredientes,{
     type:"bar",
-    data:{
-      labels: top.slice(0,5).map(i=>i[0]),
-      datasets:[{ data: top.slice(0,5).map(i=>i[1]) }]
+    data:{ labels: topIng.slice(0,5).map(i=>i[0]),
+      datasets:[{ data: topIng.slice(0,5).map(i=>i[1]) }]
     },
     options:{ plugins:{legend:{display:false}} }
   });
+
+  listaCmvAlto.innerHTML = rankingCmv.sort((a,b)=>b.cmv-a.cmv).slice(0,5)
+    .map(i=>`<span class="badge">${i.nome} — ${i.cmv.toFixed(1)}%</span>`).join("");
+
+  listaMaisLucrativas.innerHTML = rankingLucro.sort((a,b)=>b.lucro-a.lucro).slice(0,5)
+    .map(i=>`<span class="badge">${i.nome} — ${moeda(i.lucro)}</span>`).join("");
 }
 
 carregarHome();
