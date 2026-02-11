@@ -1593,7 +1593,7 @@ async function carregarTipos(){
 
 async function editarNomePrato(){
   const h2 = document.getElementById("tituloPrato");
-  if (!h2) return;
+  if (!h2 || !pratoAtual?.id) return;
 
   const nomeAtual = h2.innerText.trim();
 
@@ -1602,17 +1602,26 @@ async function editarNomePrato(){
 
   const nomeFinal = novoNome.trim().toUpperCase();
 
-  await sb
+  const { error } = await sb
     .from("buffet")
     .update({ nome: nomeFinal })
     .eq("id", pratoAtual.id);
 
+  if (error) {
+    alert("Erro ao salvar o nome");
+    return;
+  }
+
+  // 🔄 atualiza estado local
+  pratoAtual.nome = nomeFinal;
+
+  // atualiza o header do modal
   h2.innerText = nomeFinal;
 
+  // atualiza lista de cards
   await carregarPratos();
   renderLista();
 }
-
 
    
 </script>
