@@ -574,7 +574,7 @@ async function carregarPratos(){
 
   if(error) return alert("Erro pratos");
   pratos = data;
-  // ❌ remove renderLista daqui
+  renderLista();
 }
 
 
@@ -601,8 +601,8 @@ async function calcularCMVPercentual(prato){
     if(i.modalidade === "FIXO")
       totalImpostos += Number(i.valor);
 
-if(i.modalidade === "PERCENTUAL")
-  totalImpostos += (Number(cmvBase || 0) * Number(i.valor)) / 100;
+    if(i.modalidade === "PERCENTUAL")
+      totalImpostos += (cmvBase * Number(i.valor)) / 100;
   });
 
   const cmvFinal = cmvBase + totalImpostos;
@@ -670,20 +670,15 @@ for(const p of pratos){
     dados.impostos.forEach(i=>{
       if(i.modalidade === "FIXO")
         totalImpostos += Number(i.valor);
-if(i.modalidade === "PERCENTUAL")
-  totalImpostos += (Number(dados.cmvBase || 0) * Number(i.valor)) / 100;
+      if(i.modalidade === "PERCENTUAL")
+        totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
     });
 
 const custoBase = dados.cmvBase;
 const custoTotal = dados.cmvBase + totalImpostos;
 
-// CMV clássico (custo final / venda)
 const cmvPerc =
-  p.preco_venda ? (custoTotal / p.preco_venda) * 100 : null;
-
-// 👉 NOVO: quanto os custos operacionais representam sobre o custo base
-const custosSobreBasePerc =
-  custoBase > 0 ? (totalImpostos / custoBase) * 100 : null;
+  p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
 
 const lucro =
   p.preco_venda ? p.preco_venda - custoTotal : null;
@@ -724,23 +719,14 @@ ${p.descricao ? `
     <div class="badges primary">
       <span class="badge">${p.tipo || "-"}</span>
 
-${cmvPerc !== null ? `
-  <span class="badge"
-    style="
-      background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
-      color:${cmvPerc > 35 ? '#991b1b' : '#166534'}">
-    📊 CMV ${cmvPerc.toFixed(1)}%
-  </span>
-` : ``}
-
-${custosSobreBasePerc !== null ? `
-  <span class="badge"
-    style="
-      background:${custosSobreBasePerc > 100 ? '#fee2e2' : '#dcfce7'};
-      color:${custosSobreBasePerc > 100 ? '#991b1b' : '#166534'}">
-    ⚙ Custos/Base ${custosSobreBasePerc.toFixed(0)}%
-  </span>
-` : ``}
+      ${cmvPerc !== null ? `
+        <span class="badge"
+          style="
+            background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
+            color:${cmvPerc > 35 ? '#991b1b' : '#166534'}">
+          📊 CMV ${cmvPerc.toFixed(1)}%
+        </span>
+      ` : ``}
 
       ${margem !== null ? `
         <span class="badge"
@@ -853,8 +839,8 @@ const nutri = {
   let totalImpostos = 0;
   impostosCache.forEach(i=>{
     if(i.modalidade==="FIXO") totalImpostos += Number(i.valor);
-if(i.modalidade==="PERCENTUAL")
-  totalImpostos += (Number(cmvBase || 0) * Number(i.valor)) / 100;
+    if(i.modalidade==="PERCENTUAL")
+      totalImpostos += (cmvBase * Number(i.valor))/100;
   });
 
   const cmvFinal = cmvBase + totalImpostos;
@@ -1083,9 +1069,9 @@ ${p.preco_ideal ? `
         <small>${i.tipo} • ${i.modalidade === "PERCENTUAL" ? i.valor+"%" : moeda(i.valor)}</small>
       </span>
       <strong>
-${i.modalidade==="PERCENTUAL"
-  ? moeda((Number(cmvBase || 0) * i.valor) / 100)
-  : moeda(i.valor)}
+        ${i.modalidade==="PERCENTUAL"
+          ? moeda((cmvBase*i.valor)/100)
+          : moeda(i.valor)}
       </strong>
       <button class="btn-icon btn-delete"
         onclick="excluirImposto('${i.id}')">🗑️</button>
@@ -1503,34 +1489,12 @@ async function salvarImposto(){
     valor
   });
 
-  // 🔁 ATUALIZA CACHE
-  await carregarCMVCache();
-
-  // 🔄 recarrega o prato do banco
-  const { data: pratoNovo } = await sb
-    .from("buffet")
-    .select("*")
-    .eq("id", pratoAtual.id)
-    .single();
-
-  abrirModal(pratoNovo);
-  renderLista();
+  abrirModal(pratoAtual);
 }
 
 async function excluirImposto(id){
   await sb.from("impostos").delete().eq("id",id);
-
-  // 🔁 ATUALIZA CACHE
-  await carregarCMVCache();
-
-  const { data: pratoNovo } = await sb
-    .from("buffet")
-    .select("*")
-    .eq("id", pratoAtual.id)
-    .single();
-
-  abrirModal(pratoNovo);
-  renderLista();
+  abrirModal(pratoAtual);
 }
 /* =====================================================
    AUTO UNIDADE
