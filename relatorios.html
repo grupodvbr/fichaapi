@@ -131,17 +131,19 @@ async function exportarRelatorio(){
     const lucro = venda - total;
     const margem = venda ? (lucro/venda)*100 : 0;
 
-    return {
-      Prato: p.nome,
-      Tipo: p.tipo,
-      Status: p.ativo ? "ATIVO" : "INATIVO",
-      "Custo Base": base,
-      Impostos: imp,
-      "Custo Final": total,
-      "Preço Venda Atual": venda,
-      "Lucro Atual": lucro,
-      "Margem Atual %": margem.toFixed(2)
-    };
+const cmv = venda > 0 ? (total / venda) * 100 : 0;
+return {
+  Prato: p.nome,
+  Tipo: p.tipo,
+  Status: p.ativo ? "ATIVO" : "INATIVO",
+  "Custo Base": Number(base.toFixed(2)),
+  Impostos: Number(imp.toFixed(2)),
+  "Custo Final": Number(total.toFixed(2)),
+  "Preço Venda Atual": Number(venda.toFixed(2)),
+  "Lucro Atual": Number(lucro.toFixed(2)),
+  "CMV %": Number(cmv.toFixed(2)),
+  "Margem Atual %": Number(margem.toFixed(2))
+};
   });
 
   /* ===== ABA 2 — DETALHADO ===== */
@@ -178,17 +180,23 @@ async function exportarRelatorio(){
     const lucro = venda - total;
     const margem = venda ? (lucro/venda)*100 : 0;
 
-    return {
-      Prato: p.nome,
-      Tipo: p.tipo,
-      "Custo Final": total,
-      "Preço Venda Atual": venda,
-      "Preço Venda Novo": "",
-      "Lucro Atual": lucro,
-      "Margem Atual %": margem.toFixed(2),
-      "Lucro Novo": "",
-      "Margem Nova %": ""
-    };
+const MARGEM_PADRAO = 0.60;
+
+const precoNovo = total ? total / (1 - MARGEM_PADRAO) : 0;
+const lucroNovo = precoNovo - total;
+const margemNova = precoNovo ? (lucroNovo / precoNovo) * 100 : 0;
+
+return {
+  Prato: p.nome,
+  Tipo: p.tipo,
+  "Custo Final": Number(total.toFixed(2)),
+  "Preço Venda Atual": Number(venda.toFixed(2)),
+  "Preço Venda Sugerido (60%)": Number(precoNovo.toFixed(2)),
+  "Lucro Atual": Number(lucro.toFixed(2)),
+  "Margem Atual %": Number(margem.toFixed(2)),
+  "Lucro Sugerido": Number(lucroNovo.toFixed(2)),
+  "Margem Nova %": Number(margemNova.toFixed(2))
+};
   });
 
   /* ===== EXCEL ===== */
