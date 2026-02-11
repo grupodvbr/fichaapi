@@ -845,8 +845,15 @@ const nutri = {
   const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
 
 mHeader.innerHTML = `
-  <h2>${p.nome}</h2>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+  <h2 id="tituloPrato" style="margin:0">${p.nome}</h2>
 
+  <button class="btn-icon btn-edit"
+    title="Editar nome do prato"
+    onclick="editarNomePrato()">
+    ✏️
+  </button>
+</div>
   <div class="badges primary">
     <span class="badge">${p.tipo || "-"}</span>
 
@@ -1584,6 +1591,30 @@ async function carregarTipos(){
   renderLista();
 })();
 
+async function editarNomePrato(){
+  const h2 = document.getElementById("tituloPrato");
+  if (!h2) return;
+
+  const nomeAtual = h2.innerText.trim();
+
+  const novoNome = prompt("Novo nome do prato:", nomeAtual);
+  if (!novoNome || novoNome.trim() === nomeAtual) return;
+
+  const nomeFinal = novoNome.trim().toUpperCase();
+
+  await sb
+    .from("buffet")
+    .update({ nome: nomeFinal })
+    .eq("id", pratoAtual.id);
+
+  h2.innerText = nomeFinal;
+
+  await carregarPratos();
+  renderLista();
+}
+
+
+   
 </script>
 
 
