@@ -1549,6 +1549,7 @@ filtroNome.addEventListener("input", () => {
 });
 
 filtroTipo.addEventListener("change", () => {
+  filtroTipoSelecionado = filtroTipo.value;   // salva o estado do filtro
   renderLista();
 });
 
@@ -1573,6 +1574,11 @@ async function carregarTipos(){
   if (window.filtroTipo) {
     filtroTipo.innerHTML = `<option value="">Todos os tipos</option>` +
       tiposUnicos.map(t => `<option value="${t}">${t}</option>`).join("");
+
+    // 🔁 mantém o filtro selecionado visualmente
+    if (filtroTipoSelecionado) {
+      filtroTipo.value = filtroTipoSelecionado;
+    }
   }
 
   // select do modal
@@ -1584,7 +1590,6 @@ async function carregarTipos(){
     `;
   }
 }
-   
    (async ()=>{
   await carregarIngredientesBase();
   await carregarPratos();
