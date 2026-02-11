@@ -317,7 +317,6 @@ const titles = {
 
 document.getElementById("pageTitle").innerText = titles[page] || "CB SYSTEMS®";
 }
-
 async function check(){
   const { data } = await sb.auth.getSession();
   if(data.session){
@@ -329,8 +328,15 @@ async function check(){
   }
 }
 
+check();
 window.openLogin = openLogin;
 window.closeLogin = closeLogin;
+
+
+
+
+
+  
 </script>
 
 </body>
