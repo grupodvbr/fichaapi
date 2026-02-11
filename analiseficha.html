@@ -614,9 +614,8 @@ let cacheCMV = {};
 async function carregarCMVCache(){
   cacheCMV = {};
 
-  // 👇 garante cache para todos os pratos
   pratos.forEach(p => {
-    cacheCMV[p.id] = { cmvBase: 0, impostos: [] };
+    cacheCMV[p.id] = { cmvBase: 0, impostos: [], __carregado: false };
   });
 
   const { data: itens } = await sb
@@ -628,17 +627,20 @@ async function carregarCMVCache(){
     .select("buffet_id, modalidade, valor");
 
   (itens || []).forEach(i=>{
+    if (!cacheCMV[i.buffet_id]) return;
     cacheCMV[i.buffet_id].cmvBase += Number(i.custo_calculado || 0);
   });
 
   (impostos || []).forEach(i=>{
+    if (!cacheCMV[i.buffet_id]) return;
     cacheCMV[i.buffet_id].impostos.push(i);
   });
 
+  // ✅ MARCA QUE JÁ CARREGOU
+  Object.values(cacheCMV).forEach(v => v.__carregado = true);
+
   renderLista();
 }
-
-
 
 
 
@@ -739,7 +741,7 @@ ${p.descricao ? `
 
 <!-- LINHA 2 — CUSTOS -->
 <div class="badges">
-${cacheCMV[p.id]
+${cacheCMV[p.id] && cacheCMV[p.id].__carregado
   ? (
       custoBase > 0
         ? `<span class="badge">🧾 Custo ${moeda(custoBase)}</span>`
