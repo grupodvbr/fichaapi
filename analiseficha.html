@@ -739,9 +739,13 @@ ${p.descricao ? `
 
 <!-- LINHA 2 — CUSTOS -->
 <div class="badges">
-${custoBase > 0 
-  ? `<span class="badge">🧾 Custo ${moeda(custoBase)}</span>`
-  : `<span class="badge" style="background:#fee2e2;color:#991b1b">⚠️ Sem custo cadastrado</span>`
+${cacheCMV[p.id]
+  ? (
+      custoBase > 0
+        ? `<span class="badge">🧾 Custo ${moeda(custoBase)}</span>`
+        : `<span class="badge" style="background:#fee2e2;color:#991b1b">⚠️ Custo base zerado</span>`
+    )
+  : `<span class="badge" style="background:#e0e7ff;color:#1e40af">⏳ Carregando custo...</span>`
 }
   ${totalImpostos > 0
     ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
@@ -1490,6 +1494,9 @@ async function salvarImposto(){
     valor
   });
 
+  await carregarCMVCache();   // 👈 ATUALIZA CACHE
+  await carregarPratos();    // 👈 ATUALIZA LISTA
+  renderLista();             // 👈 ATUALIZA CARDS
   abrirModal(pratoAtual);
 }
 
@@ -1617,11 +1624,17 @@ async function carregarTipos(){
   }
 }
 (async ()=>{
-  await carregarIngredientesBase();
-  await carregarCMVCache();   // 👈 primeiro carrega custos
-  await carregarPratos();     // 👈 depois pratos
-  await carregarTipos();
-  renderLista();              // 👈 só renderiza depois de tudo pronto
+await carregarIngredientesBase();
+await carregarCMVCache();
+await carregarPratos();
+await carregarTipos();
+
+if (!Object.keys(cacheCMV).length) {
+  console.warn("Cache CMV vazio, forçando reload...");
+  await carregarCMVCache();
+}
+
+renderLista();
 })();
 
 async function editarNomePrato(){
