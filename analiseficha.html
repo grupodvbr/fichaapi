@@ -734,15 +734,14 @@ ${p.descricao ? `
       ` : ``}
     </div>
 
-    <!-- LINHA 2 — CUSTOS -->
-    <div class="badges">
-<span class="badge">🧾 Custo ${moeda(custoBase)}</span>
-${totalImpostos > 0
-  ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
-  : ``}      ${totalImpostos > 0
-        ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
-        : ``}
-    </div>
+<!-- LINHA 2 — CUSTOS -->
+<div class="badges">
+  <span class="badge">🧾 Custo ${moeda(custoBase)}</span>
+
+  ${totalImpostos > 0
+    ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
+    : ``}
+</div>
 
     <!-- LINHA 3 — RESULTADO -->
     <div class="badges secondary">
