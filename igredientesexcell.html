@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Ingredientes • Excel de Custos</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -28,35 +27,30 @@ body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text
 }
 .header h1{margin:0;font-size:18px;font-weight:900}
 
-.filter, .search, .btn{
+.search{
   background:#020617; border:1px solid var(--grid); color:var(--text);
   padding:6px 10px; border-radius:8px; font-weight:700;
 }
-.btn.primary{border-color:var(--accent); color:#bbf7d0}
 
 .table-wrap{overflow:auto;height:calc(100vh - 64px)}
-table{border-collapse:collapse;width:100%;min-width:1100px;font-size:13px}
+table{border-collapse:collapse;width:100%;min-width:1200px;font-size:13px}
 thead th{position:sticky;top:0;background:#020617;z-index:2}
 th,td{border:1px solid var(--grid);padding:8px 10px;white-space:nowrap}
 tbody tr:hover{background:#020617}
 
-input, select{
+input, select, textarea{
   background:#020617;border:1px solid #1e293b;color:#e5e7eb;
-  padding:4px 6px;border-radius:6px;font-weight:700
+  padding:6px 8px;border-radius:6px;font-weight:700; width:100%;
 }
-input:focus, select:focus{outline:none;border-color:#22c55e}
-
-.bad{color:#ef4444;font-weight:900}
-.good{color:#22c55e;font-weight:900}
-.action{cursor:pointer}
+input:focus, select:focus, textarea:focus{outline:none;border-color:#22c55e}
+textarea{resize:vertical; min-height:36px}
 </style>
 </head>
 
 <body>
 <div class="header">
-  <h1>🧾 Ingredientes • Excel de Custos</h1>
+  <h1>🧾 Ingredientes • Base de Produtos</h1>
   <input id="busca" class="search" placeholder="Buscar ingrediente...">
-  <button class="btn primary" onclick="novoIngrediente()">+ Novo ingrediente</button>
 </div>
 
 <div class="table-wrap">
@@ -64,11 +58,10 @@ input:focus, select:focus{outline:none;border-color:#22c55e}
 <thead>
 <tr>
   <th>Nome</th>
+  <th>Descrição</th>
   <th>Unidade</th>
   <th>Custo unitário (R$)</th>
   <th>Rendimento %</th>
-  <th>Ativo</th>
-  <th>Ações</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -81,11 +74,12 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-let ingredientes = [];
+let produtos = [];
 
 async function carregar(){
-  const { data } = await sb.from("ingredientes").select("*").order("nome");
-  ingredientes = data || [];
+  const { data, error } = await sb.from("produtos").select("*").order("nome");
+  if(error){ alert("Erro ao carregar produtos: " + error.message); return; }
+  produtos = data || [];
   render();
 }
 
@@ -93,31 +87,38 @@ function render(){
   const tbody = document.querySelector("#tabela tbody");
   tbody.innerHTML = "";
 
-  const busca = (buscaInput.value || "").toLowerCase().trim();
+  const busca = (document.getElementById("busca").value || "").toLowerCase().trim();
 
-  ingredientes
-    .filter(i => !busca || i.nome.toLowerCase().includes(busca))
-    .forEach(i=>{
+  produtos
+    .filter(p => !busca || (p.nome || "").toLowerCase().includes(busca))
+    .forEach(p=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td><input value="${i.nome||""}" onchange="salvar('${i.id}','nome',this.value)"></td>
         <td>
-          <select onchange="salvar('${i.id}','unidade_medida',this.value)">
+          <input value="${p.nome||""}" 
+                 onchange="salvar('${p.id}','nome',this.value)">
+        </td>
+
+        <td>
+          <textarea onchange="salvar('${p.id}','descricao',this.value)">${p.descricao||""}</textarea>
+        </td>
+
+        <td>
+          <select onchange="salvar('${p.id}','unidade_medida',this.value)">
             ${["KG","G","L","ML","UN"].map(u => 
-              `<option ${i.unidade_medida===u?'selected':''}>${u}</option>`
+              `<option value="${u}" ${p.unidade_medida===u?'selected':''}>${u}</option>`
             ).join("")}
           </select>
         </td>
-        <td><input type="number" step="0.0001" value="${Number(i.valor||0)}" onchange="salvar('${i.id}','valor',this.value)"></td>
-        <td><input type="number" step="0.01" value="${Number(i.rendimento_percentual||100)}" onchange="salvar('${i.id}','rendimento_percentual',this.value)"></td>
+
         <td>
-          <select onchange="salvar('${i.id}','ativo',this.value==='true')">
-            <option value="true" ${i.ativo?'selected':''}>Sim</option>
-            <option value="false" ${!i.ativo?'selected':''}>Não</option>
-          </select>
+          <input type="number" step="0.0001" value="${Number(p.valor||0)}"
+                 onchange="salvar('${p.id}','valor',this.value)">
         </td>
+
         <td>
-          <span class="action bad" onclick="excluir('${i.id}')">🗑️ Excluir</span>
+          <input type="number" step="0.01" value="${Number(p.rendimento_percentual||100)}"
+                 onchange="salvar('${p.id}','rendimento_percentual',this.value)">
         </td>
       `;
       tbody.appendChild(tr);
@@ -127,31 +128,14 @@ function render(){
 async function salvar(id, campo, valor){
   const obj = {};
   obj[campo] = valor;
-  await sb.from("ingredientes").update(obj).eq("id", id);
+
+  const { error } = await sb.from("produtos").update(obj).eq("id", id);
+  if(error){
+    alert("Erro ao salvar: " + error.message);
+  }
 }
 
-async function novoIngrediente(){
-  const nome = prompt("Nome do ingrediente:");
-  if(!nome) return;
-
-  await sb.from("ingredientes").insert({
-    nome,
-    unidade_medida:"KG",
-    valor:0,
-    rendimento_percentual:100,
-    ativo:true
-  });
-  carregar();
-}
-
-async function excluir(id){
-  if(!confirm("Excluir este ingrediente?")) return;
-  await sb.from("ingredientes").delete().eq("id", id);
-  carregar();
-}
-
-const buscaInput = document.getElementById("busca");
-buscaInput.oninput = render;
+document.getElementById("busca").oninput = render;
 
 carregar();
 </script>
