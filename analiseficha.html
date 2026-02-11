@@ -671,7 +671,7 @@ for(const p of pratos){
       if(i.modalidade === "FIXO")
         totalImpostos += Number(i.valor);
 if(i.modalidade === "PERCENTUAL")
-  totalImpostos += (Number(p.preco_venda || 0) * Number(i.valor)) / 100;
+  totalImpostos += (Number(dados.cmvBase || 0) * Number(i.valor)) / 100;
     });
 
 const custoBase = dados.cmvBase;
@@ -854,7 +854,7 @@ const nutri = {
   impostosCache.forEach(i=>{
     if(i.modalidade==="FIXO") totalImpostos += Number(i.valor);
 if(i.modalidade==="PERCENTUAL")
-  totalImpostos += (Number(p.preco_venda || 0) * Number(i.valor)) / 100;;
+  totalImpostos += (Number(cmvBase || 0) * Number(i.valor)) / 100;
   });
 
   const cmvFinal = cmvBase + totalImpostos;
@@ -1083,8 +1083,8 @@ ${p.preco_ideal ? `
         <small>${i.tipo} • ${i.modalidade === "PERCENTUAL" ? i.valor+"%" : moeda(i.valor)}</small>
       </span>
       <strong>
- ${i.modalidade==="PERCENTUAL"
-  ? moeda((Number(p.preco_venda || 0) * i.valor) / 100)
+${i.modalidade==="PERCENTUAL"
+  ? moeda((Number(cmvBase || 0) * i.valor) / 100)
   : moeda(i.valor)}
       </strong>
       <button class="btn-icon btn-delete"
