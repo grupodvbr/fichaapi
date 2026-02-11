@@ -622,21 +622,18 @@ async function carregarCMVCache(){
     .from("impostos")
     .select("buffet_id, modalidade, valor");
 
-  // soma ingredientes
   (itens || []).forEach(i=>{
     cacheCMV[i.buffet_id] ??= { cmvBase:0, impostos:[] };
     cacheCMV[i.buffet_id].cmvBase += Number(i.custo_calculado || 0);
   });
 
-  // agrupa impostos
   (impostos || []).forEach(i=>{
     cacheCMV[i.buffet_id] ??= { cmvBase:0, impostos:[] };
     cacheCMV[i.buffet_id].impostos.push(i);
   });
+
+  renderLista(); // 👈 força atualizar os cards quando o cache termina
 }
-
-
-
 
 
 
@@ -677,7 +674,7 @@ const custoBase = dados.cmvBase;
 const custoTotal = dados.cmvBase + totalImpostos;
 
 const cmvPerc =
-  p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
+  p.preco_venda ? (custoTotal / p.preco_venda) * 100 : null;
 
 const lucro =
   p.preco_venda ? p.preco_venda - custoTotal : null;
@@ -1502,6 +1499,11 @@ async function salvarImposto(){
 
 async function excluirImposto(id){
   await sb.from("impostos").delete().eq("id",id);
+
+  await carregarCMVCache();   // 🔁 atualiza cache
+  await carregarPratos();    // 🔄 atualiza lista
+  renderLista();             // 🧾 atualiza cards
+
   abrirModal(pratoAtual);
 }
 /* =====================================================
