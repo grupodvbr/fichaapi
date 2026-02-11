@@ -627,22 +627,19 @@ async function carregarCMVCache(){
     .select("buffet_id, modalidade, valor");
 
   (itens || []).forEach(i=>{
-    if (!cacheCMV[i.buffet_id]) return;
+    if (!cacheCMV[i.buffet_id]) return;   // 🔥 impede id inválido
     cacheCMV[i.buffet_id].cmvBase += Number(i.custo_calculado || 0);
   });
 
   (impostos || []).forEach(i=>{
-    if (!cacheCMV[i.buffet_id]) return;
+    if (!cacheCMV[i.buffet_id]) return;   // 🔥 impede id inválido
     cacheCMV[i.buffet_id].impostos.push(i);
   });
 
-  // ✅ MARCA QUE JÁ CARREGOU
   Object.values(cacheCMV).forEach(v => v.__carregado = true);
 
   renderLista();
 }
-
-
 
    
 /* =====================================================
