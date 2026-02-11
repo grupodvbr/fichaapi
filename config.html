@@ -125,7 +125,7 @@ input:focus{outline:none;border-color:#22c55e}
   <th>Custo Base</th>
   <th>Custos</th>
   <th>Custo Final</th>
-  <th>Markup %</th>
+<th>Margem alvo %</th>
   <th>Preço (R$)</th>
   <th>CMV %</th>
   <th>Lucro</th>
@@ -164,12 +164,21 @@ async function carregarCache(){
   const { data: itens } = await sb.from("buffet_itens").select("buffet_id, custo_calculado, nome, quantidade, unidade_uso");
   const { data: impostos } = await sb.from("impostos").select("buffet_id, modalidade, valor");
 
-  (itens||[]).forEach(i=>{
-    cacheCMV[i.buffet_id] ??= { base:0, impostos:[], itens:[] };
-    cacheCMV[i.buffet_id].base += Number(i.custo_calculado||0);
-    cacheCMV[i.buffet_id].itens.push(i);
-  });
+const vistos = new Set();
 
+(itens||[]).forEach(i=>{
+  const chave = `${i.buffet_id}-${i.nome}`;
+  if (vistos.has(chave)) return;
+  vistos.add(chave);
+
+  cacheCMV[i.buffet_id] ??= { base:0, impostos:[], itens:[] };
+
+  const qtd = Number(i.quantidade || 1);
+  const custoUnit = Number(i.custo_calculado || 0);
+  cacheCMV[i.buffet_id].base += qtd * custoUnit;
+
+  cacheCMV[i.buffet_id].itens.push(i);
+});
   (impostos||[]).forEach(i=>{
     cacheCMV[i.buffet_id] ??= { base:0, impostos:[], itens:[] };
     cacheCMV[i.buffet_id].impostos.push(i);
@@ -213,8 +222,8 @@ function render(){
 
     d.impostos.forEach(i=>{
       if(i.modalidade==="FIXO") imp+=Number(i.valor);
-      if(i.modalidade==="PERCENTUAL") imp+=(d.base*i.valor)/100;
-    });
+if (i.modalidade === "PERCENTUAL") {
+imp += (d.base * Number(i.valor)) / 100;}    });
 
     const custoFinal = d.base + imp;
     const preco = Number(p.preco_venda||0);
@@ -253,8 +262,8 @@ function render(){
 async function precificarPerc(input, custo, id){
   const mk = Number(input.value||0);
   if(mk<=0) return;
-  const preco = custo*(1+mk/100);
-  await sb.from("buffet").update({ preco_venda: preco }).eq("id", id);
+const margem = mk / 100;
+const preco = custo / (1 - margem);  await sb.from("buffet").update({ preco_venda: preco }).eq("id", id);
   carregar();
 }
 
@@ -369,8 +378,7 @@ setTimeout(() => {
     ${d.itens.map(i=>`
       <div class="ing">
         <span>${i.nome} (${i.quantidade} ${i.unidade_uso})</span>
-        <b>${moeda(i.custo_calculado)}</b>
-      </div>
+<b>${moeda(Number(i.quantidade || 1) * Number(i.custo_calculado || 0))}</b>      </div>
     `).join("")}
 
     <h3 style="margin-top:18px">Descrição</h3>
