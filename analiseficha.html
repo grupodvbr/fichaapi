@@ -601,8 +601,8 @@ async function calcularCMVPercentual(prato){
     if(i.modalidade === "FIXO")
       totalImpostos += Number(i.valor);
 
-    if(i.modalidade === "PERCENTUAL")
-      totalImpostos += (cmvBase * Number(i.valor)) / 100;
+if(i.modalidade === "PERCENTUAL")
+  totalImpostos += (Number(prato.preco_venda || 0) * Number(i.valor)) / 100;
   });
 
   const cmvFinal = cmvBase + totalImpostos;
@@ -670,15 +670,15 @@ for(const p of pratos){
     dados.impostos.forEach(i=>{
       if(i.modalidade === "FIXO")
         totalImpostos += Number(i.valor);
-      if(i.modalidade === "PERCENTUAL")
-        totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
+if(i.modalidade === "PERCENTUAL")
+  totalImpostos += (Number(p.preco_venda || 0) * Number(i.valor)) / 100;
     });
 
 const custoBase = dados.cmvBase;
 const custoTotal = dados.cmvBase + totalImpostos;
 
 const cmvPerc =
-  p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
+  p.preco_venda ? (custoTotal / p.preco_venda) * 100 : null;
 
 const lucro =
   p.preco_venda ? p.preco_venda - custoTotal : null;
@@ -839,8 +839,8 @@ const nutri = {
   let totalImpostos = 0;
   impostosCache.forEach(i=>{
     if(i.modalidade==="FIXO") totalImpostos += Number(i.valor);
-    if(i.modalidade==="PERCENTUAL")
-      totalImpostos += (cmvBase * Number(i.valor))/100;
+if(i.modalidade==="PERCENTUAL")
+  totalImpostos += (Number(p.preco_venda || 0) * Number(i.valor)) / 100;;
   });
 
   const cmvFinal = cmvBase + totalImpostos;
@@ -1069,9 +1069,9 @@ ${p.preco_ideal ? `
         <small>${i.tipo} • ${i.modalidade === "PERCENTUAL" ? i.valor+"%" : moeda(i.valor)}</small>
       </span>
       <strong>
-        ${i.modalidade==="PERCENTUAL"
-          ? moeda((cmvBase*i.valor)/100)
-          : moeda(i.valor)}
+ ${i.modalidade==="PERCENTUAL"
+  ? moeda((Number(p.preco_venda || 0) * i.valor) / 100)
+  : moeda(i.valor)}
       </strong>
       <button class="btn-icon btn-delete"
         onclick="excluirImposto('${i.id}')">🗑️</button>
