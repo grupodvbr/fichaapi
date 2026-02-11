@@ -627,20 +627,18 @@ async function carregarCMVCache(){
     .select("buffet_id, modalidade, valor");
 
   (itens || []).forEach(i=>{
-    if (!cacheCMV[i.buffet_id]) return;   // 🔥 impede id inválido
+    if (!cacheCMV[i.buffet_id]) return;   // protege id inválido
     cacheCMV[i.buffet_id].cmvBase += Number(i.custo_calculado || 0);
   });
 
   (impostos || []).forEach(i=>{
-    if (!cacheCMV[i.buffet_id]) return;   // 🔥 impede id inválido
+    if (!cacheCMV[i.buffet_id]) return;
     cacheCMV[i.buffet_id].impostos.push(i);
   });
 
   Object.values(cacheCMV).forEach(v => v.__carregado = true);
-
   renderLista();
 }
-
    
 /* =====================================================
    LISTA
@@ -662,19 +660,17 @@ for(const p of pratos){
 
     if(!nomeOk || !tipoOk) continue;
 
-    const dados = cacheCMV[p.id] || { cmvBase:0, impostos:[] };
-
+const dados = cacheCMV[p.id] || { cmvBase: null, impostos: [], __carregado:false };
     let totalImpostos = 0;
     dados.impostos.forEach(i=>{
       if(i.modalidade === "FIXO")
         totalImpostos += Number(i.valor);
-      if(i.modalidade === "PERCENTUAL")
-        totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
+if(i.modalidade === "PERCENTUAL")
+  totalImpostos += ((dados.cmvBase || 0) * Number(i.valor)) / 100;
     });
 
 const custoBase = dados.cmvBase;
-const custoTotal = dados.cmvBase + totalImpostos;
-
+const custoTotal = (dados.cmvBase || 0) + totalImpostos;
 const cmvPerc =
   p.preco_venda ? (custoTotal / p.preco_venda) * 100 : null;
 
@@ -740,17 +736,16 @@ ${p.descricao ? `
 <div class="badges">
 ${cacheCMV[p.id] && cacheCMV[p.id].__carregado
   ? (
-      custoBase > 0
-        ? `<span class="badge">🧾 Custo ${moeda(custoBase)}</span>`
-        : `<span class="badge" style="background:#fee2e2;color:#991b1b">⚠️ Custo base zerado</span>`
-    )
+custoBase !== null && custoBase > 0        ? `<span class="badge">🧾 Custo ${moeda(custoBase)}</span>`
+: custoBase === 0
+  ? `<span class="badge" style="background:#fee2e2;color:#991b1b">⚠️ Custo base zerado</span>`
+  : `<span class="badge" style="background:#e0e7ff;color:#1e40af">⏳ Carregando custo...</span>`    )
   : `<span class="badge" style="background:#e0e7ff;color:#1e40af">⏳ Carregando custo...</span>`
 }
   ${totalImpostos > 0
     ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
     : ``}
 </div>
-
     <!-- LINHA 3 — RESULTADO -->
     <div class="badges secondary">
       ${p.preco_venda
@@ -1493,10 +1488,11 @@ async function salvarImposto(){
     valor
   });
 
-  await carregarCMVCache();   // 👈 ATUALIZA CACHE
-  await carregarPratos();    // 👈 ATUALIZA LISTA
-  renderLista();             // 👈 ATUALIZA CARDS
-  abrirModal(pratoAtual);
+await carregarIngredientesBase();
+await carregarPratos();        // 👈 primeiro pratos
+await carregarCMVCache();     // 👈 depois cache (preenche cmvBase)
+await carregarTipos();
+renderLista();                // 👈 só renderiza no final
 }
 
 async function excluirImposto(id){
@@ -1637,9 +1633,8 @@ renderLista();
 if (!Object.keys(cacheCMV).length) {
   console.warn("Cache CMV vazio, forçando reload...");
   await carregarCMVCache();
+  renderLista();
 }
-
-renderLista();
 })();
 
 async function editarNomePrato(){
