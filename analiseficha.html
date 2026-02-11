@@ -602,7 +602,7 @@ async function calcularCMVPercentual(prato){
       totalImpostos += Number(i.valor);
 
 if(i.modalidade === "PERCENTUAL")
-  totalImpostos += (Number(prato.preco_venda || 0) * Number(i.valor)) / 100;
+  totalImpostos += (Number(cmvBase || 0) * Number(i.valor)) / 100;
   });
 
   const cmvFinal = cmvBase + totalImpostos;
