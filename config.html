@@ -229,8 +229,7 @@ imp += (d.base * Number(i.valor)) / 100;}    });
     const preco = Number(p.preco_venda||0);
     const lucro = preco - custoFinal;
     const cmv = preco ? (custoFinal/preco)*100 : 0;
-    const margem = preco ? (lucro/preco)*100 : 0;
-
+const margem = preco ? (lucro / preco) * 100 : 0;
     const tr = document.createElement("tr");
     tr.onclick = ()=>abrirModal(p, d, custoFinal, cmv, lucro, margem);
 
@@ -241,9 +240,10 @@ imp += (d.base * Number(i.valor)) / 100;}    });
       <td>${moeda(imp)}</td>
       <td>${moeda(custoFinal)}</td>
       <td>
-        <input type="number" step="0.01" placeholder="%"
-          onclick="event.stopPropagation()"
-          onblur="precificarPerc(this, ${custoFinal}, '${p.id}')">
+<input type="number" step="0.01" placeholder="%"
+  onclick="event.stopPropagation()"
+  onchange="precificarPerc(this, ${custoFinal}, '${p.id}')"
+  value="${preco ? margem.toFixed(1) : ''}">
       </td>
       <td>
         <input type="number" step="0.01" placeholder="R$"
@@ -253,17 +253,23 @@ imp += (d.base * Number(i.valor)) / 100;}    });
       </td>
       <td class="${cmv>35?'bad':'good'}">${cmv.toFixed(1)}%</td>
       <td class="${lucro<0?'bad':'good'}">${moeda(lucro)}</td>
-      <td class="${margem<30?'bad':'good'}">${margem.toFixed(1)}%</td>
-    `;
+<td class="${custoFinal === 0 ? 'bad' : (margem < 30 ? 'bad' : 'good')}">
+  ${custoFinal === 0 ? 'Cadastre o custo' : margem.toFixed(1) + '%'}
+</td>    `;
     tbody.appendChild(tr);
   });
 }
 
 async function precificarPerc(input, custo, id){
-  const mk = Number(input.value||0);
-  if(mk<=0) return;
+const mk = Number(input.value || 0);
+if (mk <= 0 || mk >= 95) {
+  alert("Use uma margem entre 1% e 95%");
+  return;
+}
 const margem = mk / 100;
-const preco = custo / (1 - margem);  await sb.from("buffet").update({ preco_venda: preco }).eq("id", id);
+const preco = custo / (1 - margem);
+  
+  await sb.from("buffet").update({ preco_venda: preco }).eq("id", id);
   carregar();
 }
 
