@@ -670,11 +670,15 @@ for(const p of pratos){
         totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
     });
 
-    const cmvFinal = dados.cmvBase + totalImpostos;
-    const cmvPerc =
-      p.preco_venda ? (cmvFinal / p.preco_venda) * 100 : null;
-    const lucro =
-      p.preco_venda ? p.preco_venda - cmvFinal : null;
+const custoBase = dados.cmvBase;
+const custoTotal = dados.cmvBase + totalImpostos;
+
+const cmvPerc =
+  p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
+
+const lucro =
+  p.preco_venda ? p.preco_venda - custoTotal : null;
+
 const margem =
   p.preco_venda ? (lucro / p.preco_venda) * 100 : null;
 
@@ -732,8 +736,10 @@ ${p.descricao ? `
 
     <!-- LINHA 2 — CUSTOS -->
     <div class="badges">
-      <span class="badge">🧾 Custo ${moeda(cmvFinal)}</span>
-      ${totalImpostos > 0
+<span class="badge">🧾 Custo ${moeda(custoBase)}</span>
+${totalImpostos > 0
+  ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
+  : ``}      ${totalImpostos > 0
         ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
         : ``}
     </div>
