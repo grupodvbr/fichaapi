@@ -574,7 +574,7 @@ async function carregarPratos(){
 
   if(error) return alert("Erro pratos");
   pratos = data;
-  renderLista();
+  // ❌ remove renderLista daqui
 }
 
 
@@ -1503,12 +1503,34 @@ async function salvarImposto(){
     valor
   });
 
-  abrirModal(pratoAtual);
+  // 🔁 ATUALIZA CACHE
+  await carregarCMVCache();
+
+  // 🔄 recarrega o prato do banco
+  const { data: pratoNovo } = await sb
+    .from("buffet")
+    .select("*")
+    .eq("id", pratoAtual.id)
+    .single();
+
+  abrirModal(pratoNovo);
+  renderLista();
 }
 
 async function excluirImposto(id){
   await sb.from("impostos").delete().eq("id",id);
-  abrirModal(pratoAtual);
+
+  // 🔁 ATUALIZA CACHE
+  await carregarCMVCache();
+
+  const { data: pratoNovo } = await sb
+    .from("buffet")
+    .select("*")
+    .eq("id", pratoAtual.id)
+    .single();
+
+  abrirModal(pratoNovo);
+  renderLista();
 }
 /* =====================================================
    AUTO UNIDADE
