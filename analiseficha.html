@@ -614,6 +614,11 @@ let cacheCMV = {};
 async function carregarCMVCache(){
   cacheCMV = {};
 
+  // 👇 garante cache para todos os pratos
+  pratos.forEach(p => {
+    cacheCMV[p.id] = { cmvBase: 0, impostos: [] };
+  });
+
   const { data: itens } = await sb
     .from("buffet_itens")
     .select("buffet_id, custo_calculado");
@@ -623,16 +628,14 @@ async function carregarCMVCache(){
     .select("buffet_id, modalidade, valor");
 
   (itens || []).forEach(i=>{
-    cacheCMV[i.buffet_id] ??= { cmvBase:0, impostos:[] };
     cacheCMV[i.buffet_id].cmvBase += Number(i.custo_calculado || 0);
   });
 
   (impostos || []).forEach(i=>{
-    cacheCMV[i.buffet_id] ??= { cmvBase:0, impostos:[] };
     cacheCMV[i.buffet_id].impostos.push(i);
   });
 
-  renderLista(); // 👈 força atualizar os cards quando o cache termina
+  renderLista();
 }
 
 
@@ -1627,9 +1630,10 @@ async function carregarTipos(){
 }
 (async ()=>{
 await carregarIngredientesBase();
-await carregarCMVCache();
-await carregarPratos();
+await carregarPratos();        // 👈 primeiro pratos
+await carregarCMVCache();     // 👈 depois cache
 await carregarTipos();
+renderLista();
 
 if (!Object.keys(cacheCMV).length) {
   console.warn("Cache CMV vazio, forçando reload...");
