@@ -574,7 +574,6 @@ async function carregarPratos(){
 
   if(error) return alert("Erro pratos");
   pratos = data;
-  renderLista();
 }
 
 
@@ -740,8 +739,10 @@ ${p.descricao ? `
 
 <!-- LINHA 2 — CUSTOS -->
 <div class="badges">
-  <span class="badge">🧾 Custo ${moeda(custoBase)}</span>
-
+${custoBase > 0 
+  ? `<span class="badge">🧾 Custo ${moeda(custoBase)}</span>`
+  : `<span class="badge" style="background:#fee2e2;color:#991b1b">⚠️ Sem custo cadastrado</span>`
+}
   ${totalImpostos > 0
     ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
     : ``}
@@ -1615,12 +1616,12 @@ async function carregarTipos(){
     `;
   }
 }
-   (async ()=>{
+(async ()=>{
   await carregarIngredientesBase();
-  await carregarPratos();
-  await carregarCMVCache();
-  await carregarTipos();   // 👈 ADICIONA ISSO
-  renderLista();
+  await carregarCMVCache();   // 👈 primeiro carrega custos
+  await carregarPratos();     // 👈 depois pratos
+  await carregarTipos();
+  renderLista();              // 👈 só renderiza depois de tudo pronto
 })();
 
 async function editarNomePrato(){
