@@ -1055,8 +1055,8 @@ ${p.preco_ideal ? `
       <input id="ingUnidade" readonly placeholder="Unidade">
     </div>
 
-    <button class="btn-add" style="margin-top:10px"
-      onclick="salvarIngrediente()">ADICIONAR INGREDIENTE</button>
+<button id="btnSalvarIngrediente" class="btn-add" style="margin-top:10px"
+  onclick="salvarIngrediente()">ADICIONAR INGREDIENTE</button>
   </div>
 
   <hr>
@@ -1530,8 +1530,7 @@ async function editarIngrediente(itemId){
   ingQtd.value = data.quantidade;
   ingUnidade.value = data.unidade_uso;
 
-  const btn = document.querySelector(".precificacao .btn-add");
-  btn.innerText = "ATUALIZAR INGREDIENTE";
+const btn = document.getElementById("btnSalvarIngrediente");  btn.innerText = "ATUALIZAR INGREDIENTE";
 
   btn.onclick = async () => {
     const qtd = Number(ingQtd.value || 0);
