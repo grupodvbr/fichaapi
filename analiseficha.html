@@ -802,7 +802,7 @@ cards.appendChild(c);
 ===================================================== */
 async function abrirModal(p){
   pratoAtual = p;
-  await sincronizarCustosComProdutos(); // 🔁 força sync ao abrir o prato
+  // ❌ remove a sincronização pesada daqui (já roda na carga inicial)
   modal.style.display = "flex";
   document.body.style.overflow = "hidden";
 mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
