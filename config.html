@@ -173,9 +173,8 @@ const vistos = new Set();
 
   cacheCMV[i.buffet_id] ??= { base:0, impostos:[], itens:[] };
 
-  const qtd = Number(i.quantidade || 1);
-  const custoUnit = Number(i.custo_calculado || 0);
-  cacheCMV[i.buffet_id].base += qtd * custoUnit;
+  const custo = Number(i.custo_calculado || 0); // já vem calculado no banco
+  cacheCMV[i.buffet_id].base += custo;
 
   cacheCMV[i.buffet_id].itens.push(i);
 });
@@ -384,7 +383,8 @@ setTimeout(() => {
     ${d.itens.map(i=>`
       <div class="ing">
         <span>${i.nome} (${i.quantidade} ${i.unidade_uso})</span>
-<b>${moeda(Number(i.quantidade || 1) * Number(i.custo_calculado || 0))}</b>      </div>
+<b>${moeda(Number(i.custo_calculado || 0))}</b>
+</div>
     `).join("")}
 
     <h3 style="margin-top:18px">Descrição</h3>
