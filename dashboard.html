@@ -275,17 +275,7 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-async function check(){
-  const { data } = await sb.auth.getSession();
-  if(data.session){
-    showApp();
-    openPage("home.html", document.querySelector(".icon"));
-  } else {
-    document.getElementById("loginHero").style.display = "block";
-    document.getElementById("app").style.display = "none";
-  }
-}
-check();
+
 
 function openLogin(){ document.getElementById("modalLogin").classList.add("open"); }
 function closeLogin(){ document.getElementById("modalLogin").classList.remove("open"); }
