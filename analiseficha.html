@@ -637,8 +637,36 @@ async function carregarCMVCache(){
 }
 
 
+async function sincronizarCustosComProdutos(){
+  // busca todos os itens dos pratos
+  const { data: itens, error } = await sb
+    .from("buffet_itens")
+    .select("id, produto_id, quantidade");
 
+  if (error) {
+    console.error("Erro ao buscar buffet_itens:", error);
+    return;
+  }
 
+  for (const item of itens || []) {
+    const prod = ingredientesBase.find(p => p.id === item.produto_id);
+    if (!prod) continue;
+
+    const custoUnit = Number(prod.valor || 0);
+    const qtd = Number(item.quantidade || 0);
+
+    await sb
+      .from("buffet_itens")
+      .update({
+        custo_unitario: custoUnit,
+        custo_calculado: custoUnit * qtd
+      })
+      .eq("id", item.id);
+  }
+
+  await carregarCMVCache();
+  await carregarPratos();
+}
 
 
 
@@ -774,6 +802,7 @@ cards.appendChild(c);
 ===================================================== */
 async function abrirModal(p){
   pratoAtual = p;
+  await sincronizarCustosComProdutos(); // 🔁 força sync ao abrir o prato
   modal.style.display = "flex";
   document.body.style.overflow = "hidden";
 mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
@@ -1615,11 +1644,12 @@ async function carregarTipos(){
     `;
   }
 }
-   (async ()=>{
+(async ()=>{
   await carregarIngredientesBase();
+  await sincronizarCustosComProdutos(); // 🔁 AQUI entra a atualização automática
   await carregarPratos();
   await carregarCMVCache();
-  await carregarTipos();   // 👈 ADICIONA ISSO
+  await carregarTipos();
   renderLista();
 })();
 
