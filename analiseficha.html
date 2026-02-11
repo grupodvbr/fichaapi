@@ -677,8 +677,13 @@ if(i.modalidade === "PERCENTUAL")
 const custoBase = dados.cmvBase;
 const custoTotal = dados.cmvBase + totalImpostos;
 
+// CMV clássico (custo final / venda)
 const cmvPerc =
   p.preco_venda ? (custoTotal / p.preco_venda) * 100 : null;
+
+// 👉 NOVO: quanto os custos operacionais representam sobre o custo base
+const custosSobreBasePerc =
+  custoBase > 0 ? (totalImpostos / custoBase) * 100 : null;
 
 const lucro =
   p.preco_venda ? p.preco_venda - custoTotal : null;
@@ -719,14 +724,23 @@ ${p.descricao ? `
     <div class="badges primary">
       <span class="badge">${p.tipo || "-"}</span>
 
-      ${cmvPerc !== null ? `
-        <span class="badge"
-          style="
-            background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
-            color:${cmvPerc > 35 ? '#991b1b' : '#166534'}">
-          📊 CMV ${cmvPerc.toFixed(1)}%
-        </span>
-      ` : ``}
+${cmvPerc !== null ? `
+  <span class="badge"
+    style="
+      background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
+      color:${cmvPerc > 35 ? '#991b1b' : '#166534'}">
+    📊 CMV ${cmvPerc.toFixed(1)}%
+  </span>
+` : ``}
+
+${custosSobreBasePerc !== null ? `
+  <span class="badge"
+    style="
+      background:${custosSobreBasePerc > 100 ? '#fee2e2' : '#dcfce7'};
+      color:${custosSobreBasePerc > 100 ? '#991b1b' : '#166534'}">
+    ⚙ Custos/Base ${custosSobreBasePerc.toFixed(0)}%
+  </span>
+` : ``}
 
       ${margem !== null ? `
         <span class="badge"
