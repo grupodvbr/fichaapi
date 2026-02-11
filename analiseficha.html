@@ -574,6 +574,7 @@ async function carregarPratos(){
 
   if(error) return alert("Erro pratos");
   pratos = data;
+  renderLista();
 }
 
 
@@ -614,10 +615,6 @@ let cacheCMV = {};
 async function carregarCMVCache(){
   cacheCMV = {};
 
-  pratos.forEach(p => {
-    cacheCMV[p.id] = { cmvBase: 0, impostos: [], __carregado: false };
-  });
-
   const { data: itens } = await sb
     .from("buffet_itens")
     .select("buffet_id, custo_calculado");
@@ -626,19 +623,26 @@ async function carregarCMVCache(){
     .from("impostos")
     .select("buffet_id, modalidade, valor");
 
+  // soma ingredientes
   (itens || []).forEach(i=>{
-    if (!cacheCMV[i.buffet_id]) return;   // protege id inválido
+    cacheCMV[i.buffet_id] ??= { cmvBase:0, impostos:[] };
     cacheCMV[i.buffet_id].cmvBase += Number(i.custo_calculado || 0);
   });
 
+  // agrupa impostos
   (impostos || []).forEach(i=>{
-    if (!cacheCMV[i.buffet_id]) return;
+    cacheCMV[i.buffet_id] ??= { cmvBase:0, impostos:[] };
     cacheCMV[i.buffet_id].impostos.push(i);
   });
-
-  Object.values(cacheCMV).forEach(v => v.__carregado = true);
-  renderLista();
 }
+
+
+
+
+
+
+
+
    
 /* =====================================================
    LISTA
@@ -660,19 +664,21 @@ for(const p of pratos){
 
     if(!nomeOk || !tipoOk) continue;
 
-const dados = cacheCMV[p.id] || { cmvBase: null, impostos: [], __carregado:false };
+    const dados = cacheCMV[p.id] || { cmvBase:0, impostos:[] };
+
     let totalImpostos = 0;
     dados.impostos.forEach(i=>{
       if(i.modalidade === "FIXO")
         totalImpostos += Number(i.valor);
-if(i.modalidade === "PERCENTUAL")
-  totalImpostos += ((dados.cmvBase || 0) * Number(i.valor)) / 100;
+      if(i.modalidade === "PERCENTUAL")
+        totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
     });
 
 const custoBase = dados.cmvBase;
-const custoTotal = (dados.cmvBase || 0) + totalImpostos;
+const custoTotal = dados.cmvBase + totalImpostos;
+
 const cmvPerc =
-  p.preco_venda ? (custoTotal / p.preco_venda) * 100 : null;
+  p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
 
 const lucro =
   p.preco_venda ? p.preco_venda - custoTotal : null;
@@ -734,18 +740,13 @@ ${p.descricao ? `
 
 <!-- LINHA 2 — CUSTOS -->
 <div class="badges">
-${cacheCMV[p.id] && cacheCMV[p.id].__carregado
-  ? (
-custoBase !== null && custoBase > 0        ? `<span class="badge">🧾 Custo ${moeda(custoBase)}</span>`
-: custoBase === 0
-  ? `<span class="badge" style="background:#fee2e2;color:#991b1b">⚠️ Custo base zerado</span>`
-  : `<span class="badge" style="background:#e0e7ff;color:#1e40af">⏳ Carregando custo...</span>`    )
-  : `<span class="badge" style="background:#e0e7ff;color:#1e40af">⏳ Carregando custo...</span>`
-}
+  <span class="badge">🧾 Custo ${moeda(custoBase)}</span>
+
   ${totalImpostos > 0
     ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
     : ``}
 </div>
+
     <!-- LINHA 3 — RESULTADO -->
     <div class="badges secondary">
       ${p.preco_venda
@@ -1488,20 +1489,11 @@ async function salvarImposto(){
     valor
   });
 
-await carregarIngredientesBase();
-await carregarPratos();        // 👈 primeiro pratos
-await carregarCMVCache();     // 👈 depois cache (preenche cmvBase)
-await carregarTipos();
-renderLista();                // 👈 só renderiza no final
+  abrirModal(pratoAtual);
 }
 
 async function excluirImposto(id){
   await sb.from("impostos").delete().eq("id",id);
-
-  await carregarCMVCache();   // 🔁 atualiza cache
-  await carregarPratos();    // 🔄 atualiza lista
-  renderLista();             // 🧾 atualiza cards
-
   abrirModal(pratoAtual);
 }
 /* =====================================================
@@ -1623,18 +1615,12 @@ async function carregarTipos(){
     `;
   }
 }
-(async ()=>{
-await carregarIngredientesBase();
-await carregarPratos();        // 👈 primeiro pratos
-await carregarCMVCache();     // 👈 depois cache
-await carregarTipos();
-renderLista();
-
-if (!Object.keys(cacheCMV).length) {
-  console.warn("Cache CMV vazio, forçando reload...");
+   (async ()=>{
+  await carregarIngredientesBase();
+  await carregarPratos();
   await carregarCMVCache();
+  await carregarTipos();   // 👈 ADICIONA ISSO
   renderLista();
-}
 })();
 
 async function editarNomePrato(){
