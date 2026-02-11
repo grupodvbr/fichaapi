@@ -1441,20 +1441,35 @@ await sb.from("buffet_itens").insert({
   custo_calculado: custoUnit * qtd
 });
 
+// 🔁 atualiza cache e reabre com dados novos
+await carregarCMVCache();
 
-  abrirModal(pratoAtual);
-}
+const { data: pratoNovo } = await sb
+  .from("buffet")
+  .select("*")
+  .eq("id", pratoAtual.id)
+  .single();
+
+abrirModal(pratoNovo);
 
 async function excluirIngrediente(itemId){
   if(!confirm("Excluir este ingrediente?")) return;
 
-  await sb
-    .from("buffet_itens")
-    .delete()
-    .eq("id", itemId);
+await sb
+  .from("buffet_itens")
+  .delete()
+  .eq("id", itemId);
 
-  abrirModal(pratoAtual);
-}
+// 🔁 atualiza cache e reabre com dados novos
+await carregarCMVCache();
+
+const { data: pratoNovo } = await sb
+  .from("buffet")
+  .select("*")
+  .eq("id", pratoAtual.id)
+  .single();
+
+abrirModal(pratoNovo);
 
 
 async function salvarImposto(){
@@ -1525,23 +1540,34 @@ async function editarIngrediente(itemId){
     const prod = ingredientesBase.find(p => p.id === ingProduto.value);
     const custoUnit = Number(prod.valor);
 
-    await sb
-      .from("buffet_itens")
-      .update({
-        quantidade: qtd,
-        custo_unitario: custoUnit,
-        custo_calculado: custoUnit * qtd
-      })
-      .eq("id", itemId);
+await sb
+  .from("buffet_itens")
+  .update({
+    quantidade: qtd,
+    custo_unitario: custoUnit,
+    custo_calculado: custoUnit * qtd
+  })
+  .eq("id", itemId);
 
-    btn.innerText = "ADICIONAR INGREDIENTE";
-    btn.onclick = salvarIngrediente;
+// 🔁 atualiza cache de CMV
+await carregarCMVCache();
 
-    ingProduto.value = "";
-    ingQtd.value = "";
-    ingUnidade.value = "";
+// 🔄 recarrega o prato do banco (pra não usar objeto velho)
+const { data: pratoNovo } = await sb
+  .from("buffet")
+  .select("*")
+  .eq("id", pratoAtual.id)
+  .single();
 
-    abrirModal(pratoAtual);
+btn.innerText = "ADICIONAR INGREDIENTE";
+btn.onclick = salvarIngrediente;
+
+ingProduto.value = "";
+ingQtd.value = "";
+ingUnidade.value = "";
+
+// 🔁 reabre com dados novos
+abrirModal(pratoNovo);
   };
 }
 filtroNome.addEventListener("input", () => {
