@@ -677,6 +677,7 @@ for(const p of pratos){
 const custoBase = dados.cmvBase;
 const custoTotal = dados.cmvBase + totalImpostos;
 
+// ✅ CMV apenas do custo base (ingredientes)
 const cmvPerc =
   p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
 
@@ -865,9 +866,15 @@ mHeader.innerHTML = `
       💰 Venda ${moeda(precoVenda)}
     </span>
 
-    <span class="badge" style="background:#eef2ff;color:#3730a3">
-      🧾 Custo ${moeda(cmvFinal)}
-    </span>
+<span class="badge" style="background:#eef2ff;color:#3730a3">
+  🧾 Custo ${moeda(cmvFinal)}
+</span>
+
+<span class="badge" style="
+  background:${cmvPercentual > 35 ? '#fee2e2' : '#dcfce7'};
+  color:${cmvPercentual > 35 ? '#991b1b' : '#166534'}">
+  📊 CMV ${cmvPercentual.toFixed(1)}%
+</span>
 
     <span class="badge" style="
       background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
