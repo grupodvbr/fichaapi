@@ -844,11 +844,16 @@ const nutri = {
       totalImpostos += (cmvBase * Number(i.valor))/100;
   });
 
-  const cmvFinal = cmvBase + totalImpostos;
-  const precoVenda = Number(p.preco_venda||0);
-  const lucro = precoVenda ? precoVenda - cmvFinal : 0;
-  const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
+const cmvFinal = cmvBase + totalImpostos;
+const precoVenda = Number(p.preco_venda||0);
 
+// ✅ CMV apenas em cima do custo base (ingredientes)
+const cmvPercentual = precoVenda
+  ? (cmvBase / precoVenda) * 100
+  : 0;
+
+const lucro = precoVenda ? precoVenda - cmvFinal : 0;
+const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
 mHeader.innerHTML = `
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
   <h2 id="tituloPrato" style="margin:0">${p.nome}</h2>
