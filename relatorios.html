@@ -1,214 +1,214 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Relatório Executivo • CMV</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Relatórios • CMV</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
 :root{
+  --primary:#2563eb;
+  --primary-dark:#1e40af;
   --bg:#f8fafc;
   --card:#ffffff;
-  --primary:#2563eb;
   --text:#0f172a;
   --muted:#64748b;
   --border:#e5e7eb;
+  --radius:22px;
+  --shadow:0 20px 50px rgba(0,0,0,.12);
 }
+
 *{box-sizing:border-box}
 
 body{
   margin:0;
-  font-family:Inter,sans-serif;
-  background:var(--bg);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(1000px 500px at 10% -10%, #eef2ff 0%, transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, #ecfeff 0%, transparent 60%),
+    var(--bg);
   color:var(--text);
+}
+
+.header{
+  padding:26px 22px 10px;
+  max-width:1200px;
+  margin:auto;
+}
+
+.header h1{
+  margin:0;
+  font-size:32px;
+  font-weight:900;
+  letter-spacing:-.02em;
+}
+
+.header p{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-weight:600;
 }
 
 .container{
   max-width:1200px;
   margin:auto;
-  padding:36px;
+  padding:22px;
 }
 
-h1{
-  font-size:30px;
-  margin-bottom:6px;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:22px;
 }
 
-p{
-  color:var(--muted);
-  margin-bottom:26px;
-}
-
+/* CARD */
 .card{
   background:var(--card);
+  border-radius:var(--radius);
   border:1px solid var(--border);
-  border-radius:22px;
-  padding:30px;
+  box-shadow:var(--shadow);
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  cursor:pointer;
+  text-decoration:none;
+  color:inherit;
+  transition:.2s ease;
+  position:relative;
+  overflow:hidden;
 }
 
-button{
-  background:linear-gradient(135deg,#2563eb,#1e40af);
-  color:#fff;
-  border:none;
+.card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg, rgba(37,99,235,.12), transparent 60%);
+  opacity:0;
+  transition:.2s ease;
+}
+
+.card:hover{
+  transform:translateY(-6px) scale(1.01);
+  box-shadow:0 30px 80px rgba(0,0,0,.22);
+}
+
+.card:hover::after{opacity:1}
+
+.icon{
+  width:54px;
+  height:54px;
   border-radius:16px;
-  padding:18px 30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
   font-weight:900;
-  cursor:pointer;
-  font-size:15px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;
+  box-shadow:0 14px 30px rgba(37,99,235,.45);
+}
+
+.card h3{
+  margin:6px 0 0;
+  font-size:18px;
+  font-weight:900;
+}
+
+.card p{
+  margin:0;
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.35;
+}
+
+.badge{
+  margin-top:6px;
+  display:inline-block;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:#1e40af;
+  background:#eef2ff;
+  padding:6px 12px;
+  border-radius:999px;
+  width:max-content;
+}
+
+/* RESPONSIVO */
+@media(max-width:900px){
+  .grid{ grid-template-columns:repeat(2, 1fr); }
+}
+
+@media(max-width:560px){
+  .grid{ grid-template-columns:1fr; }
+  .header h1{ font-size:26px; }
 }
 </style>
 </head>
 
 <body>
-<div class="container">
-  <h1>Relatório Executivo de CMV</h1>
-  <p>Resumo financeiro, ficha técnica e simulação de preços</p>
 
-  <div class="card">
-    <button onclick="exportarRelatorio()">
-      📊 EXPORTAR RELATÓRIO COMPLETO (EXCEL)
-    </button>
+<div class="header">
+  <h1>📊 Central de Relatórios</h1>
+  <p>Financeiro • CMV • Ingredientes • Simulações</p>
+</div>
+
+<div class="container">
+  <div class="grid">
+
+    <!-- 1 -->
+    <a href="receitas.html" class="card">
+      <div class="icon">💰</div>
+      <h3>Relatório de Receitas</h3>
+      <p>Resumo de vendas, faturamento e lucratividade dos pratos.</p>
+      <span class="badge">VENDAS</span>
+    </a>
+
+    <!-- 2 -->
+    <a href="ingredientes.html" class="card">
+      <div class="icon">🧾</div>
+      <h3>Relatório de Ingredientes</h3>
+      <p>Consumo, custo unitário e impacto no CMV por item.</p>
+      <span class="badge">INSUMOS</span>
+    </a>
+
+    <!-- 3 -->
+    <a href="cmv.html" class="card">
+      <div class="icon">📈</div>
+      <h3>Relatório de CMV</h3>
+      <p>CMV por prato, margem, lucro e custos operacionais.</p>
+      <span class="badge">CMV</span>
+    </a>
+
+    <!-- 4 -->
+    <a href="vendas.html" class="card">
+      <div class="icon">🛒</div>
+      <h3>Relatório de Vendas</h3>
+      <p>Análise de performance de produtos e categorias.</p>
+      <span class="badge">DESEMPENHO</span>
+    </a>
+
+    <!-- 5 -->
+    <a href="impostos.html" class="card">
+      <div class="icon">⚙️</div>
+      <h3>Custos & Impostos</h3>
+      <p>Impostos, taxas e custos operacionais por ficha.</p>
+      <span class="badge">CUSTOS</span>
+    </a>
+
+    <!-- 6 -->
+    <a href="simulacoes.html" class="card">
+      <div class="icon">🧠</div>
+      <h3>Simulações de Preço</h3>
+      <p>Simule markup, margem alvo e preço ideal por prato.</p>
+      <span class="badge">PRECIFICAÇÃO</span>
+    </a>
+
   </div>
 </div>
 
-<script>
-/* ===============================
-   SUPABASE
-================================ */
-const sb = supabase.createClient(
-  "https://dxkszikemntfusfyrzos.supabase.co",
-  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
-);
-
-const hoje = new Date().toISOString().slice(0,10);
-
-/* ===============================
-   EXPORTAÇÃO
-================================ */
-async function exportarRelatorio(){
-
-  const { data: pratos } = await sb.from("buffet").select("*");
-  const { data: itens } = await sb
-    .from("buffet_itens")
-    .select("buffet_id, nome, quantidade, unidade_uso, custo_unitario, custo_calculado");
-
-  const { data: impostos } = await sb
-    .from("impostos")
-    .select("buffet_id, modalidade, valor");
-
-  /* ===== MAPAS ===== */
-  const mapaItens = {};
-  itens.forEach(i=>{
-    mapaItens[i.buffet_id] ??= [];
-    mapaItens[i.buffet_id].push(i);
-  });
-
-  const mapaCustos = {};
-  itens.forEach(i=>{
-    mapaCustos[i.buffet_id] ??= { base:0, impostos:0 };
-    mapaCustos[i.buffet_id].base += Number(i.custo_calculado||0);
-  });
-
-  impostos.forEach(i=>{
-    mapaCustos[i.buffet_id] ??= { base:0, impostos:0 };
-    if(i.modalidade === "FIXO")
-      mapaCustos[i.buffet_id].impostos += Number(i.valor||0);
-if(i.modalidade === "PERCENTUAL"){
-  const baseAtual = mapaCustos[i.buffet_id]?.base || 0;
-  mapaCustos[i.buffet_id].impostos +=
-    (baseAtual * Number(i.valor||0)) / 100;
-}
-  });
-
-  /* ===== ABA 1 — RESUMO ===== */
-  const resumo = pratos.map(p=>{
-    const base = mapaCustos[p.id]?.base || 0;
-    const imp  = mapaCustos[p.id]?.impostos || 0;
-    const total = base + imp;
-    const venda = Number(p.preco_venda||0);
-    const lucro = venda - total;
-    const margem = venda ? (lucro/venda)*100 : 0;
-
-const cmv = venda > 0 ? (total / venda) * 100 : 0;
-return {
-  Prato: p.nome,
-  Tipo: p.tipo,
-  Status: p.ativo ? "ATIVO" : "INATIVO",
-  "Custo Base": Number(base.toFixed(2)),
-  Impostos: Number(imp.toFixed(2)),
-  "Custo Final": Number(total.toFixed(2)),
-  "Preço Venda Atual": Number(venda.toFixed(2)),
-  "Lucro Atual": Number(lucro.toFixed(2)),
-  "CMV %": Number(cmv.toFixed(2)),
-  "Margem Atual %": Number(margem.toFixed(2))
-};
-  });
-
-  /* ===== ABA 2 — DETALHADO ===== */
-  const detalhado = [];
-  pratos.forEach(p=>{
-    const base = mapaCustos[p.id]?.base || 0;
-    const imp  = mapaCustos[p.id]?.impostos || 0;
-    const total = base + imp;
-    const venda = Number(p.preco_venda||0);
-
-    (mapaItens[p.id] || []).forEach(i=>{
-      detalhado.push({
-        Prato: p.nome,
-        Tipo: p.tipo,
-        Ingrediente: i.nome,
-        Quantidade: i.quantidade,
-        Unidade: i.unidade_uso,
-        "Custo Unitário": i.custo_unitario,
-        "Custo Ingrediente": i.custo_calculado,
-        "Custo Base Ficha": base,
-        "Impostos Ficha": imp,
-        "Custo Final Ficha": total,
-        "Preço Venda Atual": venda
-      });
-    });
-  });
-
-  /* ===== ABA 3 — SIMULAÇÃO ===== */
-  const simulacao = pratos.map(p=>{
-    const total = mapaCustos[p.id]
-      ? mapaCustos[p.id].base + mapaCustos[p.id].impostos
-      : 0;
-    const venda = Number(p.preco_venda||0);
-    const lucro = venda - total;
-    const margem = venda ? (lucro/venda)*100 : 0;
-
-const MARGEM_PADRAO = 0.60;
-
-const precoNovo = total ? total / (1 - MARGEM_PADRAO) : 0;
-const lucroNovo = precoNovo - total;
-const margemNova = precoNovo ? (lucroNovo / precoNovo) * 100 : 0;
-
-return {
-  Prato: p.nome,
-  Tipo: p.tipo,
-  "Custo Final": Number(total.toFixed(2)),
-  "Preço Venda Atual": Number(venda.toFixed(2)),
-  "Preço Venda Sugerido (60%)": Number(precoNovo.toFixed(2)),
-  "Lucro Atual": Number(lucro.toFixed(2)),
-  "Margem Atual %": Number(margem.toFixed(2)),
-  "Lucro Sugerido": Number(lucroNovo.toFixed(2)),
-  "Margem Nova %": Number(margemNova.toFixed(2))
-};
-  });
-
-  /* ===== EXCEL ===== */
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumo), "Resumo");
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detalhado), "Fichas Detalhadas");
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(simulacao), "Simulação de Preços");
-
-  XLSX.writeFile(wb, `relatorio_CMV_completo_${hoje}.xlsx`);
-}
-</script>
 </body>
 </html>
