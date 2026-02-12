@@ -786,7 +786,11 @@ ${p.descricao ? `
 
 <!-- LINHA 2 — CUSTOS -->
 <div class="badges">
-  <span class="badge">🧾 Custo ${moeda(custoBase)}</span>
+  ${
+    custoBase > 0
+      ? `<span class="badge">🧾 Custo ${moeda(custoBase)}</span>`
+      : `<span class="badge" style="background:#fff7ed;color:#9a3412">⚠️ Sem custo cadastrado</span>`
+  }
 
   ${totalImpostos > 0
     ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
@@ -1672,13 +1676,13 @@ async function carregarTipos(){
     `;
   }
 }
-   (async ()=>{
+(async ()=>{
   await carregarIngredientesBase();
-  await carregarPratos();
-  await carregarCMVCache();
-  await carregarTipos();   // 👈 ADICIONA ISSO
+  await carregarCMVCache();   // 🔥 cache primeiro
+  await carregarPratos();     // 🔥 depois os pratos
+  await carregarTipos();
   renderLista();
-})();
+})();;
 
 async function editarNomePrato(){
   const h2 = document.getElementById("tituloPrato");
