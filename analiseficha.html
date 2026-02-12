@@ -695,20 +695,21 @@ const margem =
 const c = document.createElement("div");
 c.className = "card";
 
-// clique normal abre modal
-c.onclick = () => abrirModal(p);
-
-// 🔁 detectar 3 cliques
 let clicks = 0;
 let clickTimer = null;
 
-c.addEventListener("click", async () => {
+c.addEventListener("click", async (e) => {
   clicks++;
 
   clearTimeout(clickTimer);
+
   clickTimer = setTimeout(() => {
+    // se não chegou em 3 cliques, considera clique normal
+    if (clicks === 1) {
+      abrirModal(p);
+    }
     clicks = 0;
-  }, 600); // tempo máximo entre cliques
+  }, 350); // janela de tempo entre cliques
 
   if (clicks === 3) {
     clicks = 0;
@@ -716,20 +717,19 @@ c.addEventListener("click", async () => {
     const { data: { user } } = await sb.auth.getUser();
     const email = user?.email || null;
 
-const autorizado = email && EMAILS_AUTORIZADOS_EXCLUSAO.includes(email);
+    const autorizado = email && EMAILS_AUTORIZADOS_EXCLUSAO.includes(email);
 
     if (!autorizado) {
       alert("❌ Você não tem permissão para excluir este item.");
       return;
     }
 
-    const confirmar = confirm(`Deseja EXCLUIR o prato:\n\n${p.nome} ?\n\n⚠️ Essa ação é irreversível.`);
+    const confirmar = confirm(
+      `Deseja EXCLUIR o prato:\n\n${p.nome}\n\n⚠️ Essa ação é irreversível.`
+    );
     if (!confirmar) return;
 
-    const { error } = await sb
-      .from("buffet")
-      .delete()
-      .eq("id", p.id);
+    const { error } = await sb.from("buffet").delete().eq("id", p.id);
 
     if (error) {
       alert("Erro ao excluir o prato.");
@@ -741,7 +741,6 @@ const autorizado = email && EMAILS_AUTORIZADOS_EXCLUSAO.includes(email);
     renderLista();
   }
 });
-
 c.innerHTML = `
   ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
   <div class="card-body">
