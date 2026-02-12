@@ -9,7 +9,6 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -30,28 +29,24 @@
 
 html,body{
   height:100%;
-  overflow:hidden;
-}
-
-body{
   margin:0;
+  overflow:hidden; /* 🔒 trava scroll da página inteira */
   font-family:Inter,sans-serif;
-  background:
-    radial-gradient(1200px 500px at 10% -10%, #eef2ff 0%, transparent 60%),
-    radial-gradient(1200px 500px at 110% 10%, #ecfeff 0%, transparent 60%),
-    var(--bg);
+  background:var(--bg);
   color:var(--text);
-  display:flex;
-  flex-direction:column;
 }
 
-/* HEADER FIXO */
+/* ================= HEADER FIXO REAL ================= */
 .header{
-  flex-shrink:0;
-  backdrop-filter:blur(8px);
-  background:rgba(244,246,251,.96);
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:128px;
+  z-index:999;
+  backdrop-filter:blur(10px);
+  background:rgba(244,246,251,.97);
   border-bottom:1px solid var(--border);
-  z-index:10;
 }
 
 .header-inner{
@@ -76,7 +71,7 @@ body{
   font-weight:600;
 }
 
-/* FILTROS */
+/* ================= FILTROS ================= */
 .filters{
   display:grid;
   grid-template-columns:2fr 1fr 1fr auto;
@@ -115,10 +110,14 @@ body{
   box-shadow:0 10px 24px rgba(37,99,235,.45);
 }
 
-/* CONTEÚDO SCROLL */
+/* ================= CONTEÚDO COM SCROLL ================= */
 .main{
-  flex:1;
-  overflow:auto;
+  position:fixed;
+  top:128px;          /* 🔥 altura exata do header */
+  left:0;
+  right:0;
+  bottom:0;
+  overflow:auto;     /* 👈 somente aqui rola */
   padding:18px;
 }
 
@@ -213,7 +212,6 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-const hoje = new Date().toISOString().slice(0,10);
 let pratos=[], itens=[], impostos=[];
 
 async function carregarBase(){
