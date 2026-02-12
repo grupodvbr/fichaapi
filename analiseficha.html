@@ -509,7 +509,12 @@ const EMAILS_AUTORIZADOS_PRECO_IDEAL = [
   "leonardo_henrique1@hotmail.com",
   "souzanalbert58@gmail.com"
 ];
-
+const EMAILS_AUTORIZADOS_EXCLUSAO = [
+  "leonardo_henrique1@hotmail.com",
+  "souzanalbert58@gmail.com",
+  "yanequeiroz123@gmail.com",   // 👈 exemplo
+  "gerente@mercattodelicia.com.br"  // 👈 exemplo
+];
 let usuarioEmailAtual = null;
 
 
@@ -689,12 +694,53 @@ const margem =
 
 const c = document.createElement("div");
 c.className = "card";
-if (p.ativo === false) {
-  c.style.opacity = "0.45";
-  c.style.filter = "grayscale(1)";
-}
 
-    c.onclick = ()=>abrirModal(p);
+// clique normal abre modal
+c.onclick = () => abrirModal(p);
+
+// 🔁 detectar 3 cliques
+let clicks = 0;
+let clickTimer = null;
+
+c.addEventListener("click", async () => {
+  clicks++;
+
+  clearTimeout(clickTimer);
+  clickTimer = setTimeout(() => {
+    clicks = 0;
+  }, 600); // tempo máximo entre cliques
+
+  if (clicks === 3) {
+    clicks = 0;
+
+    const { data: { user } } = await sb.auth.getUser();
+    const email = user?.email || null;
+
+const autorizado = email && EMAILS_AUTORIZADOS_EXCLUSAO.includes(email);
+
+    if (!autorizado) {
+      alert("❌ Você não tem permissão para excluir este item.");
+      return;
+    }
+
+    const confirmar = confirm(`Deseja EXCLUIR o prato:\n\n${p.nome} ?\n\n⚠️ Essa ação é irreversível.`);
+    if (!confirmar) return;
+
+    const { error } = await sb
+      .from("buffet")
+      .delete()
+      .eq("id", p.id);
+
+    if (error) {
+      alert("Erro ao excluir o prato.");
+      return;
+    }
+
+    alert("✅ Prato excluído com sucesso.");
+    await carregarPratos();
+    renderLista();
+  }
+});
 
 c.innerHTML = `
   ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
