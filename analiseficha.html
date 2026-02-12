@@ -1504,15 +1504,17 @@ async function salvarIngrediente(){
     custo_calculado: custoUnit * qtd
   });
 
-  await carregarCMVCache();
+await carregarCMVCache();
+await carregarPratos();   // 🔁 atualiza lista
+renderLista();            // 🔁 re-renderiza cards
 
-  const { data: pratoNovo } = await sb
-    .from("buffet")
-    .select("*")
-    .eq("id", pratoAtual.id)
-    .single();
+const { data: pratoNovo } = await sb
+  .from("buffet")
+  .select("*")
+  .eq("id", pratoAtual.id)
+  .single();
 
-  abrirModal(pratoNovo);
+abrirModal(pratoNovo);
 }
 
 async function excluirIngrediente(itemId){
@@ -1523,15 +1525,17 @@ async function excluirIngrediente(itemId){
     .delete()
     .eq("id", itemId);
 
-  await carregarCMVCache();
+await carregarCMVCache();
+await carregarPratos();   // 🔁 atualiza lista
+renderLista();            // 🔁 re-renderiza cards
 
-  const { data: pratoNovo } = await sb
-    .from("buffet")
-    .select("*")
-    .eq("id", pratoAtual.id)
-    .single();
+const { data: pratoNovo } = await sb
+  .from("buffet")
+  .select("*")
+  .eq("id", pratoAtual.id)
+  .single();
 
-  abrirModal(pratoNovo);
+abrirModal(pratoNovo);
 }
 
 async function salvarImposto(){
@@ -1611,6 +1615,8 @@ await sb
 
 // 🔁 atualiza cache de CMV
 await carregarCMVCache();
+await carregarPratos();   // 🔁 atualiza lista
+renderLista();            // 🔁 re-renderiza cards
 
 // 🔄 recarrega o prato do banco (pra não usar objeto velho)
 const { data: pratoNovo } = await sb
