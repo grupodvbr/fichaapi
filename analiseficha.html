@@ -689,8 +689,10 @@ for(const p of pratos){
         totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
     });
 
-const custoBase = dados.cmvBase;
-const custoTotal = dados.cmvBase + totalImpostos;
+const custoBase = dados.cmvBase > 0
+  ? dados.cmvBase
+  : Number(p.custo_total || p.custo_unitario || 0);
+   const custoTotal = dados.cmvBase + totalImpostos;
 
 // ✅ CMV apenas do custo base (ingredientes)
 const cmvPerc =
@@ -1718,7 +1720,7 @@ async function carregarTipos(){
   await carregarCMVCache();   // 🔥 cache primeiro
   await carregarPratos();     // 🔥 depois os pratos
   await carregarTipos();
-  renderLista();
+  renderLista();              // 🔥 render só depois do cache
 })();
 async function editarNomePrato(){
   const h2 = document.getElementById("tituloPrato");
@@ -1746,10 +1748,9 @@ async function editarNomePrato(){
 
   // atualiza o header do modal
   h2.innerText = nomeFinal;
-
-  // atualiza lista de cards
-  await carregarPratos();
-  renderLista();
+await carregarCMVCache();  // 🔁 atualiza cache
+await carregarPratos();    // 🔁 atualiza lista
+renderLista();             // 🔁 re-renderiza cards
 }
 
    
