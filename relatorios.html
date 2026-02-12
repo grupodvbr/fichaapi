@@ -117,9 +117,11 @@ async function exportarRelatorio(){
     mapaCustos[i.buffet_id] ??= { base:0, impostos:0 };
     if(i.modalidade === "FIXO")
       mapaCustos[i.buffet_id].impostos += Number(i.valor||0);
-    if(i.modalidade === "PERCENTUAL")
-      mapaCustos[i.buffet_id].impostos +=
-        (mapaCustos[i.buffet_id].base * Number(i.valor||0)) / 100;
+if(i.modalidade === "PERCENTUAL"){
+  const baseAtual = mapaCustos[i.buffet_id]?.base || 0;
+  mapaCustos[i.buffet_id].impostos +=
+    (baseAtual * Number(i.valor||0)) / 100;
+}
   });
 
   /* ===== ABA 1 — RESUMO ===== */
