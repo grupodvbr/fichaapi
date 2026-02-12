@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório Executivo • CMV</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --primary:#2563eb;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:#e5e7eb;
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:36px;
+}
+
+h1{
+  font-size:30px;
+  margin-bottom:6px;
+}
+
+p{
+  color:var(--muted);
+  margin-bottom:26px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:30px;
+}
+
+button{
+  background:linear-gradient(135deg,#2563eb,#1e40af);
+  color:#fff;
+  border:none;
+  border-radius:16px;
+  padding:18px 30px;
+  font-weight:900;
+  cursor:pointer;
+  font-size:15px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>Relatório Executivo de CMV</h1>
+  <p>Resumo financeiro, ficha técnica e simulação de preços</p>
+
+  <div class="card">
+    <button onclick="exportarRelatorio()">
+      📊 EXPORTAR RELATÓRIO COMPLETO (EXCEL)
+    </button>
+  </div>
+</div>
+
+<script>
+/* ===============================
+   SUPABASE
+================================ */
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+);
+
+const hoje = new Date().toISOString().slice(0,10);
+
+/* ===============================
+   EXPORTAÇÃO
+================================ */
+async function exportarRelatorio(){
+
+  const { data: pratos } = await sb.from("buffet").select("*");
+  const { data: itens } = await sb
+    .from("buffet_itens")
+    .select("buffet_id, nome, quantidade, unidade_uso, custo_unitario, custo_calculado");
+
+  const { data: impostos } = await sb
+    .from("impostos")
+    .select("buffet_id, modalidade, valor");
+
+  /* ===== MAPAS ===== */
+  const mapaItens = {};
+  itens.forEach(i=>{
+    mapaItens[i.buffet_id] ??= [];
+    mapaItens[i.buffet_id].push(i);
+  });
+
+  const mapaCustos = {};
+  itens.forEach(i=>{
+    mapaCustos[i.buffet_id] ??= { base:0, impostos:0 };
+    mapaCustos[i.buffet_id].base += Number(i.custo_calculado||0);
+  });
+
+  impostos.forEach(i=>{
+    mapaCustos[i.buffet_id] ??= { base:0, impostos:0 };
+    if(i.modalidade === "FIXO")
+      mapaCustos[i.buffet_id].impostos += Number(i.valor||0);
+if(i.modalidade === "PERCENTUAL"){
+  const baseAtual = mapaCustos[i.buffet_id]?.base || 0;
+  mapaCustos[i.buffet_id].impostos +=
+    (baseAtual * Number(i.valor||0)) / 100;
+}
+  });
+
+  /* ===== ABA 1 — RESUMO ===== */
+  const resumo = pratos.map(p=>{
+    const base = mapaCustos[p.id]?.base || 0;
+    const imp  = mapaCustos[p.id]?.impostos || 0;
+    const total = base + imp;
+    const venda = Number(p.preco_venda||0);
+    const lucro = venda - total;
+    const margem = venda ? (lucro/venda)*100 : 0;
+
+const cmv = venda > 0 ? (total / venda) * 100 : 0;
+return {
+  Prato: p.nome,
+  Tipo: p.tipo,
+  Status: p.ativo ? "ATIVO" : "INATIVO",
+  "Custo Base": Number(base.toFixed(2)),
+  Impostos: Number(imp.toFixed(2)),
+  "Custo Final": Number(total.toFixed(2)),
+  "Preço Venda Atual": Number(venda.toFixed(2)),
+  "Lucro Atual": Number(lucro.toFixed(2)),
+  "CMV %": Number(cmv.toFixed(2)),
+  "Margem Atual %": Number(margem.toFixed(2))
+};
+  });
+
+  /* ===== ABA 2 — DETALHADO ===== */
+  const detalhado = [];
+  pratos.forEach(p=>{
+    const base = mapaCustos[p.id]?.base || 0;
+    const imp  = mapaCustos[p.id]?.impostos || 0;
+    const total = base + imp;
+    const venda = Number(p.preco_venda||0);
+
+    (mapaItens[p.id] || []).forEach(i=>{
+      detalhado.push({
+        Prato: p.nome,
+        Tipo: p.tipo,
+        Ingrediente: i.nome,
+        Quantidade: i.quantidade,
+        Unidade: i.unidade_uso,
+        "Custo Unitário": i.custo_unitario,
+        "Custo Ingrediente": i.custo_calculado,
+        "Custo Base Ficha": base,
+        "Impostos Ficha": imp,
+        "Custo Final Ficha": total,
+        "Preço Venda Atual": venda
+      });
+    });
+  });
+
+  /* ===== ABA 3 — SIMULAÇÃO ===== */
+  const simulacao = pratos.map(p=>{
+    const total = mapaCustos[p.id]
+      ? mapaCustos[p.id].base + mapaCustos[p.id].impostos
+      : 0;
+    const venda = Number(p.preco_venda||0);
+    const lucro = venda - total;
+    const margem = venda ? (lucro/venda)*100 : 0;
+
+const MARGEM_PADRAO = 0.60;
+
+const precoNovo = total ? total / (1 - MARGEM_PADRAO) : 0;
+const lucroNovo = precoNovo - total;
+const margemNova = precoNovo ? (lucroNovo / precoNovo) * 100 : 0;
+
+return {
+  Prato: p.nome,
+  Tipo: p.tipo,
+  "Custo Final": Number(total.toFixed(2)),
+  "Preço Venda Atual": Number(venda.toFixed(2)),
+  "Preço Venda Sugerido (60%)": Number(precoNovo.toFixed(2)),
+  "Lucro Atual": Number(lucro.toFixed(2)),
+  "Margem Atual %": Number(margem.toFixed(2)),
+  "Lucro Sugerido": Number(lucroNovo.toFixed(2)),
+  "Margem Nova %": Number(margemNova.toFixed(2))
+};
+  });
+
+  /* ===== EXCEL ===== */
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumo), "Resumo");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detalhado), "Fichas Detalhadas");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(simulacao), "Simulação de Preços");
+
+  XLSX.writeFile(wb, `relatorio_CMV_completo_${hoje}.xlsx`);
+}
+</script>
+</body>
+</html>
