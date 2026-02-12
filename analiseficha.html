@@ -1564,12 +1564,33 @@ async function salvarImposto(){
     valor
   });
 
-  abrirModal(pratoAtual);
+  await carregarCMVCache();  // 🔁 atualiza cache
+  await carregarPratos();    // 🔁 atualiza lista
+  renderLista();             // 🔁 re-renderiza cards
+
+  const { data: pratoNovo } = await sb
+    .from("buffet")
+    .select("*")
+    .eq("id", pratoAtual.id)
+    .single();
+
+  abrirModal(pratoNovo);
 }
 
 async function excluirImposto(id){
   await sb.from("impostos").delete().eq("id",id);
-  abrirModal(pratoAtual);
+
+  await carregarCMVCache();  // 🔁 atualiza cache
+  await carregarPratos();    // 🔁 atualiza lista
+  renderLista();             // 🔁 re-renderiza cards
+
+  const { data: pratoNovo } = await sb
+    .from("buffet")
+    .select("*")
+    .eq("id", pratoAtual.id)
+    .single();
+
+  abrirModal(pratoNovo);
 }
 /* =====================================================
    AUTO UNIDADE
