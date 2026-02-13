@@ -657,7 +657,61 @@ button{
     width:100%;
   }
 }
+/* ===== CARDS FINANCEIROS COMPACTOS ===== */
+.card-stats{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:8px;
+  margin-top:10px;
+}
 
+.stat{
+  background:#f8fafc;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:8px 10px;
+  font-size:11px;
+  line-height:1.1;
+  box-shadow:var(--shadow-xs);
+}
+
+.stat b{
+  display:block;
+  margin-top:4px;
+  font-size:13px;
+  font-weight:900;
+}
+
+.stat.green{
+  background:#ecfdf5;
+  border-color:#a7f3d0;
+  color:#065f46;
+}
+
+.stat.red{
+  background:#fef2f2;
+  border-color:#fecaca;
+  color:#991b1b;
+}
+
+.stat.blue{
+  background:#eef2ff;
+  border-color:#c7d2fe;
+  color:#3730a3;
+}
+
+.stat.orange{
+  background:#fff7ed;
+  border-color:#fed7aa;
+  color:#9a3412;
+}
+
+/* mobile: 2 colunas */
+@media(max-width:520px){
+  .card-stats{
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
 
 
@@ -972,58 +1026,39 @@ ${p.descricao ? `
     ${p.descricao}
   </p>
 ` : ``}
+<div class="card-stats">
 
-    <!-- LINHA 1 — STATUS FINANCEIRO -->
-    <div class="badges primary">
-      <span class="badge">${p.tipo || "-"}</span>
+  <div class="stat blue">
+    📦 Tipo
+    <b>${p.tipo || "-"}</b>
+  </div>
 
-      ${cmvPerc !== null ? `
-        <span class="badge"
-          style="
-            background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
-            color:${cmvPerc > 35 ? '#991b1b' : '#166534'}">
-          📊 CMV ${cmvPerc.toFixed(1)}%
-        </span>
-      ` : ``}
+  <div class="stat ${cmvPerc > 35 ? "red" : "green"}">
+    📊 CMV
+    <b>${cmvPerc !== null ? cmvPerc.toFixed(1) + "%" : "-"}</b>
+  </div>
 
-      ${margem !== null ? `
-        <span class="badge"
-          style="
-            background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
-            color:${margem < 30 ? '#991b1b' : '#166534'}">
-          📈 Margem ${margem.toFixed(1)}%
-        </span>
-      ` : ``}
-    </div>
+  <div class="stat ${margem < 30 ? "red" : "green"}">
+    📈 Margem
+    <b>${margem !== null ? margem.toFixed(1) + "%" : "-"}</b>
+  </div>
 
-<!-- LINHA 2 — CUSTOS -->
-<div class="badges">
-  ${
-    custoBase > 0
-      ? `<span class="badge">🧾 Custo ${moeda(custoBase)}</span>`
-      : `<span class="badge" style="background:#fff7ed;color:#9a3412">⚠️ Sem custo cadastrado</span>`
-  }
+  <div class="stat orange">
+    🧾 Custo
+    <b>${moeda(custoTotal)}</b>
+  </div>
 
-  ${totalImpostos > 0
-    ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
-    : ``}
+  <div class="stat">
+    💰 Venda
+    <b>${p.preco_venda ? moeda(p.preco_venda) : "-"}</b>
+  </div>
+
+  <div class="stat ${lucro < 0 ? "red" : "green"}">
+    🟢 Lucro
+    <b>${lucro !== null ? moeda(lucro) : "-"}</b>
+  </div>
+
 </div>
-
-    <!-- LINHA 3 — RESULTADO -->
-    <div class="badges secondary">
-      ${p.preco_venda
-        ? `<span class="badge">💰 Venda ${moeda(p.preco_venda)}</span>`
-        : ``}
-
-      ${lucro !== null ? `
-        <span class="badge"
-          style="
-            background:${lucro < 0 ? '#fee2e2' : '#dcfce7'};
-            color:${lucro < 0 ? '#991b1b' : '#166534'}">
-          🟢 Lucro ${moeda(lucro)}
-        </span>
-      ` : ``}
-    </div>
 
   </div>
 `;
