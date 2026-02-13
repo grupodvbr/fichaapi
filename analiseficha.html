@@ -658,7 +658,51 @@ button{
   }
 }
 
+/* linha compacta para custo / imposto */
+.line-cost{
+  display:grid;
+  grid-template-columns: 1.6fr .7fr .7fr .7fr auto;
+  gap:10px;
+  align-items:center;
+}
 
+.line-desc{
+  height:40px;
+  border-radius:12px;
+  font-size:13px;
+}
+
+.line-type,
+.line-mode{
+  height:40px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.line-value{
+  height:40px;
+  border-radius:12px;
+  font-size:13px;
+  text-align:right;
+}
+
+@media(max-width:720px){
+  .line-cost{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .btn-line{
+    grid-column: span 2;
+    width:100%;
+  }
+}
+
+
+
+
+
+   
 
 
 
@@ -1388,27 +1432,30 @@ ${p.preco_ideal ? `
 </table>
 
   <div class="precificacao">
-    <h3>Novo custo / imposto</h3>
+<div class="precificacao compact-line">
+  <h3 style="margin:0 0 10px">Novo custo / imposto</h3>
 
-    <input id="impDesc" placeholder="Descrição">
+  <div class="line-cost">
+    <input id="impDesc" placeholder="Descrição" class="line-desc">
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <select id="impTipo">
-        <option value="IMPOSTO">IMPOSTO</option>
-        <option value="CUSTO">CUSTO</option>
-      </select>
+    <select id="impTipo" class="line-type">
+      <option value="IMPOSTO">IMPOSTO</option>
+      <option value="CUSTO">CUSTO</option>
+    </select>
 
-      <select id="impModalidade">
-        <option value="FIXO">VALOR FIXO</option>
-        <option value="PERCENTUAL">PERCENTUAL (%)</option>
-      </select>
-    </div>
+    <select id="impModalidade" class="line-mode">
+      <option value="FIXO">VALOR FIXO</option>
+      <option value="PERCENTUAL">%</option>
+    </select>
 
-    <input id="impValor" type="number" step="0.01" placeholder="Valor">
+    <input id="impValor" type="number" step="0.01" placeholder="Valor" class="line-value">
 
-    <button class="btn-add" style="margin-top:10px"
-      onclick="salvarImposto()">ADICIONAR</button>
+    <button class="btn-add btn-line"
+      onclick="salvarImposto()">
+      ＋
+    </button>
   </div>
+</div>
 <hr>
 <hr>
 
