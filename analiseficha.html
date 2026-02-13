@@ -96,9 +96,9 @@ body.modal-open{
 ========================================================= */
 .grid{
   display:grid;
-  grid-template-columns:repeat(6, 1fr);
-  gap:22px;
-  padding:22px;
+  grid-template-columns:repeat(5, 1fr); /* 🔥 menos colunas */
+  gap:20px;
+  padding:20px;
 }
 
 /* =========================================================
@@ -121,7 +121,7 @@ body.modal-open{
 
 .card img{
   width:100%;
-  height:160px;       /* 👈 reduz a altura */
+  height:130px;   /* 🔥 diminui a imagem */
   object-fit:cover;
   transition:.3s ease;
 }
@@ -721,26 +721,25 @@ button{
 }
 
 .card-stats{
-  min-height:92px;   /* 🔥 força mesma altura em todos */
+  min-height:76px;  /* 🔥 cabe melhor no 100% */
 }
-
 .stat b{
   min-height:14px;
   display:block;
 }
 
 .desc-card{
-  font-size:13px;
+  font-size:12px;          /* 🔥 fonte menor */
   color:#64748b;
-  line-height:1.3;
-  margin:4px 0 8px;
+  line-height:1.25;
+  margin:2px 0 6px;       /* 🔥 menos margem */
 
   display:-webkit-box;
-  -webkit-line-clamp:2;
+  -webkit-line-clamp:1;   /* 🔥 só 1 linha no card */
   -webkit-box-orient:vertical;
   overflow:hidden;
 
-  min-height:34px;   /* 🔥 trava altura da descrição */
+  min-height:18px;        /* 🔥 menos altura fixa */
 }
 
 
