@@ -153,7 +153,21 @@ body.modal-open{
 
 .badges.primary{ margin-top:6px; }
 .badges.secondary{ margin-top:10px; }
+/* ===== GRID DOS BADGES (2 POR LINHA) ===== */
+.badges.grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:8px;
+  margin-top:8px;
+}
 
+.badges.grid .badge{
+  justify-content:center;
+  padding:8px 10px;
+  font-size:12px;
+  text-align:center;
+  border-radius:999px;
+}
 .badge{
   display:inline-flex;
   align-items:center;
@@ -973,59 +987,52 @@ ${p.descricao ? `
   </p>
 ` : ``}
 
-    <!-- LINHA 1 — STATUS FINANCEIRO -->
-    <div class="badges primary">
-      <span class="badge">${p.tipo || "-"}</span>
+<div class="badges grid">
+  <span class="badge">${p.tipo || "-"}</span>
 
-      ${cmvPerc !== null ? `
-        <span class="badge"
-          style="
-            background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
-            color:${cmvPerc > 35 ? '#991b1b' : '#166534'}">
-          📊 CMV ${cmvPerc.toFixed(1)}%
-        </span>
-      ` : ``}
+  ${cmvPerc !== null ? `
+    <span class="badge"
+      style="
+        background:${cmvPerc > 35 ? '#fee2e2' : '#dcfce7'};
+        color:${cmvPerc > 35 ? '#991b1b' : '#166534'}">
+      📊 CMV ${cmvPerc.toFixed(1)}%
+    </span>
+  ` : ``}
 
-      ${margem !== null ? `
-        <span class="badge"
-          style="
-            background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
-            color:${margem < 30 ? '#991b1b' : '#166534'}">
-          📈 Margem ${margem.toFixed(1)}%
-        </span>
-      ` : ``}
-    </div>
+  ${margem !== null ? `
+    <span class="badge"
+      style="
+        background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
+        color:${margem < 30 ? '#991b1b' : '#166534'}">
+      📈 Margem ${margem.toFixed(1)}%
+    </span>
+  ` : ``}
 
-<!-- LINHA 2 — CUSTOS -->
-<div class="badges">
   ${
     custoBase > 0
       ? `<span class="badge">🧾 Custo ${moeda(custoBase)}</span>`
-      : `<span class="badge" style="background:#fff7ed;color:#9a3412">⚠️ Sem custo cadastrado</span>`
+      : `<span class="badge" style="background:#fff7ed;color:#9a3412">⚠️ Sem custo</span>`
   }
 
   ${totalImpostos > 0
     ? `<span class="badge">⚙ Op. ${moeda(totalImpostos)}</span>`
-    : ``}
+    : `<span class="badge" style="opacity:.5">⚙ Op. R$ 0,00</span>`
+  }
+
+  ${p.preco_venda
+    ? `<span class="badge">💰 Venda ${moeda(p.preco_venda)}</span>`
+    : `<span class="badge" style="opacity:.5">💰 Sem preço</span>`
+  }
+
+  ${lucro !== null ? `
+    <span class="badge"
+      style="
+        background:${lucro < 0 ? '#fee2e2' : '#dcfce7'};
+        color:${lucro < 0 ? '#991b1b' : '#166534'}">
+      🟢 Lucro ${moeda(lucro)}
+    </span>
+  ` : ``}
 </div>
-
-    <!-- LINHA 3 — RESULTADO -->
-    <div class="badges secondary">
-      ${p.preco_venda
-        ? `<span class="badge">💰 Venda ${moeda(p.preco_venda)}</span>`
-        : ``}
-
-      ${lucro !== null ? `
-        <span class="badge"
-          style="
-            background:${lucro < 0 ? '#fee2e2' : '#dcfce7'};
-            color:${lucro < 0 ? '#991b1b' : '#166534'}">
-          🟢 Lucro ${moeda(lucro)}
-        </span>
-      ` : ``}
-    </div>
-
-  </div>
 `;
 cards.appendChild(c);
   } // fecha for
