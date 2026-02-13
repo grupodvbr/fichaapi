@@ -249,18 +249,28 @@ iframe{flex:1;width:100%;border:0;background:#fff}
 
 <!-- APP -->
 <div id="app" class="app">
-  <aside class="sidebar">
-    <div class="icon active" onclick="openPage('home.html',this)"><span class="glyph home"></span></div>
-    <div class="icon" onclick="openPage('fichatecnica.html',this)"><span class="glyph doc"></span></div>
-    <div class="icon" onclick="openPage('ingredientes.html',this)"><span class="glyph box"></span></div>
-    <div class="icon" onclick="openPage('analiseficha.html',this)"><span class="glyph chart"></span></div>
-   <div class="icon" onclick="openPage('config.html',this)"><span class="glyph settings"></span></div>
-    <div class="icon" onclick="openPage('ingredientesexcell.html',this)"><span class="glyph settings"></span></div>
-<div class="icon" onclick="openPage('midias.html',this)"><span class="glyph media"></span></div>
-     <div class="icon" onclick="openPage('relatorios.html',this)"><span class="glyph settings"></span></div>
+<aside class="sidebar">
+  <div class="icon active" onclick="openPage('home.html',this)"><span class="glyph home"></span></div>
+  <div class="icon" onclick="openPage('fichatecnica.html',this)"><span class="glyph doc"></span></div>
+  <div class="icon" onclick="openPage('ingredientes.html',this)"><span class="glyph box"></span></div>
+  <div class="icon" onclick="openPage('analiseficha.html',this)"><span class="glyph chart"></span></div>
+  <div class="icon" onclick="openPage('config.html',this)"><span class="glyph settings"></span></div>
 
+  <!-- Excel Ingredientes -->
+  <div class="icon" onclick="openPage('ingredientesexcell.html',this)">
+    <span class="glyph doc"></span>
+  </div>
 
-  </aside>
+  <!-- Mídias -->
+  <div class="icon" onclick="openPage('midias.html',this)">
+    <span class="glyph media"></span>
+  </div>
+
+  <!-- Relatórios -->
+  <div class="icon" onclick="openPage('relatorios.html',this)">
+    <span class="glyph chart"></span>
+  </div>
+</aside>
 
   <div class="main">
     <div class="header">
@@ -313,10 +323,9 @@ const titles = {
   "ingredientes.html": "CB SYSTEMS® - Ingredientes",
   "analiseficha.html": "CB SYSTEMS® - Análise de Fichas",
   "config.html": "CB SYSTEMS® - Análise financeira",
-  "igredientesexcell.html": "CB SYSTEMS® - Análise de Ingredientes",
+  "ingredientesexcell.html": "CB SYSTEMS® - Excel de Ingredientes", // ✅ corrigido
   "midias.html": "CB SYSTEMS® - Mídias do Cardápio",
-   "relatorios.html": "CB SYSTEMS® - Relatórios"
-
+  "relatorios.html": "CB SYSTEMS® - Relatórios"
 };
 
 document.getElementById("pageTitle").innerText = titles[page] || "CB SYSTEMS®";
