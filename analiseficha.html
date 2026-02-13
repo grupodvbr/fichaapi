@@ -713,7 +713,14 @@ button{
   }
 }
 
+.card-stats{
+  min-height:auto;
+}
 
+.stat b{
+  min-height:14px;
+  display:block;
+}
 
 
 
@@ -1030,36 +1037,35 @@ ${p.descricao ? `
 
   <div class="stat blue">
     📦 Tipo
-    <b>${p.tipo || "-"}</b>
+    <b>${p.tipo || "—"}</b>
   </div>
 
-  <div class="stat ${cmvPerc > 35 ? "red" : "green"}">
+  <div class="stat ${cmvPerc ? (cmvPerc > 35 ? "red" : "green") : ""}">
     📊 CMV
-    <b>${cmvPerc !== null ? cmvPerc.toFixed(1) + "%" : "-"}</b>
+    <b>${cmvPerc ? cmvPerc.toFixed(1) + "%" : "—"}</b>
   </div>
 
-  <div class="stat ${margem < 30 ? "red" : "green"}">
+  <div class="stat ${margem ? (margem < 30 ? "red" : "green") : ""}">
     📈 Margem
-    <b>${margem !== null ? margem.toFixed(1) + "%" : "-"}</b>
+    <b>${margem ? margem.toFixed(1) + "%" : "—"}</b>
   </div>
 
   <div class="stat orange">
     🧾 Custo
-    <b>${moeda(custoTotal)}</b>
+    <b>${custoTotal > 0 ? moeda(custoTotal) : "—"}</b>
   </div>
 
   <div class="stat">
     💰 Venda
-    <b>${p.preco_venda ? moeda(p.preco_venda) : "-"}</b>
+    <b>${p.preco_venda ? moeda(p.preco_venda) : "—"}</b>
   </div>
 
-  <div class="stat ${lucro < 0 ? "red" : "green"}">
+  <div class="stat ${lucro ? (lucro < 0 ? "red" : "green") : ""}">
     🟢 Lucro
-    <b>${lucro !== null ? moeda(lucro) : "-"}</b>
+    <b>${lucro ? moeda(lucro) : "—"}</b>
   </div>
 
 </div>
-
   </div>
 `;
 cards.appendChild(c);
