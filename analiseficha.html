@@ -598,6 +598,74 @@ button{
     grid-template-columns:1fr;
   }
 }
+
+
+
+
+/* linha compacta para adicionar ingrediente */
+.precificacao.compact-line{
+  padding:12px;
+}
+
+.line-add{
+  display:grid;
+  grid-template-columns: 1.8fr .6fr .6fr auto;
+  gap:10px;
+  align-items:center;
+}
+
+.line-select{
+  height:40px;
+  border-radius:12px;
+  font-size:13px;
+}
+
+.line-qtd{
+  height:40px;
+  font-size:13px;
+  text-align:center;
+}
+
+.line-unidade{
+  height:40px;
+  font-size:12px;
+  text-align:center;
+  background:#f1f5f9 !important;
+}
+
+.btn-line{
+  height:40px;
+  width:44px;
+  padding:0;
+  border-radius:12px;
+  font-size:18px;
+  font-weight:900;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* mobile: quebra em 2 linhas */
+@media(max-width:720px){
+  .line-add{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .btn-line{
+    grid-column: span 2;
+    width:100%;
+  }
+}
+
+
+
+
+
+
+
+
+   
 </style>
 </head>
 
@@ -1256,11 +1324,12 @@ ${p.preco_ideal ? `
   </tbody>
 </table>
 
-  <div class="precificacao">
-    <h3>Novo ingrediente</h3>
+ <div class="precificacao compact-line">
+  <h3 style="margin:0 0 10px">Novo ingrediente</h3>
 
-    <select id="ingProduto">
-      <option value="">Selecione</option>
+  <div class="line-add">
+    <select id="ingProduto" class="line-select">
+      <option value="">Selecione o ingrediente</option>
       ${ingredientesBase.map(i=>`
         <option value="${i.id}"
           data-custo="${i.valor}"
@@ -1270,15 +1339,16 @@ ${p.preco_ideal ? `
       `).join("")}
     </select>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <input id="ingQtd" type="number" step="0.001" placeholder="Quantidade">
-      <input id="ingUnidade" readonly placeholder="Unidade">
-    </div>
+    <input id="ingQtd" type="number" step="0.001" placeholder="Qtd" class="line-qtd">
 
-<button id="btnSalvarIngrediente" class="btn-add" style="margin-top:10px"
-  onclick="salvarIngrediente()">ADICIONAR INGREDIENTE</button>
+    <input id="ingUnidade" readonly placeholder="Un." class="line-unidade">
+
+    <button id="btnSalvarIngrediente" class="btn-add btn-line"
+      onclick="salvarIngrediente()">
+      ＋
+    </button>
   </div>
-
+</div>
   <hr>
 
 <h3>Custos / Impostos (planilha)</h3>
