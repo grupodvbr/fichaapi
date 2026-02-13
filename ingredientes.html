@@ -274,6 +274,36 @@ button:hover{
 @media(max-width:520px){
   .form-grid{grid-template-columns:1fr}
 }
+
+.sugestoes{
+  position:absolute;
+  top:100%;
+  left:0;
+  right:0;
+  margin-top:6px;
+  background:#020617;
+  border:1px solid var(--border);
+  border-radius:14px;
+  max-height:220px;
+  overflow:auto;
+  z-index:50;
+  box-shadow:0 20px 50px rgba(0,0,0,.6);
+}
+
+.sugestoes div{
+  padding:12px 14px;
+  cursor:pointer;
+  font-weight:700;
+  letter-spacing:.04em;
+  color:#e6fffa;
+  transition:.15s;
+}
+
+.sugestoes div:hover{
+  background:linear-gradient(135deg, rgba(20,184,166,.25), rgba(20,184,166,.08));
+}
+
+  
 </style>
 </head>
 
@@ -296,10 +326,11 @@ button:hover{
     <h1 id="titulo">NOVO INGREDIENTE</h1>
 <div class="section form-grid">
 
-  <div class="field full">
-    <label>NOME</label>
-    <input id="nome">
-  </div>
+<div class="field full" style="position:relative">
+  <label>NOME</label>
+  <input id="nome" autocomplete="off" placeholder="DIGITE PARA BUSCAR OU CADASTRAR...">
+  <div id="sugestoes" class="sugestoes"></div>
+</div>
 
   <div class="field full">
     <label>DESCRIÇÃO</label>
@@ -547,6 +578,62 @@ async function salvar(){
 
   carregar(true);
 }
+
+const sugestoes = document.getElementById("sugestoes");
+
+nome.addEventListener("input", async () => {
+  const q = nome.value.trim();
+
+  if(q.length < 2){
+    sugestoes.innerHTML = "";
+    return;
+  }
+
+  const { data } = await sb
+    .from("produtos")
+    .select("id, nome")
+    .ilike("nome", `%${q}%`)
+    .limit(6);
+
+  if(!data || data.length === 0){
+    sugestoes.innerHTML = "";
+    return;
+  }
+
+  sugestoes.innerHTML = data.map(i => `
+    <div onclick="selecionarIngrediente('${i.id}')">
+      ${i.nome}
+    </div>
+  `).join("");
+});
+
+async function selecionarIngrediente(id){
+  const { data } = await sb
+    .from("produtos")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  atual = data;
+  titulo.textContent = "EDITAR INGREDIENTE";
+
+  Object.keys(data).forEach(k=>{
+    if(document.getElementById(k)){
+      document.getElementById(k).value = data[k] || "";
+    }
+  });
+
+  valor.value = "R$ " + Number(data.valor).toFixed(2).replace(".", ",");
+
+  sugestoes.innerHTML = "";
+}
+
+// fecha sugestões ao clicar fora
+document.addEventListener("click", (e)=>{
+  if(!e.target.closest(".field")){
+    sugestoes.innerHTML = "";
+  }
+});
 </script>
 
 </body>
