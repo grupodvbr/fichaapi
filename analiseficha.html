@@ -465,7 +465,103 @@ button{
 
   .btn-add{ width:100% }
 }
-   
+/* ====== SEÇÕES ORGANIZADAS ====== */
+.secao{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+  margin:14px 0;
+  box-shadow:var(--shadow-xs);
+}
+
+.secao h3{
+  margin:0 0 10px;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.02em;
+}
+
+/* ====== GRID COMPACTO ====== */
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+/* ====== TABELA ESTILO PLANILHA ====== */
+.table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+.table thead th{
+  text-align:left;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  padding:6px 8px;
+  border-bottom:1px solid var(--border);
+}
+
+.table tbody td{
+  padding:6px 8px;
+  border-bottom:1px solid var(--border);
+  vertical-align:middle;
+}
+
+.table tbody tr:hover{
+  background:#f8fafc;
+}
+
+.table .acoes{
+  text-align:right;
+  white-space:nowrap;
+}
+
+/* ====== RESUMO FINANCEIRO ====== */
+.resumo{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.resumo .box{
+  background:#f8fafc;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px;
+  text-align:center;
+}
+
+.resumo .box b{
+  display:block;
+  font-size:15px;
+  margin-top:4px;
+}
+
+/* ====== NUTRIÇÃO COMPACTA ====== */
+.nutri-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.nutri-item{
+  background:#f8fafc;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:8px;
+  font-size:13px;
+}
+
+/* ====== RESPONSIVO ====== */
+@media(max-width:720px){
+  .resumo{ grid-template-columns:1fr 1fr; }
+  .nutri-grid{ grid-template-columns:1fr 1fr; }
+}   
 </style>
 </head>
 
@@ -993,9 +1089,12 @@ mBody.innerHTML = `
     >
   </div>
 
-  <p><b>CUSTO BASE:</b> ${moeda(cmvBase)}</p>
-  <p><b>IMPOSTOS E CUSTOS OPERACIONAIS:</b> ${moeda(totalImpostos)}</p>
-  <p><b>CUSTO FINAL:</b> ${moeda(cmvFinal)}</p>
+<div class="resumo">
+  <div class="box">Custo base<b>${moeda(cmvBase)}</b></div>
+  <div class="box">Operacional<b>${moeda(totalImpostos)}</b></div>
+  <div class="box">Custo final<b>${moeda(cmvFinal)}</b></div>
+  <div class="box">Margem<b>${margem.toFixed(1)}%</b></div>
+</div>
 
   <hr>
   <h3>Tipo do prato</h3>
@@ -1089,25 +1188,37 @@ ${p.preco_ideal ? `
 
 
   <hr>
+<h3>Ingredientes (planilha)</h3>
 
-  <h3>Ingredientes</h3>
-  ${itens.map(i=>`
-    <div class="ing">
-      <span>
-        <b>${i.nome} — ${moeda(i.custo_unitario)}</b><br>
-        <small>${i.quantidade} ${i.unidade_uso}</small>
-      </span>
-
-      <strong>${moeda(i.custo_calculado)}</strong>
-
-<div style="display:flex;gap:6px;align-items:center">
-<button class="btn-icon btn-edit"
-          onclick="editarIngrediente('${i.id}')">✏️</button>
-        <button class="btn-icon btn-delete"
-          onclick="excluirIngrediente('${i.id}')">🗑️</button>
-      </div>
-    </div>
-  `).join("")}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Ingrediente</th>
+      <th>Qtd</th>
+      <th>Un.</th>
+      <th>Custo Unit</th>
+      <th>Total</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    ${itens.map(i=>`
+      <tr>
+        <td><b>${i.nome}</b></td>
+        <td>${i.quantidade}</td>
+        <td>${i.unidade_uso}</td>
+        <td>${moeda(i.custo_unitario)}</td>
+        <td><b>${moeda(i.custo_calculado)}</b></td>
+        <td class="acoes">
+          <button class="btn-icon btn-edit"
+            onclick="editarIngrediente('${i.id}')">✏️</button>
+          <button class="btn-icon btn-delete"
+            onclick="excluirIngrediente('${i.id}')">🗑️</button>
+        </td>
+      </tr>
+    `).join("")}
+  </tbody>
+</table>
 
   <div class="precificacao">
     <h3>Novo ingrediente</h3>
@@ -1134,22 +1245,41 @@ ${p.preco_ideal ? `
 
   <hr>
 
-  <h3>Custos / Impostos</h3>
-  ${impostosCache.map(i=>`
-    <div class="ing">
-      <span>
-        <b>${i.descricao}</b><br>
-        <small>${i.tipo} • ${i.modalidade === "PERCENTUAL" ? i.valor+"%" : moeda(i.valor)}</small>
-      </span>
-      <strong>
-        ${i.modalidade==="PERCENTUAL"
-          ? moeda((cmvBase*i.valor)/100)
-          : moeda(i.valor)}
-      </strong>
-      <button class="btn-icon btn-delete"
-        onclick="excluirImposto('${i.id}')">🗑️</button>
-    </div>
-  `).join("")}
+<h3>Custos / Impostos (planilha)</h3>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Descrição</th>
+      <th>Tipo</th>
+      <th>Modalidade</th>
+      <th>Valor</th>
+      <th>Total</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    ${impostosCache.map(i=>`
+      <tr>
+        <td><b>${i.descricao}</b></td>
+        <td>${i.tipo}</td>
+        <td>${i.modalidade}</td>
+        <td>${i.modalidade==="PERCENTUAL" ? i.valor+"%" : moeda(i.valor)}</td>
+        <td>
+          <b>${
+            i.modalidade==="PERCENTUAL"
+              ? moeda((cmvBase*i.valor)/100)
+              : moeda(i.valor)
+          }</b>
+        </td>
+        <td class="acoes">
+          <button class="btn-icon btn-delete"
+            onclick="excluirImposto('${i.id}')">🗑️</button>
+        </td>
+      </tr>
+    `).join("")}
+  </tbody>
+</table>
 
   <div class="precificacao">
     <h3>Novo custo / imposto</h3>
