@@ -1156,9 +1156,9 @@ const nutri = {
 });
 
 
-  const cmvBase = itens.reduce(
-    (s,i)=>s + Number(i.custo_calculado||0),0
-  );
+const cmvBase = (itens || []).reduce(
+  (s,i)=> s + Number(i.custo_calculado || 0), 0
+);
 
   /* IMPOSTOS / CUSTOS */
   const { data: impostos } = await sb
@@ -1469,7 +1469,6 @@ ${p.preco_ideal ? `
   </div>
 </div>
 <hr>
-<hr>
 
 <h3>Tabela Nutricional (por prato)</h3>
 
@@ -1557,6 +1556,9 @@ setTimeout(() => {
   inputFoto.onchange = async () => {
     const file = inputFoto.files[0];
     if (!file) return;
+
+    // 🔥 preview instantâneo (não espera upload)
+    mFoto.src = URL.createObjectURL(file);
 
     const ext = file.name.split(".").pop();
     const fileName = `${pratoAtual.id}.${ext}`;
