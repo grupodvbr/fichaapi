@@ -139,6 +139,13 @@ body.modal-open{
   font-weight:900;
   font-size:16px;
   letter-spacing:-.01em;
+
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+
+  min-height:42px;   /* 🔥 trava altura em 2 linhas */
 }
 
 /* =========================================================
@@ -714,7 +721,7 @@ button{
 }
 
 .card-stats{
-  min-height:auto;
+  min-height:92px;   /* 🔥 força mesma altura em todos */
 }
 
 .stat b{
@@ -722,7 +729,19 @@ button{
   display:block;
 }
 
+.desc-card{
+  font-size:13px;
+  color:#64748b;
+  line-height:1.3;
+  margin:4px 0 8px;
 
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+
+  min-height:34px;   /* 🔥 trava altura da descrição */
+}
 
 
 
@@ -1019,20 +1038,9 @@ c.innerHTML = `
   <div class="card-body">
 
     <h3>${p.nome}</h3>
-${p.descricao ? `
-  <p style="
-    font-size:13px;
-    color:#64748b;
-    line-height:1.3;
-    margin:4px 0 8px;
-    display:-webkit-box;
-    -webkit-line-clamp:2;
-    -webkit-box-orient:vertical;
-    overflow:hidden;
-  ">
-    ${p.descricao}
-  </p>
-` : ``}
+<p class="desc-card">
+  ${p.descricao || ""}
+</p>
 <div class="card-stats">
 
   <div class="stat blue">
