@@ -562,6 +562,42 @@ button{
   .resumo{ grid-template-columns:1fr 1fr; }
   .nutri-grid{ grid-template-columns:1fr 1fr; }
 }   
+
+
+
+
+/* versão compacta do card de precificação */
+.precificacao.compact{
+  padding:12px;
+  margin:0;
+}
+
+.precificacao.compact label{
+  font-weight:900;
+  font-size:12px;
+  display:block;
+  margin-bottom:6px;
+}
+
+.precificacao.compact input{
+  height:40px;
+  font-size:13px;
+  border-radius:10px;
+}
+
+.precificacao.compact small{
+  display:block;
+  margin-top:4px;
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* no mobile, volta pra 1 coluna */
+@media(max-width:720px){
+  .grid-2{
+    grid-template-columns:1fr;
+  }
+}
 </style>
 </head>
 
@@ -1106,45 +1142,45 @@ mBody.innerHTML = `
 <hr>
 <hr>
 
-<h3>Código do Varejo (Varejo Fácil)</h3>
+<h3>Integração & Preço ideal</h3>
 
-<div class="precificacao">
-  <label style="font-weight:800;font-size:13px">
-    🏷️ CÓDIGO NO VAREJO FÁCIL
-  </label>
+<div class="grid-2">
+  <!-- Código Varejo -->
+  <div class="precificacao compact">
+    <label>
+      🏷️ Código Varejo
+    </label>
 
-  <input
-    id="codigoVarejoInput"
-    type="text"
-    placeholder="Ex: 123456"
-    value="${p.codigo_varejo || ""}"
-    style="margin-top:8px"
-  >
+    <input
+      id="codigoVarejoInput"
+      type="text"
+      placeholder="Ex: 123456"
+      value="${p.codigo_varejo || ""}"
+    >
 
-  <small style="color:var(--muted)">
-    Código de integração com o sistema Varejo Fácil.
-  </small>
-</div>
+    <small>
+      Integração com o Varejo Fácil.
+    </small>
+  </div>
 
-<h3>Preço ideal</h3>
+  <!-- Preço ideal -->
+  <div class="precificacao compact">
+    <label>
+      💡 Preço ideal (R$)
+    </label>
 
-<div class="precificacao">
-  <label style="font-weight:800;font-size:13px">
-    💡 PREÇO IDEAL (R$)
-  </label>
+    <input
+      id="precoIdealInput"
+      type="number"
+      step="0.01"
+      placeholder="Ex: 29.90"
+      value="${p.preco_ideal || ""}"
+    >
 
-  <input
-    id="precoIdealInput"
-    type="number"
-    step="0.01"
-    placeholder="Ex: 29.90"
-    value="${p.preco_ideal || ""}"
-    style="margin-top:8px"
-  >
-
-  <small style="color:var(--muted)">
-    Valor de referência ideal (salva automaticamente).
-  </small>
+    <small>
+      Valor de referência (salva automático).
+    </small>
+  </div>
 </div>
 
 <h3>Precificação</h3>
