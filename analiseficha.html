@@ -658,73 +658,7 @@ button{
   }
 }
 
-/* linha compacta para custo / imposto */
-.line-cost{
-  display:grid;
-  grid-template-columns: 1.6fr .7fr .7fr .7fr auto;
-  gap:10px;
-  align-items:center;
-}
 
-.line-desc{
-  height:40px;
-  border-radius:12px;
-  font-size:13px;
-}
-
-.line-type,
-.line-mode{
-  height:40px;
-  border-radius:12px;
-  font-size:12px;
-  font-weight:800;
-}
-
-.line-value{
-  height:40px;
-  border-radius:12px;
-  font-size:13px;
-  text-align:right;
-}
-
-@media(max-width:720px){
-  .line-cost{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .btn-line{
-    grid-column: span 2;
-    width:100%;
-  }
-}
-
-.upload-foto{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  padding:10px 12px;
-  background:rgba(0,0,0,.55);
-  color:#fff;
-  font-weight:800;
-  font-size:12px;
-  letter-spacing:.04em;
-  cursor:pointer;
-  border-top:1px solid rgba(255,255,255,.12);
-  transition:.15s ease;
-}
-
-.upload-foto:hover{
-  background:rgba(0,0,0,.75);
-}
-
-.upload-foto input{
-  display:none;
-}
-
-
-
-   
 
 
 
@@ -750,22 +684,18 @@ button{
   <div class="modal-box" onclick="event.stopPropagation()">
     <span class="close" onclick="fechar()">✕</span>
 
-<div class="modal-header">
-  <div class="modal-left">
-    <img id="mFoto" class="modal-img">
+    <div class="modal-header">
+      <div class="modal-left">
+        <img id="mFoto" class="modal-img">
+      </div>
 
-    <!-- 🔽 BOTÃO DE UPLOAD AQUI, EMBAIXO DA FOTO -->
-    <label class="upload-foto">
-      <input type="file" id="fotoPrato" accept="image/*">
-      📸 Trocar foto
-    </label>
-  </div>
+      <div class="modal-main">
+        <div id="mHeader"></div>
 
-  <div class="modal-main">
-    <div id="mHeader"></div>
-    <div id="mBody" class="modal-body"></div>
-  </div>
-</div>
+        <!-- CONTEÚDO VAI PRAQUI -->
+        <div id="mBody" class="modal-body"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1156,9 +1086,9 @@ const nutri = {
 });
 
 
-const cmvBase = (itens || []).reduce(
-  (s,i)=> s + Number(i.custo_calculado || 0), 0
-);
+  const cmvBase = itens.reduce(
+    (s,i)=>s + Number(i.custo_calculado||0),0
+  );
 
   /* IMPOSTOS / CUSTOS */
   const { data: impostos } = await sb
@@ -1250,7 +1180,18 @@ mBody.innerHTML = `
   </select>
 </div>
 
+  <div style="margin:12px 0">
+    <label style="font-weight:800;font-size:13px">
+      FOTO DO PRATO
+    </label>
 
+    <input
+      type="file"
+      id="fotoPrato"
+      accept="image/*"
+      style="margin-top:6px"
+    >
+  </div>
 
 <div class="resumo">
   <div class="box">Custo base<b>${moeda(cmvBase)}</b></div>
@@ -1267,6 +1208,8 @@ mBody.innerHTML = `
 </select>
 
 <hr>
+<hr>
+
 <h3>Integração & Preço ideal</h3>
 
 <div class="grid-2">
@@ -1444,30 +1387,29 @@ ${p.preco_ideal ? `
   </tbody>
 </table>
 
-<div class="precificacao compact-line">
-  <h3 style="margin:0 0 10px">Novo custo / imposto</h3>
+  <div class="precificacao">
+    <h3>Novo custo / imposto</h3>
 
-  <div class="line-cost">
-    <input id="impDesc" placeholder="Descrição" class="line-desc">
+    <input id="impDesc" placeholder="Descrição">
 
-    <select id="impTipo" class="line-type">
-      <option value="IMPOSTO">IMPOSTO</option>
-      <option value="CUSTO">CUSTO</option>
-    </select>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <select id="impTipo">
+        <option value="IMPOSTO">IMPOSTO</option>
+        <option value="CUSTO">CUSTO</option>
+      </select>
 
-    <select id="impModalidade" class="line-mode">
-      <option value="FIXO">VALOR FIXO</option>
-      <option value="PERCENTUAL">%</option>
-    </select>
+      <select id="impModalidade">
+        <option value="FIXO">VALOR FIXO</option>
+        <option value="PERCENTUAL">PERCENTUAL (%)</option>
+      </select>
+    </div>
 
-    <input id="impValor" type="number" step="0.01" placeholder="Valor" class="line-value">
+    <input id="impValor" type="number" step="0.01" placeholder="Valor">
 
-    <button class="btn-add btn-line"
-      onclick="salvarImposto()">
-      ＋
-    </button>
+    <button class="btn-add" style="margin-top:10px"
+      onclick="salvarImposto()">ADICIONAR</button>
   </div>
-</div>
+<hr>
 <hr>
 
 <h3>Tabela Nutricional (por prato)</h3>
@@ -1556,9 +1498,6 @@ setTimeout(() => {
   inputFoto.onchange = async () => {
     const file = inputFoto.files[0];
     if (!file) return;
-
-    // 🔥 preview instantâneo (não espera upload)
-    mFoto.src = URL.createObjectURL(file);
 
     const ext = file.name.split(".").pop();
     const fileName = `${pratoAtual.id}.${ext}`;
