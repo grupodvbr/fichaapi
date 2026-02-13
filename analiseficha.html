@@ -698,7 +698,29 @@ button{
   }
 }
 
+.upload-foto{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:10px 12px;
+  background:rgba(0,0,0,.55);
+  color:#fff;
+  font-weight:800;
+  font-size:12px;
+  letter-spacing:.04em;
+  cursor:pointer;
+  border-top:1px solid rgba(255,255,255,.12);
+  transition:.15s ease;
+}
 
+.upload-foto:hover{
+  background:rgba(0,0,0,.75);
+}
+
+.upload-foto input{
+  display:none;
+}
 
 
 
@@ -728,18 +750,22 @@ button{
   <div class="modal-box" onclick="event.stopPropagation()">
     <span class="close" onclick="fechar()">✕</span>
 
-    <div class="modal-header">
-      <div class="modal-left">
-        <img id="mFoto" class="modal-img">
-      </div>
+<div class="modal-header">
+  <div class="modal-left">
+    <img id="mFoto" class="modal-img">
 
-      <div class="modal-main">
-        <div id="mHeader"></div>
+    <!-- 🔽 BOTÃO DE UPLOAD AQUI, EMBAIXO DA FOTO -->
+    <label class="upload-foto">
+      <input type="file" id="fotoPrato" accept="image/*">
+      📸 Trocar foto
+    </label>
+  </div>
 
-        <!-- CONTEÚDO VAI PRAQUI -->
-        <div id="mBody" class="modal-body"></div>
-      </div>
-    </div>
+  <div class="modal-main">
+    <div id="mHeader"></div>
+    <div id="mBody" class="modal-body"></div>
+  </div>
+</div>
   </div>
 </div>
 
@@ -1224,18 +1250,7 @@ mBody.innerHTML = `
   </select>
 </div>
 
-  <div style="margin:12px 0">
-    <label style="font-weight:800;font-size:13px">
-      FOTO DO PRATO
-    </label>
 
-    <input
-      type="file"
-      id="fotoPrato"
-      accept="image/*"
-      style="margin-top:6px"
-    >
-  </div>
 
 <div class="resumo">
   <div class="box">Custo base<b>${moeda(cmvBase)}</b></div>
