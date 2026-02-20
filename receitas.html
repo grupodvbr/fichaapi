@@ -294,29 +294,42 @@ function renderPreview(){
   const mapa=getMapaCustos();
   tbody.innerHTML="";
   getFiltrados().forEach(p=>{
-const base = mapa[p.id]?.base ?? 0;
-const imp  = mapa[p.id]?.impostos ?? 0;
+const dados = mapa[p.id] || { base: 0, impostos: 0 };
 
-if (!mapa[p.id]) {
-  console.warn("⚠️ Prato sem itens vinculados:", p.nome, p.id);
-}
-    const total=base+imp;
-    const venda=Number(p.preco_venda||0);
-    const lucro=venda-total;
-    const margem=venda?(lucro/venda)*100:0;
-    const cmv=venda?(total/venda)*100:0;
+// 🔁 fallback se não tiver ingredientes
+const custoBase = dados.base > 0
+  ? dados.base
+  : Number(p.custo_total || p.custo_unitario || 0);
+
+const custoImpostos = dados.base > 0
+  ? dados.impostos
+  : 0;
+
+const custoFinal =
+  dados.base > 0
+    ? (dados.base + dados.impostos)
+    : Number(p.custo_total || p.custo_unitario || 0);
+
+const venda = Number(p.preco_venda || 0);
+const lucro = venda ? venda - custoFinal : 0;
+
+// ✅ CMV % igual ao painel CMV (só ingredientes)
+const cmv = venda ? (custoBase / venda) * 100 : 0;
+
+// ✅ Margem % igual ao painel CMV
+const margem = venda ? (lucro / venda) * 100 : 0;
     tbody.innerHTML+=`
       <tr>
         <td>${p.nome}</td>
         <td>${p.tipo||"-"}</td>
         <td>${p.ativo?"ATIVO":"INATIVO"}</td>
-        <td>R$ ${base.toFixed(2)}</td>
-        <td>R$ ${imp.toFixed(2)}</td>
-        <td><b>R$ ${total.toFixed(2)}</b></td>
-        <td>R$ ${venda.toFixed(2)}</td>
-        <td>R$ ${lucro.toFixed(2)}</td>
-        <td>${cmv.toFixed(1)}%</td>
-        <td>${margem.toFixed(1)}%</td>
+<td>R$ ${custoBase.toFixed(2)}</td>
+<td>R$ ${custoImpostos.toFixed(2)}</td>
+<td><b>R$ ${custoFinal.toFixed(2)}</b></td>
+<td>R$ ${venda.toFixed(2)}</td>
+<td>R$ ${lucro.toFixed(2)}</td>
+<td>${cmv.toFixed(1)}%</td>
+<td>${margem.toFixed(1)}%</td>
       </tr>`;
   });
 }
@@ -327,18 +340,32 @@ async function exportarRelatorio(){
   const hoje=new Date().toISOString().slice(0,10);
 
   const resumo=filtrados.map(p=>{
-    const base=mapa[p.id]?.base||0;
-    const imp=mapa[p.id]?.impostos||0;
-    const total=base+imp;
-    const venda=Number(p.preco_venda||0);
-    const lucro=venda-total;
-    const margem=venda?(lucro/venda)*100:0;
-    const cmv=venda?(total/venda)*100:0;
+const dados = mapa[p.id] || { base: 0, impostos: 0 };
+
+const custoBase = dados.base > 0
+  ? dados.base
+  : Number(p.custo_total || p.custo_unitario || 0);
+
+const custoImpostos = dados.base > 0 ? dados.impostos : 0;
+
+const custoFinal =
+  dados.base > 0
+    ? (dados.base + dados.impostos)
+    : Number(p.custo_total || p.custo_unitario || 0);
+
+const venda = Number(p.preco_venda || 0);
+const lucro = venda ? venda - custoFinal : 0;
+const cmv = venda ? (custoBase / venda) * 100 : 0;
+const margem = venda ? (lucro / venda) * 100 : 0;
     return {
       Prato:p.nome, Tipo:p.tipo, Status:p.ativo?"ATIVO":"INATIVO",
-      "Custo Base":base.toFixed(2), Impostos:imp.toFixed(2),
-      "Custo Final":total.toFixed(2), Venda:venda.toFixed(2),
-      Lucro:lucro.toFixed(2), "CMV %":cmv.toFixed(2), "Margem %":margem.toFixed(2)
+"Custo Base": custoBase.toFixed(2),
+Impostos: custoImpostos.toFixed(2),
+"Custo Final": custoFinal.toFixed(2),
+Venda: venda.toFixed(2),
+Lucro: lucro.toFixed(2),
+"CMV %": cmv.toFixed(2),
+"Margem %": margem.toFixed(2)
     };
   });
 
