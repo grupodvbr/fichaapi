@@ -783,6 +783,20 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
+// 🔥 ELEMENTOS DO DOM (LOCAL EXATO)
+const cards = document.getElementById("cards");
+const filtroNome = document.getElementById("filtroNome");
+const filtroTipo = document.getElementById("filtroTipo");
+const modal = document.getElementById("modal");
+const mFoto = document.getElementById("mFoto");
+const mHeader = document.getElementById("mHeader");
+const mBody = document.getElementById("mBody");
+
+
+
+
+
+   
 const EMAILS_AUTORIZADOS_PRECO_IDEAL = [
   "leonardo_henrique1@hotmail.com",
   "souzanalbert58@gmail.com"
@@ -861,9 +875,18 @@ async function carregarPratos(){
     .select("*")
     .order("created_at",{ascending:false});
 
-  if(error) return alert("Erro pratos");
-  pratos = data;
-  // ❌ não renderiza aqui
+  if(error){
+    alert("Erro pratos");
+    console.error(error);
+    pratos = [];
+    renderLista();  // mostra estado vazio
+    return;
+  }
+
+  pratos = Array.isArray(data) ? data : [];
+  console.log("🍽️ PRATOS:", pratos);
+
+  renderLista(); // 🔥 sempre renderiza; cache pode estar vazio
 }
 
 
@@ -901,6 +924,8 @@ async function calcularCMVPercentual(prato){
 
 let cacheCMV = {};
 
+let cachePronto = false;
+
 async function carregarCMVCache(){
   cacheCMV = {};
 
@@ -912,11 +937,8 @@ async function carregarCMVCache(){
     .from("impostos")
     .select("buffet_id, modalidade, valor");
 
-  // 🔎 DEBUG: veja se está vindo o buffet_id certo
-  console.log("🧾 ITENS CMV:", itens);
-
   (itens || []).forEach(i=>{
-    if (!i.buffet_id) return; // ignora linhas quebradas
+    if (!i?.buffet_id) return;
     const bid = String(i.buffet_id).trim();
 
     cacheCMV[bid] ??= { cmvBase:0, impostos:[] };
@@ -924,15 +946,15 @@ async function carregarCMVCache(){
   });
 
   (impostos || []).forEach(i=>{
-    if (!i.buffet_id) return;
+    if (!i?.buffet_id) return;
     const bid = String(i.buffet_id).trim();
 
     cacheCMV[bid] ??= { cmvBase:0, impostos:[] };
     cacheCMV[bid].impostos.push(i);
   });
 
-  // 🔎 DEBUG: confirme se o prato está no cache
-  console.log("📦 cacheCMV:", cacheCMV);
+  cachePronto = true;
+  console.log("📦 cacheCMV pronto:", cacheCMV);
 }
 
 
@@ -949,15 +971,25 @@ async function carregarCMVCache(){
 function renderLista(){
   cards.innerHTML = "";
 
+  if (!Array.isArray(pratos) || pratos.length === 0) {
+    cards.innerHTML = `
+      <div style="grid-column:1/-1;padding:40px;text-align:center;color:#64748b;font-weight:800">
+        Nenhum prato encontrado no banco.
+      </div>
+    `;
+    return;
+  }
+
   const nomeFiltro = (filtroNome.value || "").toUpperCase().trim();
   const tipoFiltro = filtroTipo.value;
 
-for(const p of pratos){
+  for(const p of pratos){
 
 // if (p.ativo === false) continue;
 
-    const nomeOk =
-      !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
+const nomePrato = (p.nome || "").toString();
+const nomeOk =
+  !nomeFiltro || nomePrato.toUpperCase().includes(nomeFiltro);
     const tipoOk =
       !tipoFiltro || p.tipo === tipoFiltro;
 
@@ -2023,7 +2055,7 @@ async function carregarTipos(){
   await carregarCMVCache();   // 🔥 cache primeiro
   await carregarPratos();     // 🔥 depois os pratos
   await carregarTipos();
-  renderLista();              // 🔥 render só depois do cache
+  renderLista();              // 🔥 render garantido
 })();
 async function editarNomePrato(){
   const h2 = document.getElementById("tituloPrato");
