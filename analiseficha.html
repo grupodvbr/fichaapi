@@ -784,6 +784,38 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
+async function fetchAll(table, select) {
+  const pageSize = 1000;
+  let from = 0;
+  let to = pageSize - 1;
+  let all = [];
+
+  while (true) {
+    const { data, error } = await sb
+      .from(table)
+      .select(select)
+      .range(from, to);
+
+    if (error) {
+      console.error("Erro ao buscar", table, error);
+      break;
+    }
+
+    if (!data || data.length === 0) break;
+
+    all = all.concat(data);
+
+    if (data.length < pageSize) break;
+
+    from += pageSize;
+    to += pageSize;
+  }
+
+  return all;
+}
+
+
+   
 const EMAILS_AUTORIZADOS_PRECO_IDEAL = [
   "leonardo_henrique1@hotmail.com",
   "souzanalbert58@gmail.com"
@@ -899,37 +931,33 @@ let cacheCMV = {};
 async function carregarCMVCache(){
   cacheCMV = {};
 
-  const { data: itens } = await sb
-    .from("buffet_itens")
-    .select("buffet_id, custo_calculado");
+  const itens = await fetchAll("buffet_itens", "buffet_id, custo_calculado");
+  const impostos = await fetchAll("impostos", "buffet_id, modalidade, valor");
 
-  const { data: impostos } = await sb
-    .from("impostos")
-    .select("buffet_id, modalidade, valor");
-
-  // 🔎 DEBUG: veja se está vindo o buffet_id certo
-  console.log("🧾 ITENS CMV:", itens);
-
-  (itens || []).forEach(i=>{
-    if (!i.buffet_id) return; // ignora linhas quebradas
-    const bid = String(i.buffet_id).trim();
-
-    cacheCMV[bid] ??= { cmvBase:0, impostos:[] };
-    cacheCMV[bid].cmvBase += Number(i.custo_calculado || 0);
-  });
-
-  (impostos || []).forEach(i=>{
+  (itens || []).forEach(i => {
     if (!i.buffet_id) return;
     const bid = String(i.buffet_id).trim();
 
-    cacheCMV[bid] ??= { cmvBase:0, impostos:[] };
+    if (!cacheCMV[bid]) {
+      cacheCMV[bid] = { cmvBase: 0, impostos: [] };
+    }
+
+    cacheCMV[bid].cmvBase += Number(i.custo_calculado || 0);
+  });
+
+  (impostos || []).forEach(i => {
+    if (!i.buffet_id) return;
+    const bid = String(i.buffet_id).trim();
+
+    if (!cacheCMV[bid]) {
+      cacheCMV[bid] = { cmvBase: 0, impostos: [] };
+    }
+
     cacheCMV[bid].impostos.push(i);
   });
 
-  // 🔎 DEBUG: confirme se o prato está no cache
-  console.log("📦 cacheCMV:", cacheCMV);
+  console.log("📦 cacheCMV OK:", cacheCMV);
 }
-
 
 
 
