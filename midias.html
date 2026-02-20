@@ -72,6 +72,62 @@ button.primary:hover{box-shadow:0 0 0 2px rgba(212,175,55,.15) inset}
 .actions .danger{border-color:var(--danger);color:var(--danger)}
 .actions .toggle.on{border-color:var(--gold);color:var(--gold)}
 .actions .toggle.off{border-color:#555;color:#aaa}
+
+
+  .modal{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter: blur(6px);
+  display:none; place-items:center;
+  z-index:9999;
+}
+.modal.open{ display:grid; }
+
+.modal-box{
+  width:100%; max-width:980px; height:90vh;
+  background:linear-gradient(180deg,#0a0a0a,#000);
+  border-radius:22px;
+  border:1px solid var(--border);
+  padding:16px;
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:14px;
+}
+
+.buffet-list{
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+
+.buffet-item{
+  display:grid;
+  grid-template-columns:64px 1fr auto;
+  gap:10px;
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+}
+.buffet-item:hover{ background:#0f0f12 }
+
+.buffet-item img{
+  width:64px;height:64px;object-fit:contain;background:#000;border-radius:10px
+}
+
+.toggle{
+  padding:8px 12px;border-radius:999px;border:1px solid var(--border)
+}
+.toggle.on{ border-color:var(--gold); color:var(--gold) }
+.toggle.off{ opacity:.6 }
+
+.edit{
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  display:grid;
+  gap:8px;
+}
+textarea{ min-height:80px }
 </style>
 </head>
 <body>
@@ -247,6 +303,112 @@ async function delPromo(id, url){
 }
 
 load();
+
+
+
+let buffetItems = [];
+let currentEdit = null;
+
+function openBuffetModal(){
+  document.getElementById("buffetModal").classList.add("open");
+  loadBuffet();
+}
+
+function closeBuffetModal(){
+  document.getElementById("buffetModal").classList.remove("open");
+}
+
+async function loadBuffet(){
+  const { data, error } = await sb
+    .from("buffet")
+    .select("id,nome,descricao,foto_url,ativo,cardapio")
+    .order("nome");
+
+  if(error){ console.error(error); return; }
+  buffetItems = data || [];
+  renderBuffet();
+}
+
+function renderBuffet(filtro=""){
+  const list = document.getElementById("buffetList");
+  const term = filtro.toLowerCase();
+
+  list.innerHTML = buffetItems
+    .filter(i => i.nome.toLowerCase().includes(term))
+    .map(i=>`
+      <div class="buffet-item" onclick="selectItem('${i.id}')">
+        <img src="${i.foto_url || ''}">
+        <div>
+          <b>${i.nome}</b><br>
+          <small>${i.descricao || ''}</small>
+        </div>
+        <button class="toggle ${i.cardapio?'on':'off'}"
+          onclick="toggleCardapio(event,'${i.id}',${i.cardapio})">
+          ${i.cardapio ? 'NO CARDÁPIO' : 'FORA'}
+        </button>
+      </div>
+    `).join("");
+}
+
+buscaBuffet.oninput = e => renderBuffet(e.target.value);
+
+function selectItem(id){
+  currentEdit = buffetItems.find(i => i.id === id);
+  editNome.value = currentEdit.nome || "";
+  editDesc.value = currentEdit.descricao || "";
+}
+
+async function toggleCardapio(ev, id, atual){
+  ev.stopPropagation();
+  await sb.from("buffet").update({ cardapio: !atual }).eq("id", id);
+  loadBuffet();
+}
+
+async function salvarItem(){
+  if(!currentEdit) return alert("Selecione um item");
+
+  let foto_url = currentEdit.foto_url;
+  const f = editFoto.files[0];
+
+  if(f){
+    const ext = f.name.split(".").pop();
+    const path = `buffet/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { error: upErr } = await sb.storage.from("buffet").upload(path, f, { upsert:false });
+    if(upErr) return alert("Erro no upload");
+
+    foto_url = sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;
+  }
+
+  await sb.from("buffet").update({
+    nome: editNome.value,
+    descricao: editDesc.value,
+    foto_url
+  }).eq("id", currentEdit.id);
+
+  editFoto.value = "";
+  currentEdit = null;
+  loadBuffet();
+}
 </script>
+<div id="buffetModal" class="modal">
+  <div class="modal-box">
+    <h2>Gerenciar Itens do Cardápio</h2>
+
+    <input id="buscaBuffet" placeholder="Buscar item pelo nome..." />
+
+    <div id="buffetList" class="buffet-list"></div>
+
+    <div class="edit">
+      <h3>Editar Item</h3>
+      <input id="editNome" placeholder="Nome">
+      <textarea id="editDesc" placeholder="Descrição"></textarea>
+      <input id="editFoto" type="file" accept="image/*">
+      <button class="primary" onclick="salvarItem()">Salvar alterações</button>
+      <button onclick="closeBuffetModal()">Fechar</button>
+    </div>
+  </div>
+</div>
 </body>
+  
 </html>
