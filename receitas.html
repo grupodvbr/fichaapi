@@ -203,8 +203,12 @@ let pratos=[], itens=[], impostos=[];
 
 async function carregarBase(){
 pratos  = (await sb.from("buffet").select("id,nome,tipo,ativo,preco_venda")).data || [];
-itens   = (await sb.from("buffet_itens").select("buffet_id,quantidade,custo_unitario")).data || [];
-impostos= (await sb.from("impostos").select("buffet_id,modalidade,valor")).data || [];
+itens = (
+  await sb
+    .from("buffet_itens")
+    .select("buffet_id,quantidade,produtos:produto_id(valor)")
+).data || [];
+  impostos= (await sb.from("impostos").select("buffet_id,modalidade,valor")).data || [];
   carregarTipos();
   renderPreview();
 }
@@ -225,8 +229,8 @@ function getMapaCustos(){
     mapa[id] ??= { base: 0, impostos: 0 };
 
     const qtd  = Number(i.quantidade || 0);
-    const unit = Number(i.custo_unitario || 0);
-
+const unit = Number(i.produtos?.valor || 0);
+    
     mapa[id].base += qtd * unit; // recalcula em tempo real
   });
 
