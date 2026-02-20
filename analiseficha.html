@@ -971,8 +971,13 @@ for(const p of pratos){
 const custoBase = dados.cmvBase > 0
   ? dados.cmvBase
   : Number(p.custo_total || p.custo_unitario || 0);
-   const custoTotal = dados.cmvBase + totalImpostos;
 
+const custoTotal =
+  dados.cmvBase > 0
+    ? (dados.cmvBase + totalImpostos)
+    : Number(p.custo_total || p.custo_unitario || 0);
+
+   
 // ✅ CMV apenas do custo base (ingredientes)
 const cmvPerc =
   p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
