@@ -216,19 +216,37 @@ function carregarTipos(){
 }
 
 function getMapaCustos(){
-  const mapa={};
-  itens.forEach(i=>{
-    mapa[i.buffet_id]??={base:0, impostos:0};
-    mapa[i.buffet_id].base+=Number(i.custo_calculado||0);
+  const mapa = {};
+
+  itens.forEach(i => {
+    const id = i.buffet_id;
+    if (!id) return;
+
+    mapa[id] ??= { base: 0, impostos: 0 };
+
+    const qtd = Number(i.quantidade || 0);
+    const unit = Number(i.custo_unitario || 0);
+
+    // 👉 recalcula em tempo real
+    mapa[id].base += qtd * unit;
   });
-  impostos.forEach(i=>{
-    mapa[i.buffet_id]??={base:0, impostos:0};
-    if(i.modalidade==="FIXO") mapa[i.buffet_id].impostos+=Number(i.valor||0);
-    if(i.modalidade==="PERCENTUAL"){
-      const b=mapa[i.buffet_id]?.base||0;
-      mapa[i.buffet_id].impostos+=(b*Number(i.valor||0))/100;
+
+  impostos.forEach(i => {
+    const id = i.buffet_id;
+    if (!id) return;
+
+    mapa[id] ??= { base: 0, impostos: 0 };
+
+    if (i.modalidade === "FIXO") {
+      mapa[id].impostos += Number(i.valor || 0);
+    }
+
+    if (i.modalidade === "PERCENTUAL") {
+      const b = mapa[id]?.base || 0;
+      mapa[id].impostos += (b * Number(i.valor || 0)) / 100;
     }
   });
+
   return mapa;
 }
 
