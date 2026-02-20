@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>CMV • Fichas Técnicas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <meta name="mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -909,13 +909,17 @@ async function carregarCMVCache(){
   // 🔎 DEBUG: veja se está vindo o buffet_id certo
   console.log("🧾 ITENS CMV:", itens);
 
-  (itens || []).forEach(i=>{
-    if (!i.buffet_id) return; // ignora linhas quebradas
-    const bid = String(i.buffet_id).trim();
+(itens || []).forEach(i=>{
+  if (!i.buffet_id) {
+    console.warn("❌ ITEM SEM buffet_id:", i);
+    return;
+  }
 
-    cacheCMV[bid] ??= { cmvBase:0, impostos:[] };
-    cacheCMV[bid].cmvBase += Number(i.custo_calculado || 0);
-  });
+  const bid = String(i.buffet_id).trim();
+
+  cacheCMV[bid] ??= { cmvBase:0, impostos:[] };
+  cacheCMV[bid].cmvBase += Number(i.custo_calculado || 0);
+});
 
   (impostos || []).forEach(i=>{
     if (!i.buffet_id) return;
@@ -957,9 +961,9 @@ for(const p of pratos){
 
     if(!nomeOk || !tipoOk) continue;
 
-    const dados = cacheCMV[p.id] || { cmvBase:0, impostos:[] };
-
-    let totalImpostos = 0;
+const pid = String(p.id).trim();
+const dados = cacheCMV[pid] || { cmvBase:0, impostos:[] };
+   let totalImpostos = 0;
     dados.impostos.forEach(i=>{
       if(i.modalidade === "FIXO")
         totalImpostos += Number(i.valor);
@@ -967,9 +971,7 @@ for(const p of pratos){
         totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
     });
 
-const custoBase = dados.cmvBase > 0
-  ? dados.cmvBase
-  : Number(p.custo_total || p.custo_unitario || 0);
+const custoBase = dados.cmvBase;
    const custoTotal = dados.cmvBase + totalImpostos;
 
 // ✅ CMV apenas do custo base (ingredientes)
@@ -1393,13 +1395,13 @@ ${p.preco_ideal ? `
   <div class="line-add">
     <select id="ingProduto" class="line-select">
       <option value="">Selecione o ingrediente</option>
-      ${ingredientesBase.map(i=>`
-        <option value="${i.id}"
-          data-custo="${i.valor}"
-          data-unidade="${i.unidade_medida}">
-          ${i.nome}
-        </option>
-      `).join("")}
+${(ingredientesBase || []).map(i=>`
+  <option value="${i.id}"
+    data-custo="${i.valor}"
+    data-unidade="${i.unidade_medida}">
+    ${i.nome}
+  </option>
+`).join("")}
     </select>
 
     <input id="ingQtd" type="number" step="0.001" placeholder="Qtd" class="line-qtd">
