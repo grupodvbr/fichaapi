@@ -467,8 +467,7 @@ function closeModal(){modal.classList.remove("open");}
 
 async function loadMore(){
   if(carregando||fimLista)return;carregando=true;
-  let q=sb.from("buffet").select("id,nome,descricao,preco_venda,foto_url,tipo,ativo").eq("ativo",true).order("created_at",{ascending:false}).range(page*PAGE_SIZE,page*PAGE_SIZE+PAGE_SIZE-1);
-  if(catAtiva)q=q.eq("tipo",catAtiva); if(termo)q=q.ilike("nome",`%${termo}%`);
+let q=sb.from("buffet").select("id,nome,descricao,preco_venda,foto_url,tipo,ativo,cardapio").eq("ativo",true).eq("cardapio",true).order("created_at",{ascending:false}).range(page*PAGE_SIZE,page*PAGE_SIZE+PAGE_SIZE-1);  if(catAtiva)q=q.eq("tipo",catAtiva); if(termo)q=q.ilike("nome",`%${termo}%`);
   const {data,error}=await q; carregando=false; if(error)return console.error(error);
   if(!data||!data.length){fimLista=true;return;}
   data.forEach(p=>{ if(idsCarregados.has(p.id))return; idsCarregados.add(p.id);
