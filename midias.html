@@ -132,8 +132,10 @@ textarea{ min-height:80px }
 </head>
 <body>
 
-<div class="header"><h1>Mídias do cardápio</h1></div>
-
+<div class="header">
+  <h1>Mídias do cardápio</h1>
+  <button class="primary" style="float:right" onclick="openBuffetModal()">🍽️ Itens do Cardápio</button>
+</div>
 <div class="container">
 
   <!-- PAINEL DE UPLOAD -->
@@ -195,7 +197,7 @@ const horaInicioInput = document.getElementById("hora_inicio");
 const horaFimInput = document.getElementById("hora_fim");
 const preview = document.getElementById("preview");
 const grid = document.getElementById("grid");
-
+  
 let diasSel = [];
 
 document.querySelectorAll(".day").forEach(d=>{
@@ -334,7 +336,7 @@ function renderBuffet(filtro=""){
   const term = filtro.toLowerCase();
 
   list.innerHTML = buffetItems
-    .filter(i => i.nome.toLowerCase().includes(term))
+.filter(i => (i.nome || "").toLowerCase().includes(term))
     .map(i=>`
       <div class="buffet-item" onclick="selectItem('${i.id}')">
         <img src="${i.foto_url || ''}">
@@ -409,6 +411,12 @@ async function salvarItem(){
     </div>
   </div>
 </div>
+
+<script>
+  const buscaBuffet = document.getElementById("buscaBuffet");
+  buscaBuffet.oninput = e => renderBuffet(e.target.value);
+</script>
+  
 </body>
   
 </html>
