@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <title>CMV • Fichas Técnicas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+   <meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -1086,8 +1086,8 @@ async function abrirModal(p){
   pratoAtual = p;
   modal.style.display = "flex";
   document.body.style.overflow = "hidden";
-mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
-  /* INGREDIENTES */
+mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";
+   /* INGREDIENTES */
 const { data: itens } = await sb
   .from("buffet_itens")
   .select(`
@@ -1134,9 +1134,9 @@ const nutri = {
 });
 
 
-  const cmvBase = itens.reduce(
-    (s,i)=>s + Number(i.custo_calculado||0),0
-  );
+const cmvBase = (itens || []).reduce(
+  (s,i)=> s + Number(i.custo_calculado || 0), 0
+);
 
   /* IMPOSTOS / CUSTOS */
   const { data: impostos } = await sb
