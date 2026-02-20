@@ -792,7 +792,10 @@ const mFoto = document.getElementById("mFoto");
 const mHeader = document.getElementById("mHeader");
 const mBody = document.getElementById("mBody");
 
-
+// 🔥 CAMPOS DINÂMICOS DO MODAL (precisam existir no escopo)
+let ingProduto = null;
+let ingQtd = null;
+let ingUnidade = null;
 
 
 
@@ -1132,7 +1135,7 @@ const { data: itens } = await sb
     unidade_uso,
     custo_unitario,
     custo_calculado,
-    produto:produtos (
+    produto:produtos!buffet_itens_produto_id_fkey (
       energia_kcal,
       carboidratos,
       proteinas,
@@ -1169,8 +1172,17 @@ const nutri = {
 });
 
 
-const listaItens = Array.isArray(itens) ? itens : [];
-
+const listaItens = (Array.isArray(itens) ? itens : []).map(i => ({
+  ...i,
+  produto: i.produto || {
+    energia_kcal: 0,
+    carboidratos: 0,
+    proteinas: 0,
+    gorduras_totais: 0,
+    fibra_alimentar: 0,
+    sodio_mg: 0
+  }
+}));
 const cmvBase = listaItens.reduce(
   (s,i)=> s + Number(i?.custo_calculado || 0), 0
 );
@@ -1525,10 +1537,11 @@ ${(listaItens).map(i=>`
   "
 >${p.modo_preparo || ""}</textarea>
 
-
-  
 `;
-
+// 🔥 agora que o HTML do modal foi injetado, capture os inputs dinâmicos
+ingProduto = document.getElementById("ingProduto");
+ingQtd = document.getElementById("ingQtd");
+ingUnidade = document.getElementById("ingUnidade");
 
 
 // 🔥 agora o select existe → carrega os tipos
@@ -1932,7 +1945,9 @@ async function excluirImposto(id){
 document.addEventListener("change", e => {
   if (e.target.id === "ingProduto") {
     const opt = e.target.selectedOptions[0];
-    ingUnidade.value = opt?.dataset?.unidade || "";
+    if (ingUnidade) {
+      ingUnidade.value = opt?.dataset?.unidade || "";
+    }
   }
 });
 
@@ -1967,6 +1982,10 @@ const btn = document.getElementById("btnSalvarIngrediente");  btn.innerText = "A
     if(qtd <= 0) return alert("Quantidade inválida");
 
 const prod = ingredientesBase.find(p => p.id === ingProduto.value);
+if (!prod) {
+  alert("Ingrediente base não encontrado.");
+  return;
+}
 const custoUnit = Number(prod.valor);
 const rendimento = Number(prod.rendimento_percentual || 100);
 
