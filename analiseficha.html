@@ -826,7 +826,13 @@ sb.auth.onAuthStateChange((_event, session) => {
 ===================================================== */
 const moeda = v =>
   "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
+function calcularCustoReal(qtd, custoUnit, rendimentoPerc){
+  const r = Number(rendimentoPerc || 100) / 100;   // fallback 100%
+  return (qtd / r) * custoUnit;
+}
 
+
+   
 /* =====================================================
    STATE
 ===================================================== */
@@ -973,10 +979,8 @@ const custoBase = dados.cmvBase > 0
   : Number(p.custo_total || p.custo_unitario || 0);
    const custoTotal = dados.cmvBase + totalImpostos;
 
-// ✅ CMV apenas do custo base (ingredientes)
 const cmvPerc =
-  p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
-
+  p.preco_venda ? (custoTotal / p.preco_venda) * 100 : null;
 const lucro =
   p.preco_venda ? p.preco_venda - custoTotal : null;
 
@@ -1774,8 +1778,16 @@ async function salvarPrecoVenda(cmvFinal){
     return;
   }
 
+  const lucro = preco - cmvFinal;
+  const margem = (lucro / preco) * 100;
+
   await sb.from("buffet")
-    .update({ preco_venda: preco })
+    .update({
+      preco_venda: preco,
+      custo_total: cmvFinal,
+      custo_unitario: cmvFinal,
+      margem_percentual: margem
+    })
     .eq("id", pratoAtual.id);
 
   await carregarPratos();
@@ -1789,6 +1801,9 @@ async function salvarIngrediente(){
 
   const prod = ingredientesBase.find(p => p.id === prodId);
   const custoUnit = Number(prod.valor);
+  const rendimento = Number(prod.rendimento_percentual || 100);
+
+  const custoReal = calcularCustoReal(qtd, custoUnit, rendimento);
 
   await sb.from("buffet_itens").insert({
     buffet_id: pratoAtual.id,
@@ -1797,20 +1812,20 @@ async function salvarIngrediente(){
     quantidade: qtd,
     unidade_uso: prod.unidade_medida,
     custo_unitario: custoUnit,
-    custo_calculado: custoUnit * qtd
+    custo_calculado: custoReal
   });
 
-await carregarCMVCache();
-await carregarPratos();   // 🔁 atualiza lista
-renderLista();            // 🔁 re-renderiza cards
+  await carregarCMVCache();
+  await carregarPratos();
+  renderLista();
 
-const { data: pratoNovo } = await sb
-  .from("buffet")
-  .select("*")
-  .eq("id", pratoAtual.id)
-  .single();
+  const { data: pratoNovo } = await sb
+    .from("buffet")
+    .select("*")
+    .eq("id", pratoAtual.id)
+    .single();
 
-abrirModal(pratoNovo);
+  abrirModal(pratoNovo);
 }
 
 async function excluirIngrediente(itemId){
@@ -1918,15 +1933,18 @@ const btn = document.getElementById("btnSalvarIngrediente");  btn.innerText = "A
     const qtd = Number(ingQtd.value || 0);
     if(qtd <= 0) return alert("Quantidade inválida");
 
-    const prod = ingredientesBase.find(p => p.id === ingProduto.value);
-    const custoUnit = Number(prod.valor);
+const prod = ingredientesBase.find(p => p.id === ingProduto.value);
+const custoUnit = Number(prod.valor);
+const rendimento = Number(prod.rendimento_percentual || 100);
+
+const custoReal = calcularCustoReal(qtd, custoUnit, rendimento);
 
 await sb
   .from("buffet_itens")
   .update({
     quantidade: qtd,
     custo_unitario: custoUnit,
-    custo_calculado: custoUnit * qtd
+    custo_calculado: custoReal
   })
   .eq("id", itemId);
 
