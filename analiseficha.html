@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>CMV • Fichas Técnicas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -783,23 +784,6 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-// 🔥 ELEMENTOS DO DOM (LOCAL EXATO)
-const cards = document.getElementById("cards");
-const filtroNome = document.getElementById("filtroNome");
-const filtroTipo = document.getElementById("filtroTipo");
-const modal = document.getElementById("modal");
-const mFoto = document.getElementById("mFoto");
-const mHeader = document.getElementById("mHeader");
-const mBody = document.getElementById("mBody");
-
-// 🔥 CAMPOS DINÂMICOS DO MODAL (precisam existir no escopo)
-let ingProduto = null;
-let ingQtd = null;
-let ingUnidade = null;
-
-
-
-   
 const EMAILS_AUTORIZADOS_PRECO_IDEAL = [
   "leonardo_henrique1@hotmail.com",
   "souzanalbert58@gmail.com"
@@ -842,13 +826,7 @@ sb.auth.onAuthStateChange((_event, session) => {
 ===================================================== */
 const moeda = v =>
   "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-function calcularCustoReal(qtd, custoUnit, rendimentoPerc){
-  const r = Number(rendimentoPerc || 100) / 100;   // fallback 100%
-  return (qtd / r) * custoUnit;
-}
 
-
-   
 /* =====================================================
    STATE
 ===================================================== */
@@ -878,18 +856,9 @@ async function carregarPratos(){
     .select("*")
     .order("created_at",{ascending:false});
 
-  if(error){
-    alert("Erro pratos");
-    console.error(error);
-    pratos = [];
-    renderLista();  // mostra estado vazio
-    return;
-  }
-
-  pratos = Array.isArray(data) ? data : [];
-  console.log("🍽️ PRATOS:", pratos);
-
-  renderLista(); // 🔥 sempre renderiza; cache pode estar vazio
+  if(error) return alert("Erro pratos");
+  pratos = data;
+  // ❌ não renderiza aqui
 }
 
 
@@ -927,8 +896,6 @@ async function calcularCMVPercentual(prato){
 
 let cacheCMV = {};
 
-let cachePronto = false;
-
 async function carregarCMVCache(){
   cacheCMV = {};
 
@@ -940,8 +907,11 @@ async function carregarCMVCache(){
     .from("impostos")
     .select("buffet_id, modalidade, valor");
 
+  // 🔎 DEBUG: veja se está vindo o buffet_id certo
+  console.log("🧾 ITENS CMV:", itens);
+
   (itens || []).forEach(i=>{
-    if (!i?.buffet_id) return;
+    if (!i.buffet_id) return; // ignora linhas quebradas
     const bid = String(i.buffet_id).trim();
 
     cacheCMV[bid] ??= { cmvBase:0, impostos:[] };
@@ -949,15 +919,15 @@ async function carregarCMVCache(){
   });
 
   (impostos || []).forEach(i=>{
-    if (!i?.buffet_id) return;
+    if (!i.buffet_id) return;
     const bid = String(i.buffet_id).trim();
 
     cacheCMV[bid] ??= { cmvBase:0, impostos:[] };
     cacheCMV[bid].impostos.push(i);
   });
 
-  cachePronto = true;
-  console.log("📦 cacheCMV pronto:", cacheCMV);
+  // 🔎 DEBUG: confirme se o prato está no cache
+  console.log("📦 cacheCMV:", cacheCMV);
 }
 
 
@@ -974,25 +944,15 @@ async function carregarCMVCache(){
 function renderLista(){
   cards.innerHTML = "";
 
-  if (!Array.isArray(pratos) || pratos.length === 0) {
-    cards.innerHTML = `
-      <div style="grid-column:1/-1;padding:40px;text-align:center;color:#64748b;font-weight:800">
-        Nenhum prato encontrado no banco.
-      </div>
-    `;
-    return;
-  }
-
   const nomeFiltro = (filtroNome.value || "").toUpperCase().trim();
   const tipoFiltro = filtroTipo.value;
 
-  for(const p of pratos){
+for(const p of pratos){
 
 // if (p.ativo === false) continue;
 
-const nomePrato = (p.nome || "").toString();
-const nomeOk =
-  !nomeFiltro || nomePrato.toUpperCase().includes(nomeFiltro);
+    const nomeOk =
+      !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
     const tipoOk =
       !tipoFiltro || p.tipo === tipoFiltro;
 
@@ -1013,8 +973,10 @@ const custoBase = dados.cmvBase > 0
   : Number(p.custo_total || p.custo_unitario || 0);
    const custoTotal = dados.cmvBase + totalImpostos;
 
+// ✅ CMV apenas do custo base (ingredientes)
 const cmvPerc =
-  p.preco_venda ? (custoTotal / p.preco_venda) * 100 : null;
+  p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
+
 const lucro =
   p.preco_venda ? p.preco_venda - custoTotal : null;
 
@@ -1135,7 +1097,7 @@ const { data: itens } = await sb
     unidade_uso,
     custo_unitario,
     custo_calculado,
-    produto:produtos!buffet_itens_produto_id_fkey (
+    produto:produtos (
       energia_kcal,
       carboidratos,
       proteinas,
@@ -1172,20 +1134,9 @@ const nutri = {
 });
 
 
-const listaItens = (Array.isArray(itens) ? itens : []).map(i => ({
-  ...i,
-  produto: i.produto || {
-    energia_kcal: 0,
-    carboidratos: 0,
-    proteinas: 0,
-    gorduras_totais: 0,
-    fibra_alimentar: 0,
-    sodio_mg: 0
-  }
-}));
-const cmvBase = listaItens.reduce(
-  (s,i)=> s + Number(i?.custo_calculado || 0), 0
-);
+  const cmvBase = itens.reduce(
+    (s,i)=>s + Number(i.custo_calculado||0),0
+  );
 
   /* IMPOSTOS / CUSTOS */
   const { data: impostos } = await sb
@@ -1403,8 +1354,8 @@ ${p.preco_ideal ? `
     </tr>
   </thead>
   <tbody>
-${(listaItens).map(i=>`
-<tr>
+    ${itens.map(i=>`
+      <tr>
         <td><b>${i.nome}</b></td>
         <td>${i.quantidade}</td>
         <td>${i.unidade_uso}</td>
@@ -1537,11 +1488,10 @@ ${(listaItens).map(i=>`
   "
 >${p.modo_preparo || ""}</textarea>
 
+
+  
 `;
-// 🔥 agora que o HTML do modal foi injetado, capture os inputs dinâmicos
-ingProduto = document.getElementById("ingProduto");
-ingQtd = document.getElementById("ingQtd");
-ingUnidade = document.getElementById("ingUnidade");
+
 
 
 // 🔥 agora o select existe → carrega os tipos
@@ -1824,16 +1774,8 @@ async function salvarPrecoVenda(cmvFinal){
     return;
   }
 
-  const lucro = preco - cmvFinal;
-  const margem = (lucro / preco) * 100;
-
   await sb.from("buffet")
-    .update({
-      preco_venda: preco,
-      custo_total: cmvFinal,
-      custo_unitario: cmvFinal,
-      margem_percentual: margem
-    })
+    .update({ preco_venda: preco })
     .eq("id", pratoAtual.id);
 
   await carregarPratos();
@@ -1847,9 +1789,6 @@ async function salvarIngrediente(){
 
   const prod = ingredientesBase.find(p => p.id === prodId);
   const custoUnit = Number(prod.valor);
-  const rendimento = Number(prod.rendimento_percentual || 100);
-
-  const custoReal = calcularCustoReal(qtd, custoUnit, rendimento);
 
   await sb.from("buffet_itens").insert({
     buffet_id: pratoAtual.id,
@@ -1858,20 +1797,20 @@ async function salvarIngrediente(){
     quantidade: qtd,
     unidade_uso: prod.unidade_medida,
     custo_unitario: custoUnit,
-    custo_calculado: custoReal
+    custo_calculado: custoUnit * qtd
   });
 
-  await carregarCMVCache();
-  await carregarPratos();
-  renderLista();
+await carregarCMVCache();
+await carregarPratos();   // 🔁 atualiza lista
+renderLista();            // 🔁 re-renderiza cards
 
-  const { data: pratoNovo } = await sb
-    .from("buffet")
-    .select("*")
-    .eq("id", pratoAtual.id)
-    .single();
+const { data: pratoNovo } = await sb
+  .from("buffet")
+  .select("*")
+  .eq("id", pratoAtual.id)
+  .single();
 
-  abrirModal(pratoNovo);
+abrirModal(pratoNovo);
 }
 
 async function excluirIngrediente(itemId){
@@ -1945,9 +1884,7 @@ async function excluirImposto(id){
 document.addEventListener("change", e => {
   if (e.target.id === "ingProduto") {
     const opt = e.target.selectedOptions[0];
-    if (ingUnidade) {
-      ingUnidade.value = opt?.dataset?.unidade || "";
-    }
+    ingUnidade.value = opt?.dataset?.unidade || "";
   }
 });
 
@@ -1981,22 +1918,15 @@ const btn = document.getElementById("btnSalvarIngrediente");  btn.innerText = "A
     const qtd = Number(ingQtd.value || 0);
     if(qtd <= 0) return alert("Quantidade inválida");
 
-const prod = ingredientesBase.find(p => p.id === ingProduto.value);
-if (!prod) {
-  alert("Ingrediente base não encontrado.");
-  return;
-}
-const custoUnit = Number(prod.valor);
-const rendimento = Number(prod.rendimento_percentual || 100);
-
-const custoReal = calcularCustoReal(qtd, custoUnit, rendimento);
+    const prod = ingredientesBase.find(p => p.id === ingProduto.value);
+    const custoUnit = Number(prod.valor);
 
 await sb
   .from("buffet_itens")
   .update({
     quantidade: qtd,
     custo_unitario: custoUnit,
-    custo_calculado: custoReal
+    custo_calculado: custoUnit * qtd
   })
   .eq("id", itemId);
 
@@ -2074,7 +2004,7 @@ async function carregarTipos(){
   await carregarCMVCache();   // 🔥 cache primeiro
   await carregarPratos();     // 🔥 depois os pratos
   await carregarTipos();
-  renderLista();              // 🔥 render garantido
+  renderLista();              // 🔥 render só depois do cache
 })();
 async function editarNomePrato(){
   const h2 = document.getElementById("tituloPrato");
