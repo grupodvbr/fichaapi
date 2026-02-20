@@ -202,9 +202,9 @@ const sb = supabase.createClient(
 let pratos=[], itens=[], impostos=[];
 
 async function carregarBase(){
-  pratos = (await sb.from("buffet").select("*")).data || [];
-  itens = (await sb.from("buffet_itens").select("buffet_id,nome,quantidade,unidade_uso,custo_unitario,custo_calculado")).data || [];
-  impostos = (await sb.from("impostos").select("buffet_id,modalidade,valor")).data || [];
+pratos  = (await sb.from("buffet").select("id,nome,tipo,ativo,preco_venda")).data || [];
+itens   = (await sb.from("buffet_itens").select("buffet_id,quantidade,custo_unitario")).data || [];
+impostos= (await sb.from("impostos").select("buffet_id,modalidade,valor")).data || [];
   carregarTipos();
   renderPreview();
 }
@@ -224,11 +224,10 @@ function getMapaCustos(){
 
     mapa[id] ??= { base: 0, impostos: 0 };
 
-    const qtd = Number(i.quantidade || 0);
+    const qtd  = Number(i.quantidade || 0);
     const unit = Number(i.custo_unitario || 0);
 
-    // 👉 recalcula em tempo real
-    mapa[id].base += qtd * unit;
+    mapa[id].base += qtd * unit; // recalcula em tempo real
   });
 
   impostos.forEach(i => {
@@ -267,8 +266,12 @@ function renderPreview(){
   const mapa=getMapaCustos();
   tbody.innerHTML="";
   getFiltrados().forEach(p=>{
-    const base=mapa[p.id]?.base||0;
-    const imp=mapa[p.id]?.impostos||0;
+const base = mapa[p.id]?.base ?? 0;
+const imp  = mapa[p.id]?.impostos ?? 0;
+
+if (!mapa[p.id]) {
+  console.warn("⚠️ Prato sem itens vinculados:", p.nome, p.id);
+}
     const total=base+imp;
     const venda=Number(p.preco_venda||0);
     const lucro=venda-total;
