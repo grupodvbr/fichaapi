@@ -1352,8 +1352,8 @@ ${p.preco_ideal ? `
       <th></th>
     </tr>
   </thead>
-  <tbody>
-    ${itens.map(i=>`
+ <tbody>
+  ${(itens || []).map(i=>`
       <tr>
         <td><b>${i.nome}</b></td>
         <td>${i.quantidade}</td>
