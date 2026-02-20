@@ -1134,9 +1134,11 @@ const nutri = {
 });
 
 
-  const cmvBase = itens.reduce(
-    (s,i)=>s + Number(i.custo_calculado||0),0
-  );
+const listaItens = Array.isArray(itens) ? itens : [];
+
+const cmvBase = listaItens.reduce(
+  (s,i)=> s + Number(i.custo_calculado || 0), 0
+);
 
   /* IMPOSTOS / CUSTOS */
   const { data: impostos } = await sb
