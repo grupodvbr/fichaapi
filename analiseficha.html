@@ -1096,14 +1096,7 @@ const { data: itens } = await sb
     unidade_uso,
     custo_unitario,
     custo_calculado,
-    produto:produtos (
-      energia_kcal,
-      carboidratos,
-      proteinas,
-      gorduras_totais,
-      fibra_alimentar,
-      sodio_mg
-    )
+    produto_id
   `)
   .eq("buffet_id", p.id);
 
@@ -1119,9 +1112,24 @@ const nutri = {
   sodio: 0
 };
 
+const idsProdutos = [...new Set((itens || [])
+  .map(i => i.produto_id)
+  .filter(Boolean)
+)];
+
+let mapaProdutos = {};
+if (idsProdutos.length) {
+  const { data: prods } = await sb
+    .from("produtos")
+    .select("id, energia_kcal, carboidratos, proteinas, gorduras_totais, fibra_alimentar, sodio_mg")
+    .in("id", idsProdutos);
+
+  (prods || []).forEach(p => mapaProdutos[p.id] = p);
+}
+
 (itens || []).forEach(i => {
   const qtd = Number(i.quantidade || 0);
-  const prod = i.produto;
+  const prod = mapaProdutos[i.produto_id];
   if (!prod) return;
 
   nutri.calorias     += Number(prod.energia_kcal || 0) * qtd;
@@ -1352,23 +1360,31 @@ ${p.preco_ideal ? `
       <th></th>
     </tr>
   </thead>
- <tbody>
-  ${(itens || []).map(i=>`
-      <tr>
-        <td><b>${i.nome}</b></td>
-        <td>${i.quantidade}</td>
-        <td>${i.unidade_uso}</td>
-        <td>${moeda(i.custo_unitario)}</td>
-        <td><b>${moeda(i.custo_calculado)}</b></td>
-        <td class="acoes">
-          <button class="btn-icon btn-edit"
-            onclick="editarIngrediente('${i.id}')">✏️</button>
-          <button class="btn-icon btn-delete"
-            onclick="excluirIngrediente('${i.id}')">🗑️</button>
-        </td>
-      </tr>
-    `).join("")}
-  </tbody>
+<tbody>
+  ${
+    (itens || []).length
+      ? (itens || []).map(i=>`
+          <tr>
+            <td><b>${i.nome || "Ingrediente sem nome"}</b></td>
+            <td>${i.quantidade}</td>
+            <td>${i.unidade_uso}</td>
+            <td>${moeda(i.custo_unitario)}</td>
+            <td><b>${moeda(i.custo_calculado)}</b></td>
+            <td class="acoes">
+              <button class="btn-icon btn-edit"
+                onclick="editarIngrediente('${i.id}')">✏️</button>
+              <button class="btn-icon btn-delete"
+                onclick="excluirIngrediente('${i.id}')">🗑️</button>
+            </td>
+          </tr>
+        `).join("")
+      : `<tr>
+           <td colspan="6" style="text-align:center;color:#94a3b8;padding:12px">
+             Nenhum ingrediente cadastrado
+           </td>
+         </tr>`
+  }
+</tbody>
 </table>
 
  <div class="precificacao compact-line">
