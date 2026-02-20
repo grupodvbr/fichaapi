@@ -206,7 +206,7 @@ pratos  = (await sb.from("buffet").select("id,nome,tipo,ativo,preco_venda")).dat
 itens = (
   await sb
     .from("buffet_itens")
-    .select("buffet_id,quantidade,produtos:produto_id(valor)")
+    .select("buffet_id,custo_calculado")
 ).data || [];
   impostos= (await sb.from("impostos").select("buffet_id,modalidade,valor")).data || [];
   carregarTipos();
@@ -222,18 +222,16 @@ function carregarTipos(){
 function getMapaCustos(){
   const mapa = {};
 
+  // custo base direto do que foi salvo na ficha técnica
   itens.forEach(i => {
     const id = i.buffet_id;
     if (!id) return;
 
     mapa[id] ??= { base: 0, impostos: 0 };
-
-    const qtd  = Number(i.quantidade || 0);
-const unit = Number(i.produtos?.valor || 0);
-    
-    mapa[id].base += qtd * unit; // recalcula em tempo real
+    mapa[id].base += Number(i.custo_calculado || 0);
   });
 
+  // impostos continuam iguais
   impostos.forEach(i => {
     const id = i.buffet_id;
     if (!id) return;
