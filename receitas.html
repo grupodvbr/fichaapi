@@ -200,15 +200,41 @@ const sb = supabase.createClient(
 );
 
 let pratos=[], itens=[], impostos=[];
+async function fetchAll(table, select){
+  const pageSize = 1000;
+  let from = 0;
+  let to = pageSize - 1;
+  let all = [];
 
+  while (true) {
+    const { data, error } = await sb
+      .from(table)
+      .select(select)
+      .range(from, to);
+
+    if (error) {
+      console.error("Erro ao buscar", table, error);
+      break;
+    }
+
+    if (!data || data.length === 0) break;
+
+    all = all.concat(data);
+
+    if (data.length < pageSize) break; // acabou
+
+    from += pageSize;
+    to += pageSize;
+  }
+
+  return all;
+}
 async function carregarBase(){
-pratos  = (await sb.from("buffet").select("id,nome,tipo,ativo,preco_venda")).data || [];
-itens = (
-  await sb
-    .from("buffet_itens")
-    .select("buffet_id,custo_calculado")
-).data || [];
-  impostos= (await sb.from("impostos").select("buffet_id,modalidade,valor")).data || [];
+  pratos  = (await sb.from("buffet").select("id,nome,tipo,ativo,preco_venda")).data || [];
+
+  itens = await fetchAll("buffet_itens", "buffet_id,custo_calculado");
+  impostos = await fetchAll("impostos", "buffet_id,modalidade,valor");
+
   carregarTipos();
   renderPreview();
 }
