@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>CMV • Fichas Técnicas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -909,17 +910,13 @@ async function carregarCMVCache(){
   // 🔎 DEBUG: veja se está vindo o buffet_id certo
   console.log("🧾 ITENS CMV:", itens);
 
-(itens || []).forEach(i=>{
-  if (!i.buffet_id) {
-    console.warn("❌ ITEM SEM buffet_id:", i);
-    return;
-  }
+  (itens || []).forEach(i=>{
+    if (!i.buffet_id) return; // ignora linhas quebradas
+    const bid = String(i.buffet_id).trim();
 
-  const bid = String(i.buffet_id).trim();
-
-  cacheCMV[bid] ??= { cmvBase:0, impostos:[] };
-  cacheCMV[bid].cmvBase += Number(i.custo_calculado || 0);
-});
+    cacheCMV[bid] ??= { cmvBase:0, impostos:[] };
+    cacheCMV[bid].cmvBase += Number(i.custo_calculado || 0);
+  });
 
   (impostos || []).forEach(i=>{
     if (!i.buffet_id) return;
@@ -961,9 +958,9 @@ for(const p of pratos){
 
     if(!nomeOk || !tipoOk) continue;
 
-const pid = String(p.id).trim();
-const dados = cacheCMV[pid] || { cmvBase:0, impostos:[] };
-   let totalImpostos = 0;
+    const dados = cacheCMV[p.id] || { cmvBase:0, impostos:[] };
+
+    let totalImpostos = 0;
     dados.impostos.forEach(i=>{
       if(i.modalidade === "FIXO")
         totalImpostos += Number(i.valor);
@@ -971,7 +968,9 @@ const dados = cacheCMV[pid] || { cmvBase:0, impostos:[] };
         totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
     });
 
-const custoBase = dados.cmvBase;
+const custoBase = dados.cmvBase > 0
+  ? dados.cmvBase
+  : Number(p.custo_total || p.custo_unitario || 0);
    const custoTotal = dados.cmvBase + totalImpostos;
 
 // ✅ CMV apenas do custo base (ingredientes)
@@ -1087,8 +1086,8 @@ async function abrirModal(p){
   pratoAtual = p;
   modal.style.display = "flex";
   document.body.style.overflow = "hidden";
-mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";
-   /* INGREDIENTES */
+mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
+  /* INGREDIENTES */
 const { data: itens } = await sb
   .from("buffet_itens")
   .select(`
@@ -1098,7 +1097,14 @@ const { data: itens } = await sb
     unidade_uso,
     custo_unitario,
     custo_calculado,
-    produto_id
+    produto:produtos (
+      energia_kcal,
+      carboidratos,
+      proteinas,
+      gorduras_totais,
+      fibra_alimentar,
+      sodio_mg
+    )
   `)
   .eq("buffet_id", p.id);
 
@@ -1114,24 +1120,9 @@ const nutri = {
   sodio: 0
 };
 
-const idsProdutos = [...new Set((itens || [])
-  .map(i => i.produto_id)
-  .filter(Boolean)
-)];
-
-let mapaProdutos = {};
-if (idsProdutos.length) {
-  const { data: prods } = await sb
-    .from("produtos")
-    .select("id, energia_kcal, carboidratos, proteinas, gorduras_totais, fibra_alimentar, sodio_mg")
-    .in("id", idsProdutos);
-
-  (prods || []).forEach(p => mapaProdutos[p.id] = p);
-}
-
 (itens || []).forEach(i => {
   const qtd = Number(i.quantidade || 0);
-  const prod = mapaProdutos[i.produto_id];
+  const prod = i.produto;
   if (!prod) return;
 
   nutri.calorias     += Number(prod.energia_kcal || 0) * qtd;
@@ -1143,9 +1134,9 @@ if (idsProdutos.length) {
 });
 
 
-const cmvBase = (itens || []).reduce(
-  (s,i)=> s + Number(i.custo_calculado || 0), 0
-);
+  const cmvBase = itens.reduce(
+    (s,i)=>s + Number(i.custo_calculado||0),0
+  );
 
   /* IMPOSTOS / CUSTOS */
   const { data: impostos } = await sb
@@ -1362,31 +1353,23 @@ ${p.preco_ideal ? `
       <th></th>
     </tr>
   </thead>
-<tbody>
-  ${
-    (itens || []).length
-      ? (itens || []).map(i=>`
-          <tr>
-            <td><b>${i.nome || "Ingrediente sem nome"}</b></td>
-            <td>${i.quantidade}</td>
-            <td>${i.unidade_uso}</td>
-            <td>${moeda(i.custo_unitario)}</td>
-            <td><b>${moeda(i.custo_calculado)}</b></td>
-            <td class="acoes">
-              <button class="btn-icon btn-edit"
-                onclick="editarIngrediente('${i.id}')">✏️</button>
-              <button class="btn-icon btn-delete"
-                onclick="excluirIngrediente('${i.id}')">🗑️</button>
-            </td>
-          </tr>
-        `).join("")
-      : `<tr>
-           <td colspan="6" style="text-align:center;color:#94a3b8;padding:12px">
-             Nenhum ingrediente cadastrado
-           </td>
-         </tr>`
-  }
-</tbody>
+  <tbody>
+    ${itens.map(i=>`
+      <tr>
+        <td><b>${i.nome}</b></td>
+        <td>${i.quantidade}</td>
+        <td>${i.unidade_uso}</td>
+        <td>${moeda(i.custo_unitario)}</td>
+        <td><b>${moeda(i.custo_calculado)}</b></td>
+        <td class="acoes">
+          <button class="btn-icon btn-edit"
+            onclick="editarIngrediente('${i.id}')">✏️</button>
+          <button class="btn-icon btn-delete"
+            onclick="excluirIngrediente('${i.id}')">🗑️</button>
+        </td>
+      </tr>
+    `).join("")}
+  </tbody>
 </table>
 
  <div class="precificacao compact-line">
@@ -1395,13 +1378,13 @@ ${p.preco_ideal ? `
   <div class="line-add">
     <select id="ingProduto" class="line-select">
       <option value="">Selecione o ingrediente</option>
-${(ingredientesBase || []).map(i=>`
-  <option value="${i.id}"
-    data-custo="${i.valor}"
-    data-unidade="${i.unidade_medida}">
-    ${i.nome}
-  </option>
-`).join("")}
+      ${ingredientesBase.map(i=>`
+        <option value="${i.id}"
+          data-custo="${i.valor}"
+          data-unidade="${i.unidade_medida}">
+          ${i.nome}
+        </option>
+      `).join("")}
     </select>
 
     <input id="ingQtd" type="number" step="0.001" placeholder="Qtd" class="line-qtd">
