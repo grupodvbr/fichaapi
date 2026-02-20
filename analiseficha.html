@@ -1087,8 +1087,8 @@ async function abrirModal(p){
   modal.style.display = "flex";
   document.body.style.overflow = "hidden";
 mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
-  /* INGREDIENTES */
-const { data: itens } = await sb
+/* INGREDIENTES */
+const { data: itens, error } = await sb
   .from("buffet_itens")
   .select(`
     id,
@@ -1108,6 +1108,10 @@ const { data: itens } = await sb
   `)
   .eq("buffet_id", p.id);
 
+const listaItens = Array.isArray(itens) ? itens : [];
+
+if (error) console.error("Erro ao buscar itens:", error);
+
 // ===============================
 // CALCULO FICHA NUTRICIONAL
 // ===============================
@@ -1120,7 +1124,7 @@ const nutri = {
   sodio: 0
 };
 
-(itens || []).forEach(i => {
+listaItens.forEach(i => {
   const qtd = Number(i.quantidade || 0);
   const prod = i.produto;
   if (!prod) return;
@@ -1132,9 +1136,6 @@ const nutri = {
   nutri.fibras       += Number(prod.fibra_alimentar || 0) * qtd;
   nutri.sodio        += Number(prod.sodio_mg || 0) * qtd;
 });
-
-
-const listaItens = Array.isArray(itens) ? itens : [];
 
 const cmvBase = listaItens.reduce(
   (s,i)=> s + Number(i.custo_calculado || 0), 0
@@ -1356,8 +1357,8 @@ ${p.preco_ideal ? `
     </tr>
   </thead>
   <tbody>
-    ${itens.map(i=>`
-      <tr>
+${listaItens.map(i=>`
+<tr>
         <td><b>${i.nome}</b></td>
         <td>${i.quantidade}</td>
         <td>${i.unidade_uso}</td>
