@@ -1111,7 +1111,19 @@ c.innerHTML = `
 cards.appendChild(c);
   } // fecha for
 }   // fecha renderLista
+const inputFiltro = document.getElementById("filtroNome");
+  const selectFiltro = document.getElementById("filtroTipo");
 
+  if (inputFiltro) {
+    inputFiltro.addEventListener("input", renderLista);
+  }
+
+  if (selectFiltro) {
+    selectFiltro.addEventListener("change", () => {
+      filtroTipoSelecionado = selectFiltro.value;
+      renderLista();
+    });
+  }
 /* =====================================================
    MODAL
 ===================================================== */
