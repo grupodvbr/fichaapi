@@ -1943,12 +1943,16 @@ async function editarIngrediente(itemId){
     return;
   }
 
-  // preenche formulário
   ingProduto.value = data.produto_id;
   ingQtd.value = data.quantidade;
   ingUnidade.value = data.unidade_uso;
 
-const btn = document.getElementById("btnSalvarIngrediente");  btn.innerText = "ATUALIZAR INGREDIENTE";
+  const btn = document.getElementById("btnSalvarIngrediente");
+
+  // 🔥 melhora visual do botão
+  btn.innerText = "ATUALIZAR INGREDIENTE";
+  btn.classList.remove("btn-add");
+  btn.classList.add("btn-edit");
 
   btn.onclick = async () => {
     const qtd = Number(ingQtd.value || 0);
@@ -1957,48 +1961,49 @@ const btn = document.getElementById("btnSalvarIngrediente");  btn.innerText = "A
     const prod = ingredientesBase.find(p => p.id === ingProduto.value);
     const custoUnit = Number(prod.valor);
 
-await sb
-  .from("buffet_itens")
-  .update({
-    quantidade: qtd,
-    custo_unitario: custoUnit,
-    custo_calculado: custoUnit * qtd
-  })
-  .eq("id", itemId);
+    const { error: errUpdate } = await sb
+      .from("buffet_itens")
+      .update({
+        quantidade: qtd,
+        custo_unitario: custoUnit,
+        custo_calculado: custoUnit * qtd
+      })
+      .eq("id", itemId);
 
-// 🔁 atualiza cache de CMV
-await carregarCMVCache();
-await carregarPratos();   // 🔁 atualiza lista
-renderLista();            // 🔁 re-renderiza cards
+    if(errUpdate){
+      alert("Erro ao atualizar ingrediente");
+      return;
+    }
 
-// 🔄 recarrega o prato do banco (pra não usar objeto velho)
-const { data: pratoNovo } = await sb
-  .from("buffet")
-  .select("*")
-  .eq("id", pratoAtual.id)
-  .single();
+    // 🔁 atualiza cache + lista
+    await carregarCMVCache();
+    await carregarPratos();
+    renderLista();
 
-btn.innerText = "ADICIONAR INGREDIENTE";
-btn.onclick = salvarIngrediente;
+    // 🔄 recarrega prato atualizado
+    const { data: pratoNovo } = await sb
+      .from("buffet")
+      .select("*")
+      .eq("id", pratoAtual.id)
+      .single();
 
-ingProduto.value = "";
-ingQtd.value = "";
-ingUnidade.value = "";
+    // 🔥 reseta botão pro estado normal
+    btn.innerText = "ADICIONAR INGREDIENTE";
+    btn.classList.remove("btn-edit");
+    btn.classList.add("btn-add");
+    btn.onclick = salvarIngrediente;
 
-// 🔁 reabre com dados novos
-abrirModal(pratoNovo);
+    ingProduto.value = "";
+    ingQtd.value = "";
+    ingUnidade.value = "";
+
+    // 🔁 força re-render do modal
+    fechar();
+    setTimeout(() => abrirModal(pratoNovo), 50);
+
+    alert("✅ Ingrediente atualizado com sucesso");
   };
 }
-filtroNome.addEventListener("input", () => {
-  renderLista();
-});
-
-filtroTipo.addEventListener("change", () => {
-  filtroTipoSelecionado = filtroTipo.value;   // salva o estado do filtro
-  renderLista();
-});
-
-
 async function carregarTipos(){
   const { data, error } = await sb
     .from("buffet")
