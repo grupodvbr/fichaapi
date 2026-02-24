@@ -2016,11 +2016,16 @@ await carregarPratos();    // 🔁 atualiza lista
 aplicarFiltros();}
 
 window.addEventListener("scroll", () => {
-  const scrollTop = window.scrollY;
-  const windowHeight = window.innerHeight;
-  const fullHeight = document.body.offsetHeight;
+  const scrollTop =
+    window.pageYOffset || document.documentElement.scrollTop;
 
-  if (scrollTop + windowHeight >= fullHeight - 300) {
+  const windowHeight =
+    window.innerHeight || document.documentElement.clientHeight;
+
+  const fullHeight =
+    document.documentElement.scrollHeight || document.body.scrollHeight;
+
+  if (scrollTop + windowHeight >= fullHeight - 200) {
     renderProximaPagina();
   }
 });
