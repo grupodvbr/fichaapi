@@ -990,7 +990,7 @@ function renderProximaPagina() {
   if (carregandoMais) return;
 
   const inicio = pageIndex * pageSize;
-  if (inicio >= listaFiltrada.length) return; // ⛔ acabou a lista
+  if (inicio >= listaFiltrada.length) return; // ⛔ acabou tudo
 
   carregandoMais = true;
 
@@ -1057,7 +1057,6 @@ function renderProximaPagina() {
   pageIndex++;
   carregandoMais = false;
 }
-
 filtroNome.addEventListener("input", aplicarFiltros);
 
 filtroTipo.addEventListener("change", () => {
