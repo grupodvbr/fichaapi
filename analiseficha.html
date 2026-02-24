@@ -867,7 +867,10 @@ let ingredientesBase = [];
 let impostosCache = [];
 let pratoAtual = null;
 let filtroTipoSelecionado = "";
-
+let pageSize = 20;        // 🔥 quantidade por carga
+let pageIndex = 0;       // 🔥 página atual
+let carregandoMais = false;
+let listaFiltrada = [];
 
 /* =====================================================
    LOAD BASE
@@ -969,169 +972,106 @@ async function carregarCMVCache(){
 /* =====================================================
    LISTA
 ===================================================== */
-function renderLista(){
-  cards.innerHTML = "";
-
+function aplicarFiltros() {
   const nomeFiltro = (filtroNome.value || "").toUpperCase().trim();
   const tipoFiltro = filtroTipo.value;
 
-for(const p of pratos){
+  listaFiltrada = pratos.filter(p => {
+    const nomeOk = !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
+    const tipoOk = !tipoFiltro || p.tipo === tipoFiltro;
+    return nomeOk && tipoOk;
+  });
 
-// if (p.ativo === false) continue;
+  pageIndex = 0;
+  cards.innerHTML = "";
+  renderProximaPagina();
+}
+function renderProximaPagina() {
+  if (carregandoMais) return;
 
-    const nomeOk =
-      !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
-    const tipoOk =
-      !tipoFiltro || p.tipo === tipoFiltro;
+  const inicio = pageIndex * pageSize;
+  if (inicio >= listaFiltrada.length) return; // ⛔ acabou a lista
 
-    if(!nomeOk || !tipoOk) continue;
+  carregandoMais = true;
 
+  const fim = inicio + pageSize;
+  const pagina = listaFiltrada.slice(inicio, fim);
+
+  for (const p of pagina) {
     const dados = cacheCMV[p.id] || { cmvBase:0, impostos:[] };
 
     let totalImpostos = 0;
     dados.impostos.forEach(i=>{
-      if(i.modalidade === "FIXO")
-        totalImpostos += Number(i.valor);
+      if(i.modalidade === "FIXO") totalImpostos += Number(i.valor);
       if(i.modalidade === "PERCENTUAL")
         totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
     });
 
-const custoBase = dados.cmvBase > 0
-  ? dados.cmvBase
-  : Number(p.custo_total || p.custo_unitario || 0);
+    const custoBase = dados.cmvBase > 0
+      ? dados.cmvBase
+      : Number(p.custo_total || p.custo_unitario || 0);
 
-const custoTotal =
-  dados.cmvBase > 0
-    ? (dados.cmvBase + totalImpostos)
-    : Number(p.custo_total || p.custo_unitario || 0);
+    const custoTotal =
+      dados.cmvBase > 0
+        ? (dados.cmvBase + totalImpostos)
+        : Number(p.custo_total || p.custo_unitario || 0);
 
-   
-// ✅ CMV apenas do custo base (ingredientes)
-const cmvPerc =
-  p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
+    const cmvPerc =
+      p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
 
-const lucro =
-  p.preco_venda ? p.preco_venda - custoTotal : null;
+    const lucro =
+      p.preco_venda ? p.preco_venda - custoTotal : null;
 
-const margem =
-  p.preco_venda ? (lucro / p.preco_venda) * 100 : null;
+    const margem =
+      p.preco_venda ? (lucro / p.preco_venda) * 100 : null;
 
-const c = document.createElement("div");
-c.className = "card";
+    const c = document.createElement("div");
+    c.className = "card";
+    c.onclick = () => abrirModal(p);
 
-let clicks = 0;
-let clickTimer = null;
+    c.innerHTML = `
+      ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
+      <div class="card-body">
+        <h3>${p.nome}</h3>
+        <p class="desc-card">${p.descricao || ""}</p>
+        <div class="card-stats">
+          <div class="stat blue">📦 Tipo<b>${p.tipo || "—"}</b></div>
+          <div class="stat ${cmvPerc ? (cmvPerc > 35 ? "red" : "green") : ""}">
+            📊 CMV<b>${cmvPerc ? cmvPerc.toFixed(1) + "%" : "—"}</b>
+          </div>
+          <div class="stat ${margem ? (margem < 30 ? "red" : "green") : ""}">
+            📈 Margem<b>${margem ? margem.toFixed(1) + "%" : "—"}</b>
+          </div>
+          <div class="stat orange">🧾 Custo<b>${custoTotal > 0 ? moeda(custoTotal) : "—"}</b></div>
+          <div class="stat">💰 Venda<b>${p.preco_venda ? moeda(p.preco_venda) : "—"}</b></div>
+          <div class="stat ${lucro ? (lucro < 0 ? "red" : "green") : ""}">
+            🟢 Lucro<b>${lucro ? moeda(lucro) : "—"}</b>
+          </div>
+        </div>
+      </div>
+    `;
 
-c.addEventListener("click", async (e) => {
-  clicks++;
-
-  clearTimeout(clickTimer);
-
-  clickTimer = setTimeout(() => {
-    // se não chegou em 3 cliques, considera clique normal
-    if (clicks === 1) {
-      abrirModal(p);
-    }
-    clicks = 0;
-  }, 350); // janela de tempo entre cliques
-
-  if (clicks === 3) {
-    clicks = 0;
-
-    const { data: { user } } = await sb.auth.getUser();
-    const email = user?.email || null;
-
-    const autorizado = email && EMAILS_AUTORIZADOS_EXCLUSAO.includes(email);
-
-    if (!autorizado) {
-      alert("❌ Você não tem permissão para excluir este item.");
-      return;
-    }
-
-    const confirmar = confirm(
-      `Deseja EXCLUIR o prato:\n\n${p.nome}\n\n⚠️ Essa ação é irreversível.`
-    );
-    if (!confirmar) return;
-
-    const { error } = await sb.from("buffet").delete().eq("id", p.id);
-
-    if (error) {
-      alert("Erro ao excluir o prato.");
-      return;
-    }
-
-    alert("✅ Prato excluído com sucesso.");
-    await carregarPratos();
-    renderLista();
+    cards.appendChild(c);
   }
+
+  pageIndex++;
+  carregandoMais = false;
+}
+
+filtroNome.addEventListener("input", aplicarFiltros);
+
+filtroTipo.addEventListener("change", () => {
+  filtroTipoSelecionado = filtroTipo.value;
+  aplicarFiltros();
 });
-c.innerHTML = `
-  ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
-  <div class="card-body">
-
-    <h3>${p.nome}</h3>
-<p class="desc-card">
-  ${p.descricao || ""}
-</p>
-<div class="card-stats">
-
-  <div class="stat blue">
-    📦 Tipo
-    <b>${p.tipo || "—"}</b>
-  </div>
-
-  <div class="stat ${cmvPerc ? (cmvPerc > 35 ? "red" : "green") : ""}">
-    📊 CMV
-    <b>${cmvPerc ? cmvPerc.toFixed(1) + "%" : "—"}</b>
-  </div>
-
-  <div class="stat ${margem ? (margem < 30 ? "red" : "green") : ""}">
-    📈 Margem
-    <b>${margem ? margem.toFixed(1) + "%" : "—"}</b>
-  </div>
-
-  <div class="stat orange">
-    🧾 Custo
-    <b>${custoTotal > 0 ? moeda(custoTotal) : "—"}</b>
-  </div>
-
-  <div class="stat">
-    💰 Venda
-    <b>${p.preco_venda ? moeda(p.preco_venda) : "—"}</b>
-  </div>
-
-  <div class="stat ${lucro ? (lucro < 0 ? "red" : "green") : ""}">
-    🟢 Lucro
-    <b>${lucro ? moeda(lucro) : "—"}</b>
-  </div>
-
-</div>
-  </div>
-`;
-cards.appendChild(c);
-  } // fecha for
-}   // fecha renderLista
-const inputFiltro = document.getElementById("filtroNome");
-  const selectFiltro = document.getElementById("filtroTipo");
-
-  if (inputFiltro) {
-    inputFiltro.addEventListener("input", renderLista);
-  }
-
-  if (selectFiltro) {
-    selectFiltro.addEventListener("change", () => {
-      filtroTipoSelecionado = selectFiltro.value;
-      renderLista();
-    });
-  }
 /* =====================================================
    MODAL
 ===================================================== */
 async function abrirModal(p){
   pratoAtual = p;
   modal.style.display = "flex";
-  document.body.style.overflow = "hidden";
-mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
+document.body.classList.add("modal-open");
+   mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
 /* INGREDIENTES */
 const { data: itens, error } = await sb
   .from("buffet_itens")
@@ -1552,20 +1492,7 @@ if (selectTipo && p.tipo) {
 }
 
 // salva ao mudar
-if (selectTipo) {
-  selectTipo.onchange = async () => {
-    const tipo = selectTipo.value;
-    if (!tipo) return;
 
-    await sb
-      .from("buffet")
-      .update({ tipo })
-      .eq("id", pratoAtual.id);
-
-    await carregarPratos();
-    renderLista();
-  };
-}
 setTimeout(() => {
   const selectTipo = document.getElementById("tipoPrato");
   if (!selectTipo) return;
@@ -1584,7 +1511,7 @@ setTimeout(() => {
       .eq("id", pratoAtual.id);
 
     await carregarPratos();
-    renderLista();
+aplicarFiltros();
   };
 }, 0);
 setTimeout(() => {
@@ -1621,7 +1548,7 @@ setTimeout(() => {
     mFoto.src = fotoUrl;
 
     await carregarPratos();
-    renderLista();
+aplicarFiltros();
   };
 }, 0);
 
@@ -1646,7 +1573,7 @@ setTimeout(() => {
       .eq("id", pratoAtual.id);
 
     await carregarPratos();
-    renderLista();
+aplicarFiltros();
   };
 }, 0);
 setTimeout(() => {
@@ -1685,7 +1612,7 @@ setTimeout(() => {
       .eq("id", pratoAtual.id);
 
     await carregarPratos();
-    renderLista();
+aplicarFiltros();
   };
 }, 0);
 
@@ -1763,7 +1690,7 @@ setTimeout(async () => {
       .eq("id", pratoAtual.id);
 
     await carregarPratos();
-    renderLista();
+aplicarFiltros();
   };
 }, 0);
 setTimeout(() => {
@@ -1850,8 +1777,9 @@ async function salvarIngrediente(){
 
 await carregarCMVCache();
 await carregarPratos();   // 🔁 atualiza lista
-renderLista();            // 🔁 re-renderiza cards
+aplicarFiltros();         // ✅ re-render com paginação
 
+   
 const { data: pratoNovo } = await sb
   .from("buffet")
   .select("*")
@@ -1871,7 +1799,7 @@ async function excluirIngrediente(itemId){
 
 await carregarCMVCache();
 await carregarPratos();   // 🔁 atualiza lista
-renderLista();            // 🔁 re-renderiza cards
+aplicarFiltros();         // ✅ re-render com paginação
 
 const { data: pratoNovo } = await sb
   .from("buffet")
@@ -1898,9 +1826,9 @@ async function salvarImposto(){
     valor
   });
 
-  await carregarCMVCache();  // 🔁 atualiza cache
-  await carregarPratos();    // 🔁 atualiza lista
-  renderLista();             // 🔁 re-renderiza cards
+await carregarCMVCache();  // 🔁 atualiza cache
+await carregarPratos();    // 🔁 atualiza lista
+aplicarFiltros();          // ✅ re-render com paginação
 
   const { data: pratoNovo } = await sb
     .from("buffet")
@@ -1914,9 +1842,9 @@ async function salvarImposto(){
 async function excluirImposto(id){
   await sb.from("impostos").delete().eq("id",id);
 
-  await carregarCMVCache();  // 🔁 atualiza cache
-  await carregarPratos();    // 🔁 atualiza lista
-  renderLista();             // 🔁 re-renderiza cards
+await carregarCMVCache();  // 🔁 atualiza cache
+await carregarPratos();    // 🔁 atualiza lista
+aplicarFiltros();          // ✅ re-render com paginação
 
   const { data: pratoNovo } = await sb
     .from("buffet")
@@ -1938,10 +1866,9 @@ document.addEventListener("change", e => {
 
 
 function fechar(){
-  modal.style.display="none";
-  document.body.style.overflow="";
+  modal.style.display = "none";
+  document.body.classList.remove("modal-open");
 }
-
 
 async function editarIngrediente(itemId){
   const { data, error } = await sb
@@ -1987,10 +1914,10 @@ async function editarIngrediente(itemId){
       return;
     }
 
-    // 🔁 atualiza cache + lista
-    await carregarCMVCache();
-    await carregarPratos();
-    renderLista();
+// 🔁 atualiza cache + lista
+await carregarCMVCache();
+await carregarPratos();
+aplicarFiltros();   // ✅
 
     // 🔄 recarrega prato atualizado
     const { data: pratoNovo } = await sb
@@ -2057,7 +1984,7 @@ async function carregarTipos(){
   await carregarCMVCache();   // 🔥 cache primeiro
   await carregarPratos();     // 🔥 depois os pratos
   await carregarTipos();
-  renderLista();              // 🔥 render só depois do cache
+  aplicarFiltros();           // ✅ inicia com paginação
 })();
 async function editarNomePrato(){
   const h2 = document.getElementById("tituloPrato");
@@ -2087,10 +2014,17 @@ async function editarNomePrato(){
   h2.innerText = nomeFinal;
 await carregarCMVCache();  // 🔁 atualiza cache
 await carregarPratos();    // 🔁 atualiza lista
-renderLista();             // 🔁 re-renderiza cards
-}
+aplicarFiltros();}
 
-   
+window.addEventListener("scroll", () => {
+  const scrollTop = window.scrollY;
+  const windowHeight = window.innerHeight;
+  const fullHeight = document.body.offsetHeight;
+
+  if (scrollTop + windowHeight >= fullHeight - 300) {
+    renderProximaPagina();
+  }
+});
 </script>
 
 
