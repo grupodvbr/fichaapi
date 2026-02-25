@@ -57,6 +57,8 @@ body{
 /* trava scroll quando modal aberto */
 body.modal-open{
   overflow:hidden;
+  position:fixed;
+  width:100%;
 }
 
 /* =========================================================
@@ -103,7 +105,6 @@ body.modal-open{
    CARD
 ========================================================= */
 .card{
-  position:relative; /* 👈 necessário para a lixeira */
   background:var(--card);
   border-radius:22px;
   box-shadow:var(--shadow-md);
@@ -271,7 +272,7 @@ body.modal-open{
 .modal-body{
   padding:10px 4px 26px;
   overflow-y:auto;
-  max-height:calc(96vh - 180px);
+  max-height:calc(92vh - 220px);
   scrollbar-gutter:stable;
 }
 
@@ -445,7 +446,7 @@ button{
   }
 
   .modal-box{
-  max-height:96vh;
+    max-width:100%;
     height:92vh;
     border-radius:22px 22px 0 0;
   }
@@ -743,37 +744,7 @@ button{
 
 body{ zoom: 0.9; }
 
-/* ===== LIXEIRA NO CARD ===== */
-.card-actions{
-  position:absolute;
-  top:10px;
-  right:10px;
-  display:flex;
-  gap:6px;
-  z-index:5;
-}
-
-.btn-trash-card{
-  width:34px;
-  height:34px;
-  border-radius:10px;
-  border:none;
-  background:rgba(220,38,38,.95);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:16px;
-  font-weight:900;
-  cursor:pointer;
-  box-shadow:0 8px 22px rgba(0,0,0,.35);
-  transition:.15s ease;
-}
-
-.btn-trash-card:hover{
-  transform:scale(1.08);
-  background:#b91c1c;
-}
+   
 </style>
 </head>
 
@@ -812,12 +783,7 @@ const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
-// ===== EXCLUSÃO POR 3 CLIQUES =====
-let clickCountByPrato = {};
-let clickTimerByPrato = {};
-const CLICK_WINDOW_MS = 1200; // 1.2s entre cliques
 
-   
 async function fetchAll(table, select) {
   const pageSize = 1000;
   let from = 0;
@@ -901,10 +867,7 @@ let ingredientesBase = [];
 let impostosCache = [];
 let pratoAtual = null;
 let filtroTipoSelecionado = "";
-let pageSize = 20;        // 🔥 quantidade por carga
-let pageIndex = 0;       // 🔥 página atual
-let carregandoMais = false;
-let listaFiltrada = [];
+
 
 /* =====================================================
    LOAD BASE
@@ -1006,168 +969,169 @@ async function carregarCMVCache(){
 /* =====================================================
    LISTA
 ===================================================== */
-function aplicarFiltros() {
+function renderLista(){
+  cards.innerHTML = "";
+
   const nomeFiltro = (filtroNome.value || "").toUpperCase().trim();
   const tipoFiltro = filtroTipo.value;
 
-  listaFiltrada = pratos.filter(p => {
-    const nomeOk = !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
-    const tipoOk = !tipoFiltro || p.tipo === tipoFiltro;
-    return nomeOk && tipoOk;
-  });
+for(const p of pratos){
 
-  pageIndex = 0;
-  cards.innerHTML = "";
-  renderProximaPagina();
-}
+// if (p.ativo === false) continue;
 
+    const nomeOk =
+      !nomeFiltro || p.nome.toUpperCase().includes(nomeFiltro);
+    const tipoOk =
+      !tipoFiltro || p.tipo === tipoFiltro;
 
+    if(!nomeOk || !tipoOk) continue;
 
-
-   
-function renderProximaPagina() {
-  if (carregandoMais) return;
-
-  const inicio = pageIndex * pageSize;
-  if (inicio >= listaFiltrada.length) return; // ⛔ acabou tudo
-
-  carregandoMais = true;
-
-  const fim = inicio + pageSize;
-  const pagina = listaFiltrada.slice(inicio, fim);
-
-  for (const p of pagina) {
     const dados = cacheCMV[p.id] || { cmvBase:0, impostos:[] };
 
     let totalImpostos = 0;
     dados.impostos.forEach(i=>{
-      if(i.modalidade === "FIXO") totalImpostos += Number(i.valor);
+      if(i.modalidade === "FIXO")
+        totalImpostos += Number(i.valor);
       if(i.modalidade === "PERCENTUAL")
         totalImpostos += (dados.cmvBase * Number(i.valor)) / 100;
     });
 
-    const custoBase = dados.cmvBase > 0
-      ? dados.cmvBase
-      : Number(p.custo_total || p.custo_unitario || 0);
+const custoBase = dados.cmvBase > 0
+  ? dados.cmvBase
+  : Number(p.custo_total || p.custo_unitario || 0);
 
-    const custoTotal =
-      dados.cmvBase > 0
-        ? (dados.cmvBase + totalImpostos)
-        : Number(p.custo_total || p.custo_unitario || 0);
+const custoTotal =
+  dados.cmvBase > 0
+    ? (dados.cmvBase + totalImpostos)
+    : Number(p.custo_total || p.custo_unitario || 0);
 
-    const cmvPerc =
-      p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
+   
+// ✅ CMV apenas do custo base (ingredientes)
+const cmvPerc =
+  p.preco_venda ? (custoBase / p.preco_venda) * 100 : null;
 
-    const lucro =
-      p.preco_venda ? p.preco_venda - custoTotal : null;
+const lucro =
+  p.preco_venda ? p.preco_venda - custoTotal : null;
 
-    const margem =
-      p.preco_venda ? (lucro / p.preco_venda) * 100 : null;
+const margem =
+  p.preco_venda ? (lucro / p.preco_venda) * 100 : null;
 
-    const c = document.createElement("div");
-    c.className = "card";
-c.onclick = (ev) => handleCardClick(ev, p);
-c.innerHTML = `
-  <div class="card-actions">
-    <button class="btn-trash-card"
-      title="Excluir prato completo"
-      onclick="event.stopPropagation(); console.log('ID EXCLUIR:', ${p.id}); excluirReceitaInteira(${p.id})">
-      🗑️
-    </button>
-  </div>
+const c = document.createElement("div");
+c.className = "card";
 
-  ${p.foto_url ? `<img src="${p.foto_url}" style="pointer-events:none">` : ``}
-  <div class="card-body">
-        <h3>${p.nome}</h3>
-        <p class="desc-card">${p.descricao || ""}</p>
-        <div class="card-stats">
-          <div class="stat blue">📦 Tipo<b>${p.tipo || "—"}</b></div>
-          <div class="stat ${cmvPerc ? (cmvPerc > 35 ? "red" : "green") : ""}">
-            📊 CMV<b>${cmvPerc ? cmvPerc.toFixed(1) + "%" : "—"}</b>
-          </div>
-          <div class="stat ${margem ? (margem < 30 ? "red" : "green") : ""}">
-            📈 Margem<b>${margem ? margem.toFixed(1) + "%" : "—"}</b>
-          </div>
-          <div class="stat orange">🧾 Custo<b>${custoTotal > 0 ? moeda(custoTotal) : "—"}</b></div>
-          <div class="stat">💰 Venda<b>${p.preco_venda ? moeda(p.preco_venda) : "—"}</b></div>
-          <div class="stat ${lucro ? (lucro < 0 ? "red" : "green") : ""}">
-            🟢 Lucro<b>${lucro ? moeda(lucro) : "—"}</b>
-          </div>
-        </div>
-      </div>
-    `;
+let clicks = 0;
+let clickTimer = null;
 
-    cards.appendChild(c);
-  }
+c.addEventListener("click", async (e) => {
+  clicks++;
 
-  pageIndex++;
-  carregandoMais = false;
-}
-filtroNome.addEventListener("input", aplicarFiltros);
+  clearTimeout(clickTimer);
 
-filtroTipo.addEventListener("change", () => {
-  filtroTipoSelecionado = filtroTipo.value;
-  aplicarFiltros();
-});
+  clickTimer = setTimeout(() => {
+    // se não chegou em 3 cliques, considera clique normal
+    if (clicks === 1) {
+      abrirModal(p);
+    }
+    clicks = 0;
+  }, 350); // janela de tempo entre cliques
 
-async function handleCardClick(ev, p){
-  // ignora cliques que vieram de botões internos
-  if (ev && ev.target && ev.target.closest("button")) return;
+  if (clicks === 3) {
+    clicks = 0;
 
-  const id = String(p.id);
+    const { data: { user } } = await sb.auth.getUser();
+    const email = user?.email || null;
 
-  if (!clickCountByPrato[id]) clickCountByPrato[id] = 0;
-
-  clickCountByPrato[id]++;
-
-  clearTimeout(clickTimerByPrato[id]);
-  clickTimerByPrato[id] = setTimeout(() => {
-    clickCountByPrato[id] = 0;
-  }, CLICK_WINDOW_MS);
-
-  // 3 cliques = excluir receita inteira
-  if (clickCountByPrato[id] >= 3) {
-    clickCountByPrato[id] = 0;
-    clearTimeout(clickTimerByPrato[id]);
-
-    const email = usuarioEmailAtual;
     const autorizado = email && EMAILS_AUTORIZADOS_EXCLUSAO.includes(email);
 
     if (!autorizado) {
-      alert("❌ Você não tem permissão para excluir receitas.");
+      alert("❌ Você não tem permissão para excluir este item.");
       return;
     }
 
-    const ok = confirm(
-      `⚠️ EXCLUIR RECEITA INTEIRA?\n\n` +
-      `Isso apaga:\n• o prato\n• ingredientes\n• custos/impostos\n\n` +
-      `Essa ação NÃO pode ser desfeita.\n\n` +
-      `Deseja continuar?`
+    const confirmar = confirm(
+      `Deseja EXCLUIR o prato:\n\n${p.nome}\n\n⚠️ Essa ação é irreversível.`
     );
+    if (!confirmar) return;
 
-    if (!ok) return;
+    const { error } = await sb.from("buffet").delete().eq("id", p.id);
 
-    await excluirReceitaInteira(p.id);
-    return;
+    if (error) {
+      alert("Erro ao excluir o prato.");
+      return;
+    }
+
+    alert("✅ Prato excluído com sucesso.");
+    await carregarPratos();
+    renderLista();
+  }
+});
+c.innerHTML = `
+  ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
+  <div class="card-body">
+
+    <h3>${p.nome}</h3>
+<p class="desc-card">
+  ${p.descricao || ""}
+</p>
+<div class="card-stats">
+
+  <div class="stat blue">
+    📦 Tipo
+    <b>${p.tipo || "—"}</b>
+  </div>
+
+  <div class="stat ${cmvPerc ? (cmvPerc > 35 ? "red" : "green") : ""}">
+    📊 CMV
+    <b>${cmvPerc ? cmvPerc.toFixed(1) + "%" : "—"}</b>
+  </div>
+
+  <div class="stat ${margem ? (margem < 30 ? "red" : "green") : ""}">
+    📈 Margem
+    <b>${margem ? margem.toFixed(1) + "%" : "—"}</b>
+  </div>
+
+  <div class="stat orange">
+    🧾 Custo
+    <b>${custoTotal > 0 ? moeda(custoTotal) : "—"}</b>
+  </div>
+
+  <div class="stat">
+    💰 Venda
+    <b>${p.preco_venda ? moeda(p.preco_venda) : "—"}</b>
+  </div>
+
+  <div class="stat ${lucro ? (lucro < 0 ? "red" : "green") : ""}">
+    🟢 Lucro
+    <b>${lucro ? moeda(lucro) : "—"}</b>
+  </div>
+
+</div>
+  </div>
+`;
+cards.appendChild(c);
+  } // fecha for
+}   // fecha renderLista
+const inputFiltro = document.getElementById("filtroNome");
+  const selectFiltro = document.getElementById("filtroTipo");
+
+  if (inputFiltro) {
+    inputFiltro.addEventListener("input", renderLista);
   }
 
-  // 1 clique normal → abre modal
-  abrirModal(p);
-}
-
-
-
-
-
-   
+  if (selectFiltro) {
+    selectFiltro.addEventListener("change", () => {
+      filtroTipoSelecionado = selectFiltro.value;
+      renderLista();
+    });
+  }
 /* =====================================================
    MODAL
 ===================================================== */
 async function abrirModal(p){
   pratoAtual = p;
   modal.style.display = "flex";
-document.body.classList.add("modal-open");
-   mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
+  document.body.style.overflow = "hidden";
+mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
 /* INGREDIENTES */
 const { data: itens, error } = await sb
   .from("buffet_itens")
@@ -1446,10 +1410,10 @@ ${listaItens.map(i=>`
         <td>${moeda(i.custo_unitario)}</td>
         <td><b>${moeda(i.custo_calculado)}</b></td>
         <td class="acoes">
-<button class="btn-icon btn-edit"
-  onclick="event.stopPropagation(); editarIngrediente('${i.id}')">✏️</button>
-<button class="btn-icon btn-delete"
-  onclick="event.stopPropagation(); excluirIngrediente('${i.id}')">🗑️</button>
+          <button class="btn-icon btn-edit"
+            onclick="editarIngrediente('${i.id}')">✏️</button>
+          <button class="btn-icon btn-delete"
+            onclick="excluirIngrediente('${i.id}')">🗑️</button>
         </td>
       </tr>
     `).join("")}
@@ -1511,8 +1475,8 @@ ${listaItens.map(i=>`
           }</b>
         </td>
         <td class="acoes">
-<button class="btn-icon btn-delete"
-  onclick="event.stopPropagation(); excluirImposto('${i.id}')">🗑️</button>
+          <button class="btn-icon btn-delete"
+            onclick="excluirImposto('${i.id}')">🗑️</button>
         </td>
       </tr>
     `).join("")}
@@ -1588,7 +1552,20 @@ if (selectTipo && p.tipo) {
 }
 
 // salva ao mudar
+if (selectTipo) {
+  selectTipo.onchange = async () => {
+    const tipo = selectTipo.value;
+    if (!tipo) return;
 
+    await sb
+      .from("buffet")
+      .update({ tipo })
+      .eq("id", pratoAtual.id);
+
+    await carregarPratos();
+    renderLista();
+  };
+}
 setTimeout(() => {
   const selectTipo = document.getElementById("tipoPrato");
   if (!selectTipo) return;
@@ -1607,7 +1584,7 @@ setTimeout(() => {
       .eq("id", pratoAtual.id);
 
     await carregarPratos();
-aplicarFiltros();
+    renderLista();
   };
 }, 0);
 setTimeout(() => {
@@ -1644,7 +1621,7 @@ setTimeout(() => {
     mFoto.src = fotoUrl;
 
     await carregarPratos();
-aplicarFiltros();
+    renderLista();
   };
 }, 0);
 
@@ -1669,7 +1646,7 @@ setTimeout(() => {
       .eq("id", pratoAtual.id);
 
     await carregarPratos();
-aplicarFiltros();
+    renderLista();
   };
 }, 0);
 setTimeout(() => {
@@ -1708,7 +1685,7 @@ setTimeout(() => {
       .eq("id", pratoAtual.id);
 
     await carregarPratos();
-aplicarFiltros();
+    renderLista();
   };
 }, 0);
 
@@ -1786,7 +1763,7 @@ setTimeout(async () => {
       .eq("id", pratoAtual.id);
 
     await carregarPratos();
-aplicarFiltros();
+    renderLista();
   };
 }, 0);
 setTimeout(() => {
@@ -1873,9 +1850,8 @@ async function salvarIngrediente(){
 
 await carregarCMVCache();
 await carregarPratos();   // 🔁 atualiza lista
-aplicarFiltros();         // ✅ re-render com paginação
+renderLista();            // 🔁 re-renderiza cards
 
-   
 const { data: pratoNovo } = await sb
   .from("buffet")
   .select("*")
@@ -1884,34 +1860,7 @@ const { data: pratoNovo } = await sb
 
 abrirModal(pratoNovo);
 }
-async function excluirReceitaInteira(buffetId){
-  try{
-    console.log("🗑️ Tentando excluir:", buffetId);
 
-    const r1 = await sb.from("buffet_itens").delete().eq("buffet_id", buffetId);
-    console.log("buffet_itens:", r1);
-
-    const r2 = await sb.from("impostos").delete().eq("buffet_id", buffetId);
-    console.log("impostos:", r2);
-
-    const r3 = await sb.from("buffet").delete().eq("id", buffetId);
-    console.log("buffet:", r3);
-
-    if (r1.error || r2.error || r3.error) {
-      throw (r1.error || r2.error || r3.error);
-    }
-
-    fechar();
-    await carregarCMVCache();
-    await carregarPratos();
-    aplicarFiltros();
-
-    alert("✅ Receita excluída com sucesso.");
-  } catch (e){
-    console.error("❌ ERRO REAL DO SUPABASE:", e);
-    alert("❌ O Supabase bloqueou a exclusão. Veja o console (F12).");
-  }
-}
 async function excluirIngrediente(itemId){
   if(!confirm("Excluir este ingrediente?")) return;
 
@@ -1922,7 +1871,7 @@ async function excluirIngrediente(itemId){
 
 await carregarCMVCache();
 await carregarPratos();   // 🔁 atualiza lista
-aplicarFiltros();         // ✅ re-render com paginação
+renderLista();            // 🔁 re-renderiza cards
 
 const { data: pratoNovo } = await sb
   .from("buffet")
@@ -1949,9 +1898,9 @@ async function salvarImposto(){
     valor
   });
 
-await carregarCMVCache();  // 🔁 atualiza cache
-await carregarPratos();    // 🔁 atualiza lista
-aplicarFiltros();          // ✅ re-render com paginação
+  await carregarCMVCache();  // 🔁 atualiza cache
+  await carregarPratos();    // 🔁 atualiza lista
+  renderLista();             // 🔁 re-renderiza cards
 
   const { data: pratoNovo } = await sb
     .from("buffet")
@@ -1965,9 +1914,9 @@ aplicarFiltros();          // ✅ re-render com paginação
 async function excluirImposto(id){
   await sb.from("impostos").delete().eq("id",id);
 
-await carregarCMVCache();  // 🔁 atualiza cache
-await carregarPratos();    // 🔁 atualiza lista
-aplicarFiltros();          // ✅ re-render com paginação
+  await carregarCMVCache();  // 🔁 atualiza cache
+  await carregarPratos();    // 🔁 atualiza lista
+  renderLista();             // 🔁 re-renderiza cards
 
   const { data: pratoNovo } = await sb
     .from("buffet")
@@ -1989,9 +1938,10 @@ document.addEventListener("change", e => {
 
 
 function fechar(){
-  modal.style.display = "none";
-  document.body.classList.remove("modal-open");
+  modal.style.display="none";
+  document.body.style.overflow="";
 }
+
 
 async function editarIngrediente(itemId){
   const { data, error } = await sb
@@ -2037,10 +1987,10 @@ async function editarIngrediente(itemId){
       return;
     }
 
-// 🔁 atualiza cache + lista
-await carregarCMVCache();
-await carregarPratos();
-aplicarFiltros();   // ✅
+    // 🔁 atualiza cache + lista
+    await carregarCMVCache();
+    await carregarPratos();
+    renderLista();
 
     // 🔄 recarrega prato atualizado
     const { data: pratoNovo } = await sb
@@ -2107,7 +2057,7 @@ async function carregarTipos(){
   await carregarCMVCache();   // 🔥 cache primeiro
   await carregarPratos();     // 🔥 depois os pratos
   await carregarTipos();
-  aplicarFiltros();           // ✅ inicia com paginação
+  renderLista();              // 🔥 render só depois do cache
 })();
 async function editarNomePrato(){
   const h2 = document.getElementById("tituloPrato");
@@ -2137,22 +2087,10 @@ async function editarNomePrato(){
   h2.innerText = nomeFinal;
 await carregarCMVCache();  // 🔁 atualiza cache
 await carregarPratos();    // 🔁 atualiza lista
-aplicarFiltros();}
+renderLista();             // 🔁 re-renderiza cards
+}
 
-window.addEventListener("scroll", () => {
-  const scrollTop =
-    window.pageYOffset || document.documentElement.scrollTop;
-
-  const windowHeight =
-    window.innerHeight || document.documentElement.clientHeight;
-
-  const fullHeight =
-    document.documentElement.scrollHeight || document.body.scrollHeight;
-
-  if (scrollTop + windowHeight >= fullHeight - 200) {
-    renderProximaPagina();
-  }
-});
+   
 </script>
 
 
