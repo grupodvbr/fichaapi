@@ -1071,7 +1071,7 @@ c.innerHTML = `
   <div class="card-actions">
     <button class="btn-trash-card"
       title="Excluir prato completo"
-      onclick="event.stopPropagation(); excluirReceitaInteira(${p.id})">
+      onclick="event.stopPropagation(); console.log('ID EXCLUIR:', ${p.id}); excluirReceitaInteira(${p.id})">
       🗑️
     </button>
   </div>
@@ -1886,28 +1886,21 @@ abrirModal(pratoNovo);
 }
 async function excluirReceitaInteira(buffetId){
   try{
-    // apaga ingredientes
-    const { error: errItens } = await sb
-      .from("buffet_itens")
-      .delete()
-      .eq("buffet_id", buffetId);
-    if (errItens) throw errItens;
+    console.log("🗑️ Tentando excluir:", buffetId);
 
-    // apaga impostos/custos
-    const { error: errImp } = await sb
-      .from("impostos")
-      .delete()
-      .eq("buffet_id", buffetId);
-    if (errImp) throw errImp;
+    const r1 = await sb.from("buffet_itens").delete().eq("buffet_id", buffetId);
+    console.log("buffet_itens:", r1);
 
-    // apaga o prato
-    const { error: errPrato } = await sb
-      .from("buffet")
-      .delete()
-      .eq("id", buffetId);
-    if (errPrato) throw errPrato;
+    const r2 = await sb.from("impostos").delete().eq("buffet_id", buffetId);
+    console.log("impostos:", r2);
 
-    // atualiza tela
+    const r3 = await sb.from("buffet").delete().eq("id", buffetId);
+    console.log("buffet:", r3);
+
+    if (r1.error || r2.error || r3.error) {
+      throw (r1.error || r2.error || r3.error);
+    }
+
     fechar();
     await carregarCMVCache();
     await carregarPratos();
@@ -1915,8 +1908,8 @@ async function excluirReceitaInteira(buffetId){
 
     alert("✅ Receita excluída com sucesso.");
   } catch (e){
-    console.error("Erro ao excluir receita inteira:", e);
-    alert("❌ Erro ao excluir a receita. Veja o console.");
+    console.error("❌ ERRO REAL DO SUPABASE:", e);
+    alert("❌ O Supabase bloqueou a exclusão. Veja o console (F12).");
   }
 }
 async function excluirIngrediente(itemId){
