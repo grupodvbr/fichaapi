@@ -783,7 +783,12 @@ const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
+// ===== EXCLUSÃO POR 3 CLIQUES =====
+let clickCountByPrato = {};
+let clickTimerByPrato = {};
+const CLICK_WINDOW_MS = 1200; // 1.2s entre cliques
 
+   
 async function fetchAll(table, select) {
   const pageSize = 1000;
   let from = 0;
@@ -986,6 +991,11 @@ function aplicarFiltros() {
   cards.innerHTML = "";
   renderProximaPagina();
 }
+
+
+
+
+   
 function renderProximaPagina() {
   if (carregandoMais) return;
 
@@ -1027,8 +1037,7 @@ function renderProximaPagina() {
 
     const c = document.createElement("div");
     c.className = "card";
-    c.onclick = () => abrirModal(p);
-
+c.onclick = (ev) => handleCardClick(ev, p);
     c.innerHTML = `
       ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
       <div class="card-body">
@@ -1063,6 +1072,54 @@ filtroTipo.addEventListener("change", () => {
   filtroTipoSelecionado = filtroTipo.value;
   aplicarFiltros();
 });
+
+async function handleCardClick(ev, p){
+  const id = String(p.id);
+
+  if (!clickCountByPrato[id]) clickCountByPrato[id] = 0;
+
+  clickCountByPrato[id]++;
+
+  clearTimeout(clickTimerByPrato[id]);
+  clickTimerByPrato[id] = setTimeout(() => {
+    clickCountByPrato[id] = 0;
+  }, CLICK_WINDOW_MS);
+
+  // 3 cliques = excluir receita inteira
+  if (clickCountByPrato[id] >= 3) {
+    clickCountByPrato[id] = 0;
+    clearTimeout(clickTimerByPrato[id]);
+
+    const email = usuarioEmailAtual;
+    const autorizado = email && EMAILS_AUTORIZADOS_EXCLUSAO.includes(email);
+
+    if (!autorizado) {
+      alert("❌ Você não tem permissão para excluir receitas.");
+      return;
+    }
+
+    const ok = confirm(
+      `⚠️ EXCLUIR RECEITA INTEIRA?\n\n` +
+      `Isso apaga:\n• o prato\n• ingredientes\n• custos/impostos\n\n` +
+      `Essa ação NÃO pode ser desfeita.\n\n` +
+      `Deseja continuar?`
+    );
+
+    if (!ok) return;
+
+    await excluirReceitaInteira(p.id);
+    return;
+  }
+
+  // 1 clique normal → abre modal
+  abrirModal(p);
+}
+
+
+
+
+
+   
 /* =====================================================
    MODAL
 ===================================================== */
@@ -1787,7 +1844,41 @@ const { data: pratoNovo } = await sb
 
 abrirModal(pratoNovo);
 }
+async function excluirReceitaInteira(buffetId){
+  try{
+    // apaga ingredientes
+    const { error: errItens } = await sb
+      .from("buffet_itens")
+      .delete()
+      .eq("buffet_id", buffetId);
+    if (errItens) throw errItens;
 
+    // apaga impostos/custos
+    const { error: errImp } = await sb
+      .from("impostos")
+      .delete()
+      .eq("buffet_id", buffetId);
+    if (errImp) throw errImp;
+
+    // apaga o prato
+    const { error: errPrato } = await sb
+      .from("buffet")
+      .delete()
+      .eq("id", buffetId);
+    if (errPrato) throw errPrato;
+
+    // atualiza tela
+    fechar();
+    await carregarCMVCache();
+    await carregarPratos();
+    aplicarFiltros();
+
+    alert("✅ Receita excluída com sucesso.");
+  } catch (e){
+    console.error("Erro ao excluir receita inteira:", e);
+    alert("❌ Erro ao excluir a receita. Veja o console.");
+  }
+}
 async function excluirIngrediente(itemId){
   if(!confirm("Excluir este ingrediente?")) return;
 
