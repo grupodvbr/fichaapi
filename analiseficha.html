@@ -871,7 +871,10 @@ let pageSize = 20;        // 🔥 quantidade por carga
 let pageIndex = 0;       // 🔥 página atual
 let carregandoMais = false;
 let listaFiltrada = [];
-
+let draftPreco = {
+  markup: null,
+  preco: null
+};
 /* =====================================================
    LOAD BASE
 ===================================================== */
@@ -1781,8 +1784,12 @@ setTimeout(() => {
 
   mkInput.oninput = atualizarPorMarkup;
   precoInput.oninput = atualizarPorPreco;
-}, 50);
 
+  // 🔁 RESTAURA O QUE O USUÁRIO DIGITOU ANTES
+  if (draftPreco.markup !== null) mkInput.value = draftPreco.markup;
+  if (draftPreco.preco  !== null) precoInput.value = draftPreco.preco;
+
+}, 50);
 } // ✅ FECHA abrirModal(p)
 
 
@@ -1827,6 +1834,8 @@ await carregarPratos();   // 🔁 atualiza lista
 aplicarFiltros();         // ✅ re-render com paginação
 
    
+salvarDraftPreco();   // 👈 AQUI salva o que foi digitado
+
 const { data: pratoNovo } = await sb
   .from("buffet")
   .select("*")
@@ -1847,6 +1856,8 @@ async function excluirIngrediente(itemId){
 await carregarCMVCache();
 await carregarPratos();   // 🔁 atualiza lista
 aplicarFiltros();         // ✅ re-render com paginação
+
+salvarDraftPreco();   // 👈 AQUI
 
 const { data: pratoNovo } = await sb
   .from("buffet")
@@ -1877,13 +1888,15 @@ await carregarCMVCache();  // 🔁 atualiza cache
 await carregarPratos();    // 🔁 atualiza lista
 aplicarFiltros();          // ✅ re-render com paginação
 
-  const { data: pratoNovo } = await sb
-    .from("buffet")
-    .select("*")
-    .eq("id", pratoAtual.id)
-    .single();
+salvarDraftPreco();   // 👈 AQUI
 
-  abrirModal(pratoNovo);
+const { data: pratoNovo } = await sb
+  .from("buffet")
+  .select("*")
+  .eq("id", pratoAtual.id)
+  .single();
+
+abrirModal(pratoNovo);
 }
 
 async function excluirImposto(id){
@@ -1893,13 +1906,15 @@ await carregarCMVCache();  // 🔁 atualiza cache
 await carregarPratos();    // 🔁 atualiza lista
 aplicarFiltros();          // ✅ re-render com paginação
 
-  const { data: pratoNovo } = await sb
-    .from("buffet")
-    .select("*")
-    .eq("id", pratoAtual.id)
-    .single();
+salvarDraftPreco();   // 👈 AQUI
 
-  abrirModal(pratoNovo);
+const { data: pratoNovo } = await sb
+  .from("buffet")
+  .select("*")
+  .eq("id", pratoAtual.id)
+  .single();
+
+abrirModal(pratoNovo);
 }
 /* =====================================================
    AUTO UNIDADE
@@ -1916,7 +1931,13 @@ function fechar(){
   modal.style.display = "none";
   document.body.classList.remove("modal-open");
 }
+function salvarDraftPreco() {
+  const mk = document.getElementById("markupPerc");
+  const pv = document.getElementById("precoVendaInput");
 
+  draftPreco.markup = mk ? mk.value : null;
+  draftPreco.preco  = pv ? pv.value : null;
+}
 async function editarIngrediente(itemId){
   const { data, error } = await sb
     .from("buffet_itens")
