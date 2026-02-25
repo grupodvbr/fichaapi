@@ -105,6 +105,7 @@ body.modal-open{
    CARD
 ========================================================= */
 .card{
+  position:relative; /* 👈 necessário para a lixeira */
   background:var(--card);
   border-radius:22px;
   box-shadow:var(--shadow-md);
@@ -744,7 +745,37 @@ button{
 
 body{ zoom: 0.9; }
 
-   
+/* ===== LIXEIRA NO CARD ===== */
+.card-actions{
+  position:absolute;
+  top:10px;
+  right:10px;
+  display:flex;
+  gap:6px;
+  z-index:5;
+}
+
+.btn-trash-card{
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  border:none;
+  background:rgba(220,38,38,.95);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,.35);
+  transition:.15s ease;
+}
+
+.btn-trash-card:hover{
+  transform:scale(1.08);
+  background:#b91c1c;
+}
 </style>
 </head>
 
@@ -1038,9 +1069,17 @@ function renderProximaPagina() {
     const c = document.createElement("div");
     c.className = "card";
 c.onclick = (ev) => handleCardClick(ev, p);
-    c.innerHTML = `
-      ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
-      <div class="card-body">
+c.innerHTML = `
+  <div class="card-actions">
+    <button class="btn-trash-card"
+      title="Excluir prato completo"
+      onclick="event.stopPropagation(); excluirReceitaInteira(${p.id})">
+      🗑️
+    </button>
+  </div>
+
+  ${p.foto_url ? `<img src="${p.foto_url}" style="pointer-events:none">` : ``}
+  <div class="card-body">
         <h3>${p.nome}</h3>
         <p class="desc-card">${p.descricao || ""}</p>
         <div class="card-stats">
@@ -1074,6 +1113,9 @@ filtroTipo.addEventListener("change", () => {
 });
 
 async function handleCardClick(ev, p){
+  // ignora cliques que vieram de botões internos
+  if (ev && ev.target && ev.target.closest("button")) return;
+
   const id = String(p.id);
 
   if (!clickCountByPrato[id]) clickCountByPrato[id] = 0;
@@ -1406,10 +1448,10 @@ ${listaItens.map(i=>`
         <td>${moeda(i.custo_unitario)}</td>
         <td><b>${moeda(i.custo_calculado)}</b></td>
         <td class="acoes">
-          <button class="btn-icon btn-edit"
-            onclick="editarIngrediente('${i.id}')">✏️</button>
-          <button class="btn-icon btn-delete"
-            onclick="excluirIngrediente('${i.id}')">🗑️</button>
+<button class="btn-icon btn-edit"
+  onclick="event.stopPropagation(); editarIngrediente('${i.id}')">✏️</button>
+<button class="btn-icon btn-delete"
+  onclick="event.stopPropagation(); excluirIngrediente('${i.id}')">🗑️</button>
         </td>
       </tr>
     `).join("")}
@@ -1471,8 +1513,8 @@ ${listaItens.map(i=>`
           }</b>
         </td>
         <td class="acoes">
-          <button class="btn-icon btn-delete"
-            onclick="excluirImposto('${i.id}')">🗑️</button>
+<button class="btn-icon btn-delete"
+  onclick="event.stopPropagation(); excluirImposto('${i.id}')">🗑️</button>
         </td>
       </tr>
     `).join("")}
