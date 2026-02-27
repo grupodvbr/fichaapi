@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>CMV • Visualização Caderno</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMV • Caderno Técnico</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,9 +16,12 @@
   --border:#e2e8f0;
   --text:#0f172a;
   --muted:#64748b;
+  --success:#16a34a;
+  --danger:#dc2626;
 }
 
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+
 body{
   margin:0;
   font-family:Inter,sans-serif;
@@ -26,81 +29,101 @@ body{
   color:var(--text);
 }
 
-/* ===== FILTROS ===== */
-.topbar{
+/* ===== HEADER ===== */
+.header{
   padding:16px;
   background:#fff;
   border-bottom:1px solid var(--border);
   display:flex;
   gap:12px;
   flex-wrap:wrap;
+  position:sticky;
+  top:0;
+  z-index:10;
 }
 
-.topbar input,
-.topbar select{
+.header input,
+.header select{
   padding:12px 16px;
   border-radius:999px;
   border:1px solid var(--border);
-  font-weight:600;
+  font-weight:700;
 }
 
 /* ===== LAYOUT ===== */
 .layout{
   display:grid;
-  grid-template-columns:300px 1fr;
+  grid-template-columns:320px 1fr;
   height:calc(100vh - 80px);
 }
 
-/* ===== LISTA ===== */
+/* ===== SIDEBAR ===== */
 .sidebar{
   background:#fff;
   border-right:1px solid var(--border);
   overflow-y:auto;
 }
 
-.item{
+.prato-item{
   padding:14px;
   border-bottom:1px solid var(--border);
   cursor:pointer;
+  font-weight:700;
   transition:.15s;
 }
 
-.item:hover{
+.prato-item:hover{
   background:#f8fafc;
 }
 
-.item.active{
+.prato-item.active{
   background:#eef2ff;
   border-left:4px solid var(--primary);
 }
 
-/* ===== FICHA ESTILO A4 ===== */
+/* ===== VIEWER ===== */
 .viewer{
-  padding:30px;
+  padding:20px;
   overflow:auto;
 }
 
+.actions{
+  text-align:right;
+  margin-bottom:20px;
+}
+
+.btn{
+  background:#0f172a;
+  color:#fff;
+  padding:10px 18px;
+  border-radius:8px;
+  font-weight:800;
+  cursor:pointer;
+  border:none;
+}
+
+/* ===== FICHA ===== */
 .ficha{
-  max-width:900px;
+  max-width:950px;
   margin:auto;
   background:#fff;
   padding:40px;
-  border-radius:12px;
-  box-shadow:0 20px 60px rgba(0,0,0,.08);
+  border-radius:14px;
+  box-shadow:0 25px 70px rgba(0,0,0,.08);
 }
 
 .ficha h1{
-  margin:0 0 10px;
+  margin:0 0 8px;
   font-size:28px;
   font-weight:900;
 }
 
 .section{
-  margin-top:24px;
+  margin-top:28px;
 }
 
 .section h3{
-  font-size:14px;
+  font-size:13px;
   text-transform:uppercase;
   letter-spacing:.1em;
   color:var(--muted);
@@ -110,7 +133,15 @@ body{
 .grid-2{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:16px;
+  gap:18px;
+}
+
+.stat-box{
+  background:#f8fafc;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px;
+  font-size:14px;
 }
 
 .table{
@@ -123,26 +154,13 @@ body{
 .table td{
   border-bottom:1px solid var(--border);
   padding:8px;
-  text-align:left;
 }
 
-/* ===== BOTÃO PDF ===== */
-.actions{
-  margin-bottom:20px;
-  text-align:right;
+.table th{
+  background:#f8fafc;
 }
 
-.btn{
-  background:#0f172a;
-  color:#fff;
-  padding:10px 18px;
-  border-radius:8px;
-  font-weight:700;
-  cursor:pointer;
-  border:none;
-}
-
-/* ===== IMPRESSÃO ===== */
+/* ===== PRINT ===== */
 @media print{
   body *{
     visibility:hidden;
@@ -159,19 +177,29 @@ body{
   }
 }
 
-/* ===== MOBILE ===== */
+/* ===== RESPONSIVO ===== */
 @media(max-width:900px){
   .layout{
     grid-template-columns:1fr;
   }
+
   .sidebar{
-    height:200px;
     display:flex;
     overflow-x:auto;
+    height:140px;
   }
-  .item{
+
+  .prato-item{
     min-width:200px;
     border-right:1px solid var(--border);
+  }
+
+  .grid-2{
+    grid-template-columns:1fr;
+  }
+
+  .ficha{
+    padding:24px;
   }
 }
 </style>
@@ -179,7 +207,7 @@ body{
 
 <body>
 
-<div class="topbar">
+<div class="header">
   <input id="search" placeholder="Buscar por nome">
   <select id="tipoFilter">
     <option value="">Todos os tipos</option>
@@ -187,27 +215,33 @@ body{
 </div>
 
 <div class="layout">
+
   <div class="sidebar" id="lista"></div>
 
   <div class="viewer">
     <div class="actions">
-      <button class="btn" onclick="gerarPDF()">Exportar PDF</button>
+      <button class="btn" onclick="exportarPDF()">Exportar PDF</button>
     </div>
+
     <div class="ficha" id="ficha">
       <h1>Selecione um prato</h1>
     </div>
   </div>
+
 </div>
 
 <script>
+
+/* ===== SUPABASE (SUAS CREDENCIAIS) ===== */
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
-  "SUA_PUBLIC_KEY_AQUI"
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
 let pratos = [];
 let pratoAtual = null;
 
+/* ===== CARREGAR ===== */
 async function carregar(){
   const { data } = await sb.from("buffet").select("*").order("nome");
   pratos = data || [];
@@ -234,15 +268,19 @@ function renderLista(){
   )
   .forEach(p=>{
     const div = document.createElement("div");
-    div.className = "item";
+    div.className = "prato-item";
     div.innerText = p.nome;
-    div.onclick = ()=>selecionar(p);
+    div.onclick = ()=>selecionar(p, div);
     lista.appendChild(div);
   });
 }
 
-async function selecionar(p){
+async function selecionar(p, el){
+  document.querySelectorAll(".prato-item").forEach(i=>i.classList.remove("active"));
+  if(el) el.classList.add("active");
+
   pratoAtual = p;
+
   const { data: itens } = await sb
     .from("buffet_itens")
     .select("*")
@@ -253,15 +291,34 @@ async function selecionar(p){
     .select("*")
     .eq("buffet_id", p.id);
 
+  const cmvBase = (itens||[]).reduce((s,i)=>s+Number(i.custo_calculado||0),0);
+
+  let totalImpostos = 0;
+  (impostos||[]).forEach(i=>{
+    if(i.modalidade==="FIXO") totalImpostos += Number(i.valor);
+    if(i.modalidade==="PERCENTUAL")
+      totalImpostos += (cmvBase * Number(i.valor))/100;
+  });
+
+  const custoFinal = cmvBase + totalImpostos;
+  const preco = Number(p.preco_venda||0);
+  const lucro = preco - custoFinal;
+  const margem = preco ? (lucro/preco)*100 : 0;
+  const cmvPerc = preco ? (cmvBase/preco)*100 : 0;
+
   ficha.innerHTML = `
     <h1>${p.nome}</h1>
-    <p>${p.descricao || ""}</p>
+    <p>${p.descricao||""}</p>
 
     <div class="section">
-      <h3>Informações Gerais</h3>
+      <h3>Resumo Financeiro</h3>
       <div class="grid-2">
-        <div><b>Tipo:</b> ${p.tipo || "-"}</div>
-        <div><b>Preço:</b> R$ ${p.preco_venda || 0}</div>
+        <div class="stat-box">Preço: <b>R$ ${preco.toFixed(2)}</b></div>
+        <div class="stat-box">Custo Base: <b>R$ ${cmvBase.toFixed(2)}</b></div>
+        <div class="stat-box">Custo Final: <b>R$ ${custoFinal.toFixed(2)}</b></div>
+        <div class="stat-box">CMV: <b>${cmvPerc.toFixed(1)}%</b></div>
+        <div class="stat-box">Lucro: <b>R$ ${lucro.toFixed(2)}</b></div>
+        <div class="stat-box">Margem: <b>${margem.toFixed(1)}%</b></div>
       </div>
     </div>
 
@@ -273,7 +330,7 @@ async function selecionar(p){
           <tr>
             <td>${i.nome}</td>
             <td>${i.quantidade} ${i.unidade_uso}</td>
-            <td>R$ ${i.custo_calculado}</td>
+            <td>R$ ${Number(i.custo_calculado).toFixed(2)}</td>
           </tr>
         `).join("")}
       </table>
@@ -286,7 +343,7 @@ async function selecionar(p){
         ${(impostos||[]).map(i=>`
           <tr>
             <td>${i.descricao}</td>
-            <td>${i.valor}</td>
+            <td>${i.modalidade==="PERCENTUAL"?i.valor+"%":"R$ "+i.valor}</td>
           </tr>
         `).join("")}
       </table>
@@ -294,14 +351,14 @@ async function selecionar(p){
 
     <div class="section">
       <h3>Modo de Preparo</h3>
-      <p>${p.modo_preparo || "-"}</p>
+      <p>${p.modo_preparo||"-"}</p>
     </div>
   `;
 }
 
-function gerarPDF(){
+function exportarPDF(){
   if(!pratoAtual){
-    alert("Selecione um prato primeiro");
+    alert("Selecione um prato.");
     return;
   }
   window.print();
@@ -311,6 +368,7 @@ search.oninput = renderLista;
 tipoFilter.onchange = renderLista;
 
 carregar();
+
 </script>
 </body>
 </html>
