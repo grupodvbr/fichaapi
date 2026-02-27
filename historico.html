@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Histórico • Auditoria Avançada</title>
+<title>Auditoria • Sistema CMV</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,13 +14,13 @@
   --primary-dark:#1e40af;
   --danger:#dc2626;
   --success:#16a34a;
-  --bg:#f8fafc;
+  --bg:#f1f5f9;
   --card:#ffffff;
   --text:#0f172a;
   --muted:#64748b;
-  --border:#e5e7eb;
-  --radius:18px;
-  --shadow:0 20px 50px rgba(0,0,0,.12);
+  --border:#e2e8f0;
+  --radius:16px;
+  --shadow:0 20px 50px rgba(0,0,0,.08);
 }
 *{box-sizing:border-box}
 body{
@@ -30,12 +30,80 @@ body{
   color:var(--text);
 }
 .container{
-  max-width:1200px;
+  max-width:1400px;
   margin:auto;
-  padding:30px;
+  padding:40px 30px;
 }
-h1{margin:0 0 8px;font-weight:900}
-p{margin:0 0 25px;color:var(--muted)}
+h1{
+  margin:0;
+  font-weight:900;
+}
+.subtitle{
+  color:var(--muted);
+  margin-bottom:30px;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
+  margin-bottom:30px;
+}
+.card{
+  background:var(--card);
+  padding:25px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.card small{
+  color:var(--muted);
+  font-weight:600;
+}
+.card strong{
+  font-size:28px;
+  display:block;
+  margin-top:6px;
+}
+
+.filters{
+  background:#fff;
+  padding:20px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+  margin-bottom:30px;
+}
+input,select{
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid var(--border);
+}
+button{
+  border:none;
+  padding:10px 16px;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;
+}
+.btn-danger{
+  background:linear-gradient(135deg,#ef4444,#b91c1c);
+  color:#fff;
+}
+.btn-secondary{
+  background:#e2e8f0;
+  color:#0f172a;
+}
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
 
 table{
   width:100%;
@@ -48,19 +116,19 @@ table{
 th,td{
   padding:14px;
   border-bottom:1px solid var(--border);
-  font-size:14px;
 }
 th{
-  background:#f1f5f9;
-  text-align:left;
   font-size:12px;
   text-transform:uppercase;
   color:var(--muted);
+  background:#f8fafc;
 }
-tr:hover{background:#f8fafc}
+tr:hover{
+  background:#f8fafc;
+}
 
 .badge{
-  padding:5px 10px;
+  padding:4px 10px;
   border-radius:999px;
   font-size:11px;
   font-weight:800;
@@ -69,41 +137,23 @@ tr:hover{background:#f8fafc}
 .update{background:#fef9c3;color:#854d0e}
 .delete{background:#fee2e2;color:#991b1b}
 
-.btn{
-  padding:8px 14px;
-  border-radius:10px;
-  border:none;
-  cursor:pointer;
-  font-weight:700;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  transition:.2s;
-}
-.btn-view{background:#e0f2fe;color:#0369a1}
-.btn-view:hover{background:#bae6fd}
-.btn-restore{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff}
-.btn-restore:hover{transform:translateY(-2px)}
-.btn-close{background:#111827;color:#fff}
-.btn-group{display:flex;gap:10px;flex-wrap:wrap}
-
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.5);
+  background:rgba(15,23,42,.6);
+  backdrop-filter:blur(6px);
   display:none;
   align-items:center;
   justify-content:center;
 }
-.modal-content{
+.modal-box{
   background:#fff;
   width:95%;
-  max-width:1000px;
+  max-width:1100px;
   max-height:90vh;
   overflow:auto;
   border-radius:20px;
-  padding:25px;
-  box-shadow:0 30px 60px rgba(0,0,0,.25);
+  padding:30px;
 }
 .modal-header{
   display:flex;
@@ -111,15 +161,15 @@ tr:hover{background:#f8fafc}
   align-items:center;
   margin-bottom:20px;
 }
-.diff-item{
+.diff{
   border:1px solid var(--border);
   border-radius:12px;
-  padding:14px;
-  margin-bottom:12px;
+  padding:15px;
+  margin-bottom:15px;
 }
 .old{color:#dc2626;font-weight:700}
 .new{color:#16a34a;font-weight:700}
-.value-box{
+.value{
   background:#0f172a;
   color:#fff;
   padding:8px;
@@ -128,16 +178,17 @@ tr:hover{background:#f8fafc}
 }
 .linked{
   margin-top:25px;
-  padding:14px;
-  border:1px dashed var(--border);
+  padding:15px;
   border-radius:12px;
-  background:#f9fafb;
+  background:#f8fafc;
+  border:1px dashed var(--border);
 }
+
 .toast{
   position:fixed;
   bottom:20px;
   right:20px;
-  background:#111827;
+  background:#0f172a;
   color:#fff;
   padding:12px 18px;
   border-radius:10px;
@@ -149,8 +200,36 @@ tr:hover{background:#f8fafc}
 <body>
 
 <div class="container">
-<h1>🕓 Histórico de Alterações</h1>
-<p>Auditoria avançada com detecção de alterações vinculadas</p>
+
+<h1>🕓 Auditoria de Alterações</h1>
+<div class="subtitle">Sistema profissional de rollback e rastreabilidade</div>
+
+<div class="cards">
+  <div class="card"><small>Total</small><strong id="total">0</strong></div>
+  <div class="card"><small>Inserts</small><strong id="ins">0</strong></div>
+  <div class="card"><small>Updates</small><strong id="upd">0</strong></div>
+  <div class="card"><small>Deletes</small><strong id="del">0</strong></div>
+</div>
+
+<div class="filters">
+  <select id="fTabela">
+    <option value="">Todas Tabelas</option>
+    <option value="buffet">buffet</option>
+    <option value="buffet_itens">buffet_itens</option>
+    <option value="produtos">produtos</option>
+    <option value="impostos">impostos</option>
+  </select>
+  <select id="fOperacao">
+    <option value="">Todas Operações</option>
+    <option value="INSERT">INSERT</option>
+    <option value="UPDATE">UPDATE</option>
+    <option value="DELETE">DELETE</option>
+  </select>
+  <input type="date" id="inicio">
+  <input type="date" id="fim">
+  <input type="text" id="buscaId" placeholder="Buscar ID específico">
+  <button class="btn-primary" onclick="carregar()">Filtrar</button>
+</div>
 
 <table>
 <thead>
@@ -164,13 +243,14 @@ tr:hover{background:#f8fafc}
 </thead>
 <tbody id="tbody"></tbody>
 </table>
+
 </div>
 
 <div class="modal" id="modal">
-<div class="modal-content">
+<div class="modal-box">
 <div class="modal-header">
-<h3>Detalhes da Alteração</h3>
-<button class="btn btn-close" onclick="fechar()">✖ Fechar</button>
+<strong>Detalhes da Alteração</strong>
+<button class="btn-secondary" onclick="fechar()">Fechar</button>
 </div>
 <div id="conteudo"></div>
 </div>
@@ -190,31 +270,55 @@ function toast(msg){
   setTimeout(()=>t.style.display="none",3000);
 }
 
-function fechar(){
-  modal.style.display="none";
+function fechar(){ modal.style.display="none"; }
+
+function data30(){
+  const d=new Date();
+  d.setDate(d.getDate()-30);
+  return d.toISOString();
 }
 
 async function carregar(){
-  const {data}=await sb.from("historico_alteracao_fichas")
+  let query=sb.from("historico_alteracao_fichas")
     .select("*")
+    .gte("alterado_em",data30())
     .order("alterado_em",{ascending:false})
     .limit(500);
 
+  if(fTabela.value) query=query.eq("tabela",fTabela.value);
+  if(fOperacao.value) query=query.eq("operacao",fOperacao.value);
+  if(inicio.value) query=query.gte("alterado_em",inicio.value);
+  if(fim.value) query=query.lte("alterado_em",fim.value+" 23:59:59");
+  if(buscaId.value) query=query.eq("registro_id",buscaId.value);
+
+  const {data}=await query;
+
   tbody.innerHTML="";
-  data.forEach(item=>{
+  total.innerText=data.length;
+  let i=0,u=0,d=0;
+
+  data.forEach(r=>{
+    if(r.operacao==="INSERT") i++;
+    if(r.operacao==="UPDATE") u++;
+    if(r.operacao==="DELETE") d++;
+
     const tr=document.createElement("tr");
     tr.innerHTML=`
-      <td>${new Date(item.alterado_em).toLocaleString()}</td>
-      <td>${item.tabela}</td>
-      <td><span class="badge ${item.operacao.toLowerCase()}">${item.operacao}</span></td>
-      <td>${item.registro_id}</td>
-      <td class="btn-group">
-        <button class="btn btn-view" onclick='ver(${JSON.stringify(item)})'>👁 Ver</button>
-        <button class="btn btn-restore" onclick="restaurar('${item.id}')">♻ Restaurar</button>
+      <td>${new Date(r.alterado_em).toLocaleString()}</td>
+      <td>${r.tabela}</td>
+      <td><span class="badge ${r.operacao.toLowerCase()}">${r.operacao}</span></td>
+      <td>${r.registro_id}</td>
+      <td>
+        <button class="btn-secondary" onclick='ver(${JSON.stringify(r)})'>Ver</button>
+        <button class="btn-danger" onclick="restaurar('${r.id}')">Restaurar</button>
       </td>
     `;
     tbody.appendChild(tr);
   });
+
+  ins.innerText=i;
+  upd.innerText=u;
+  del.innerText=d;
 }
 
 async function ver(item){
@@ -225,31 +329,33 @@ async function ver(item){
     Object.keys(item.dados_depois).forEach(k=>{
       if(JSON.stringify(item.dados_antes[k])!==JSON.stringify(item.dados_depois[k])){
         html+=`
-        <div class="diff-item">
+        <div class="diff">
           <strong>${k}</strong><br>
-          <span class="old">ANTES:</span>
-          <div class="value-box">${item.dados_antes[k]}</div>
-          <span class="new">DEPOIS:</span>
-          <div class="value-box">${item.dados_depois[k]}</div>
+          <span class="old">ANTES</span>
+          <div class="value">${item.dados_antes[k]}</div>
+          <span class="new">DEPOIS</span>
+          <div class="value">${item.dados_depois[k]}</div>
         </div>`;
       }
     });
-  }else{
-    html+=`<pre>${JSON.stringify(item.dados_depois||item.dados_antes,null,2)}</pre>`;
+  } else {
+    html=`<pre>${JSON.stringify(item.dados_depois||item.dados_antes,null,2)}</pre>`;
   }
 
-  const {data:linked}=await sb.from("historico_alteracao_fichas")
+  const {data:grupo}=await sb.from("historico_alteracao_fichas")
     .select("*")
     .eq("alterado_em",item.alterado_em);
 
-  if(linked.length>1){
+  if(grupo.length>1){
     html+=`<div class="linked">
-      <strong>⚠ Alterações vinculadas detectadas (${linked.length})</strong><br><br>`;
-    linked.forEach(l=>{
-      html+=`${l.tabela} • ${l.operacao}<br>`;
+      <strong>Alterações vinculadas detectadas</strong><br><br>`;
+    grupo.forEach(g=>{
+      html+=`${g.tabela} • ${g.operacao}<br>`;
     });
     html+=`<br>
-      <button class="btn btn-restore" onclick="restaurarGrupo('${item.alterado_em}')">♻ Restaurar TODAS vinculadas</button>
+      <button class="btn-danger" onclick="restaurarGrupo('${item.alterado_em}')">
+      Restaurar todas vinculadas
+      </button>
     </div>`;
   }
 
@@ -259,25 +365,21 @@ async function ver(item){
 async function restaurar(id){
   const senha=prompt("Senha:");
   if(senha!=="8486"){toast("Senha incorreta");return;}
-
   await sb.rpc("restaurar_historico",{p_id:id});
-  toast("Restaurado com sucesso");
+  toast("Restaurado");
   carregar();
 }
 
-async function restaurarGrupo(dataHora){
+async function restaurarGrupo(dt){
   const senha=prompt("Senha:");
   if(senha!=="8486"){toast("Senha incorreta");return;}
-
   const {data}=await sb.from("historico_alteracao_fichas")
     .select("id")
-    .eq("alterado_em",dataHora);
-
+    .eq("alterado_em",dt);
   for(const r of data){
     await sb.rpc("restaurar_historico",{p_id:r.id});
   }
-
-  toast("Grupo restaurado com sucesso");
+  toast("Grupo restaurado");
   carregar();
 }
 
