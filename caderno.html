@@ -2,205 +2,141 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>CMV • Caderno Técnico</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CMV Executivo Total</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-:root{
-  --primary:#2563eb;
-  --bg:#f1f5f9;
-  --card:#ffffff;
-  --border:#e2e8f0;
-  --text:#0f172a;
-  --muted:#64748b;
-  --success:#16a34a;
-  --danger:#dc2626;
-}
-
-*{box-sizing:border-box;-webkit-font-smoothing:antialiased}
-
 body{
   margin:0;
   font-family:Inter,sans-serif;
-  background:var(--bg);
-  color:var(--text);
+  background:#f4f6fb;
 }
 
-/* ===== HEADER ===== */
 .header{
-  padding:16px;
   background:#fff;
-  border-bottom:1px solid var(--border);
+  padding:16px;
   display:flex;
   gap:12px;
   flex-wrap:wrap;
+  border-bottom:1px solid #e5e7eb;
   position:sticky;
   top:0;
   z-index:10;
 }
 
-.header input,
-.header select{
-  padding:12px 16px;
+input,select{
+  padding:10px 14px;
   border-radius:999px;
-  border:1px solid var(--border);
+  border:1px solid #e5e7eb;
   font-weight:700;
 }
 
-/* ===== LAYOUT ===== */
-.layout{
-  display:grid;
-  grid-template-columns:320px 1fr;
-  height:calc(100vh - 80px);
-}
-
-/* ===== SIDEBAR ===== */
-.sidebar{
-  background:#fff;
-  border-right:1px solid var(--border);
-  overflow-y:auto;
-}
-
-.prato-item{
-  padding:14px;
-  border-bottom:1px solid var(--border);
-  cursor:pointer;
-  font-weight:700;
-  transition:.15s;
-}
-
-.prato-item:hover{
-  background:#f8fafc;
-}
-
-.prato-item.active{
-  background:#eef2ff;
-  border-left:4px solid var(--primary);
-}
-
-/* ===== VIEWER ===== */
-.viewer{
-  padding:20px;
-  overflow:auto;
-}
-
-.actions{
-  text-align:right;
-  margin-bottom:20px;
-}
-
-.btn{
-  background:#0f172a;
+button{
+  background:#111827;
   color:#fff;
-  padding:10px 18px;
+  padding:10px 16px;
+  border:none;
   border-radius:8px;
   font-weight:800;
   cursor:pointer;
-  border:none;
 }
 
-/* ===== FICHA ===== */
-.ficha{
-  max-width:950px;
-  margin:auto;
+.container{
+  padding:20px;
+}
+
+.card{
   background:#fff;
-  padding:40px;
-  border-radius:14px;
-  box-shadow:0 25px 70px rgba(0,0,0,.08);
+  border-radius:18px;
+  padding:24px;
+  margin-bottom:28px;
+  box-shadow:0 15px 50px rgba(0,0,0,.08);
 }
 
-.ficha h1{
-  margin:0 0 8px;
-  font-size:28px;
+.card-header{
+  display:grid;
+  grid-template-columns:180px 1fr;
+  gap:20px;
+  align-items:center;
+}
+
+.card img{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+  border-radius:14px;
+  background:#000;
+}
+
+.card h2{
+  margin:0 0 6px;
+  font-size:24px;
   font-weight:900;
 }
 
-.section{
-  margin-top:28px;
+.badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
 }
 
-.section h3{
-  font-size:13px;
-  text-transform:uppercase;
-  letter-spacing:.1em;
-  color:var(--muted);
-  margin-bottom:10px;
+.badge{
+  background:#eef2ff;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
 }
 
-.grid-2{
+.grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;
+  margin-top:16px;
 }
 
-.stat-box{
-  background:#f8fafc;
-  border:1px solid var(--border);
+.box{
+  background:#f9fafb;
+  padding:12px;
   border-radius:10px;
-  padding:10px;
-  font-size:14px;
+  font-size:13px;
 }
 
-.table{
+table{
   width:100%;
   border-collapse:collapse;
+  margin-top:14px;
+  font-size:13px;
+}
+
+th,td{
+  border-bottom:1px solid #e5e7eb;
+  padding:8px;
+  text-align:left;
+}
+
+.section-title{
+  margin-top:20px;
+  font-weight:900;
   font-size:14px;
 }
 
-.table th,
-.table td{
-  border-bottom:1px solid var(--border);
-  padding:8px;
+@media(max-width:700px){
+  .card-header{
+    grid-template-columns:1fr;
+  }
+  .card img{
+    height:200px;
+  }
 }
 
-.table th{
-  background:#f8fafc;
-}
-
-/* ===== PRINT ===== */
 @media print{
-  body *{
-    visibility:hidden;
-  }
-  .ficha, .ficha *{
-    visibility:visible;
-  }
-  .ficha{
-    position:absolute;
-    left:0;
-    top:0;
-    width:100%;
-    box-shadow:none;
-  }
-}
-
-/* ===== RESPONSIVO ===== */
-@media(max-width:900px){
-  .layout{
-    grid-template-columns:1fr;
-  }
-
-  .sidebar{
-    display:flex;
-    overflow-x:auto;
-    height:140px;
-  }
-
-  .prato-item{
-    min-width:200px;
-    border-right:1px solid var(--border);
-  }
-
-  .grid-2{
-    grid-template-columns:1fr;
-  }
-
-  .ficha{
-    padding:24px;
-  }
+  .header{display:none}
+  .card{page-break-after:always}
 }
 </style>
 </head>
@@ -208,167 +144,158 @@ body{
 <body>
 
 <div class="header">
-  <input id="search" placeholder="Buscar por nome">
+  <input id="search" placeholder="Buscar prato">
   <select id="tipoFilter">
     <option value="">Todos os tipos</option>
   </select>
+  <button onclick="window.print()">Exportar PDF</button>
 </div>
 
-<div class="layout">
-
-  <div class="sidebar" id="lista"></div>
-
-  <div class="viewer">
-    <div class="actions">
-      <button class="btn" onclick="exportarPDF()">Exportar PDF</button>
-    </div>
-
-    <div class="ficha" id="ficha">
-      <h1>Selecione um prato</h1>
-    </div>
-  </div>
-
-</div>
+<div class="container" id="conteudo"></div>
 
 <script>
-
-/* ===== SUPABASE (SUAS CREDENCIAIS) ===== */
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
 let pratos = [];
-let pratoAtual = null;
+let itensMap = {};
+let impostosMap = {};
 
-/* ===== CARREGAR ===== */
-async function carregar(){
-  const { data } = await sb.from("buffet").select("*").order("nome");
-  pratos = data || [];
+async function carregarDados(){
+
+  const { data: buffet } = await sb.from("buffet").select("*");
+  const { data: itens } = await sb.from("buffet_itens").select("*");
+  const { data: impostos } = await sb.from("impostos").select("*");
+
+  pratos = buffet || [];
+
+  itensMap = {};
+  (itens||[]).forEach(i=>{
+    if(!itensMap[i.buffet_id]) itensMap[i.buffet_id]=[];
+    itensMap[i.buffet_id].push(i);
+  });
+
+  impostosMap = {};
+  (impostos||[]).forEach(i=>{
+    if(!impostosMap[i.buffet_id]) impostosMap[i.buffet_id]=[];
+    impostosMap[i.buffet_id].push(i);
+  });
+
   popularTipos();
-  renderLista();
+  aplicarFiltros();
 }
 
 function popularTipos(){
-  const tipos = [...new Set(pratos.map(p=>p.tipo).filter(Boolean))];
-  tipoFilter.innerHTML = `<option value="">Todos</option>` +
-    tipos.map(t=>`<option>${t}</option>`).join("");
+  const tipos=[...new Set(pratos.map(p=>p.tipo).filter(Boolean))];
+  tipoFilter.innerHTML="<option value=''>Todos</option>"+
+    tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
 }
 
-function renderLista(){
-  const nome = search.value.toLowerCase();
-  const tipo = tipoFilter.value;
+function aplicarFiltros(){
+  const nome=search.value.toUpperCase();
+  const tipo=tipoFilter.value;
 
-  lista.innerHTML = "";
-
-  pratos
-  .filter(p =>
-    (!nome || p.nome.toLowerCase().includes(nome)) &&
-    (!tipo || p.tipo === tipo)
-  )
-  .forEach(p=>{
-    const div = document.createElement("div");
-    div.className = "prato-item";
-    div.innerText = p.nome;
-    div.onclick = ()=>selecionar(p, div);
-    lista.appendChild(div);
+  const filtrados=pratos.filter(p=>{
+    const nomeOk=!nome||p.nome.toUpperCase().includes(nome);
+    const tipoOk=!tipo||p.tipo===tipo;
+    return nomeOk&&tipoOk;
   });
+
+  render(filtrados);
 }
 
-async function selecionar(p, el){
-  document.querySelectorAll(".prato-item").forEach(i=>i.classList.remove("active"));
-  if(el) el.classList.add("active");
+function render(lista){
+  conteudo.innerHTML="";
 
-  pratoAtual = p;
+  lista.forEach(p=>{
 
-  const { data: itens } = await sb
-    .from("buffet_itens")
-    .select("*")
-    .eq("buffet_id", p.id);
+    const itens=itensMap[p.id]||[];
+    const impostos=impostosMap[p.id]||[];
 
-  const { data: impostos } = await sb
-    .from("impostos")
-    .select("*")
-    .eq("buffet_id", p.id);
+    const cmvBase=itens.reduce((s,i)=>s+Number(i.custo_calculado||0),0);
 
-  const cmvBase = (itens||[]).reduce((s,i)=>s+Number(i.custo_calculado||0),0);
+    let totalImp=0;
+    impostos.forEach(i=>{
+      if(i.modalidade==="FIXO") totalImp+=Number(i.valor);
+      if(i.modalidade==="PERCENTUAL")
+        totalImp+=(cmvBase*Number(i.valor))/100;
+    });
 
-  let totalImpostos = 0;
-  (impostos||[]).forEach(i=>{
-    if(i.modalidade==="FIXO") totalImpostos += Number(i.valor);
-    if(i.modalidade==="PERCENTUAL")
-      totalImpostos += (cmvBase * Number(i.valor))/100;
-  });
+    const custoFinal=cmvBase+totalImp;
+    const preco=Number(p.preco_venda||0);
+    const lucro=preco-custoFinal;
+    const margem=preco?(lucro/preco)*100:0;
+    const cmvPerc=preco?(cmvBase/preco)*100:0;
 
-  const custoFinal = cmvBase + totalImpostos;
-  const preco = Number(p.preco_venda||0);
-  const lucro = preco - custoFinal;
-  const margem = preco ? (lucro/preco)*100 : 0;
-  const cmvPerc = preco ? (cmvBase/preco)*100 : 0;
+    const div=document.createElement("div");
+    div.className="card";
 
-  ficha.innerHTML = `
-    <h1>${p.nome}</h1>
-    <p>${p.descricao||""}</p>
+    div.innerHTML=`
+      <div class="card-header">
+        <img src="${p.foto_url||'https://placehold.co/600x400?text=Sem+Foto'}">
+        <div>
+          <h2>${p.nome}</h2>
+          <div>${p.descricao||""}</div>
 
-    <div class="section">
-      <h3>Resumo Financeiro</h3>
-      <div class="grid-2">
-        <div class="stat-box">Preço: <b>R$ ${preco.toFixed(2)}</b></div>
-        <div class="stat-box">Custo Base: <b>R$ ${cmvBase.toFixed(2)}</b></div>
-        <div class="stat-box">Custo Final: <b>R$ ${custoFinal.toFixed(2)}</b></div>
-        <div class="stat-box">CMV: <b>${cmvPerc.toFixed(1)}%</b></div>
-        <div class="stat-box">Lucro: <b>R$ ${lucro.toFixed(2)}</b></div>
-        <div class="stat-box">Margem: <b>${margem.toFixed(1)}%</b></div>
+          <div class="badges">
+            <div class="badge">Tipo: ${p.tipo||"-"}</div>
+            <div class="badge">Status: ${p.ativo?"Ativo":"Inativo"}</div>
+            <div class="badge">Código: ${p.codigo_varejo||"-"}</div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="section">
-      <h3>Ingredientes</h3>
-      <table class="table">
-        <tr><th>Nome</th><th>Qtd</th><th>Custo</th></tr>
-        ${(itens||[]).map(i=>`
+      <div class="grid">
+        <div class="box"><b>Preço Venda</b><br>R$ ${preco.toFixed(2)}</div>
+        <div class="box"><b>Preço Ideal</b><br>R$ ${Number(p.preco_ideal||0).toFixed(2)}</div>
+        <div class="box"><b>Custo Base</b><br>R$ ${cmvBase.toFixed(2)}</div>
+        <div class="box"><b>Custo Final</b><br>R$ ${custoFinal.toFixed(2)}</div>
+        <div class="box"><b>CMV</b><br>${cmvPerc.toFixed(1)}%</div>
+        <div class="box"><b>Lucro</b><br>R$ ${lucro.toFixed(2)}</div>
+        <div class="box"><b>Margem</b><br>${margem.toFixed(1)}%</div>
+      </div>
+
+      <div class="section-title">Ingredientes</div>
+      <table>
+        <tr><th>Nome</th><th>Qtd</th><th>Un.</th><th>Custo</th></tr>
+        ${itens.map(i=>`
           <tr>
             <td>${i.nome}</td>
-            <td>${i.quantidade} ${i.unidade_uso}</td>
+            <td>${i.quantidade}</td>
+            <td>${i.unidade_uso}</td>
             <td>R$ ${Number(i.custo_calculado).toFixed(2)}</td>
           </tr>
         `).join("")}
       </table>
-    </div>
 
-    <div class="section">
-      <h3>Impostos / Custos</h3>
-      <table class="table">
-        <tr><th>Descrição</th><th>Valor</th></tr>
-        ${(impostos||[]).map(i=>`
+      <div class="section-title">Impostos / Custos</div>
+      <table>
+        <tr><th>Descrição</th><th>Tipo</th><th>Modalidade</th><th>Valor</th></tr>
+        ${impostos.map(i=>`
           <tr>
             <td>${i.descricao}</td>
-            <td>${i.modalidade==="PERCENTUAL"?i.valor+"%":"R$ "+i.valor}</td>
+            <td>${i.tipo}</td>
+            <td>${i.modalidade}</td>
+            <td>${i.modalidade==="PERCENTUAL"?i.valor+"%":"R$ "+Number(i.valor).toFixed(2)}</td>
           </tr>
         `).join("")}
       </table>
-    </div>
 
-    <div class="section">
-      <h3>Modo de Preparo</h3>
-      <p>${p.modo_preparo||"-"}</p>
-    </div>
-  `;
+      <div class="section-title">Modo de Preparo</div>
+      <div>${p.modo_preparo||"-"}</div>
+    `;
+
+    conteudo.appendChild(div);
+  });
 }
 
-function exportarPDF(){
-  if(!pratoAtual){
-    alert("Selecione um prato.");
-    return;
-  }
-  window.print();
-}
+search.oninput=aplicarFiltros;
+tipoFilter.onchange=aplicarFiltros;
 
-search.oninput = renderLista;
-tipoFilter.onchange = renderLista;
-
-carregar();
-
+carregarDados();
 </script>
+
 </body>
 </html>
