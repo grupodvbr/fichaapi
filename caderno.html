@@ -278,8 +278,8 @@ function render(lista){
           return `
             <tr>
               <td>${i.nome}</td>
-              <td>${qtd}</td>
-              <td>${i.unidade_uso}</td>
+<td>${qtd.toFixed(4)}</td>
+<td>${i.unidade_uso}</td>
               <td>R$ ${custoUnit.toFixed(2)}</td>
               <td><b>R$ ${total.toFixed(2)}</b></td>
             </tr>
