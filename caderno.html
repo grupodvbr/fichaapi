@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>CMV • Visualização Caderno</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --primary:#2563eb;
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --border:#e2e8f0;
+  --text:#0f172a;
+  --muted:#64748b;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* ===== FILTROS ===== */
+.topbar{
+  padding:16px;
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.topbar input,
+.topbar select{
+  padding:12px 16px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  font-weight:600;
+}
+
+/* ===== LAYOUT ===== */
+.layout{
+  display:grid;
+  grid-template-columns:300px 1fr;
+  height:calc(100vh - 80px);
+}
+
+/* ===== LISTA ===== */
+.sidebar{
+  background:#fff;
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+}
+
+.item{
+  padding:14px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+  transition:.15s;
+}
+
+.item:hover{
+  background:#f8fafc;
+}
+
+.item.active{
+  background:#eef2ff;
+  border-left:4px solid var(--primary);
+}
+
+/* ===== FICHA ESTILO A4 ===== */
+.viewer{
+  padding:30px;
+  overflow:auto;
+}
+
+.ficha{
+  max-width:900px;
+  margin:auto;
+  background:#fff;
+  padding:40px;
+  border-radius:12px;
+  box-shadow:0 20px 60px rgba(0,0,0,.08);
+}
+
+.ficha h1{
+  margin:0 0 10px;
+  font-size:28px;
+  font-weight:900;
+}
+
+.section{
+  margin-top:24px;
+}
+
+.section h3{
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+
+.table th,
+.table td{
+  border-bottom:1px solid var(--border);
+  padding:8px;
+  text-align:left;
+}
+
+/* ===== BOTÃO PDF ===== */
+.actions{
+  margin-bottom:20px;
+  text-align:right;
+}
+
+.btn{
+  background:#0f172a;
+  color:#fff;
+  padding:10px 18px;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+  border:none;
+}
+
+/* ===== IMPRESSÃO ===== */
+@media print{
+  body *{
+    visibility:hidden;
+  }
+  .ficha, .ficha *{
+    visibility:visible;
+  }
+  .ficha{
+    position:absolute;
+    left:0;
+    top:0;
+    width:100%;
+    box-shadow:none;
+  }
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:900px){
+  .layout{
+    grid-template-columns:1fr;
+  }
+  .sidebar{
+    height:200px;
+    display:flex;
+    overflow-x:auto;
+  }
+  .item{
+    min-width:200px;
+    border-right:1px solid var(--border);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <input id="search" placeholder="Buscar por nome">
+  <select id="tipoFilter">
+    <option value="">Todos os tipos</option>
+  </select>
+</div>
+
+<div class="layout">
+  <div class="sidebar" id="lista"></div>
+
+  <div class="viewer">
+    <div class="actions">
+      <button class="btn" onclick="gerarPDF()">Exportar PDF</button>
+    </div>
+    <div class="ficha" id="ficha">
+      <h1>Selecione um prato</h1>
+    </div>
+  </div>
+</div>
+
+<script>
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "SUA_PUBLIC_KEY_AQUI"
+);
+
+let pratos = [];
+let pratoAtual = null;
+
+async function carregar(){
+  const { data } = await sb.from("buffet").select("*").order("nome");
+  pratos = data || [];
+  popularTipos();
+  renderLista();
+}
+
+function popularTipos(){
+  const tipos = [...new Set(pratos.map(p=>p.tipo).filter(Boolean))];
+  tipoFilter.innerHTML = `<option value="">Todos</option>` +
+    tipos.map(t=>`<option>${t}</option>`).join("");
+}
+
+function renderLista(){
+  const nome = search.value.toLowerCase();
+  const tipo = tipoFilter.value;
+
+  lista.innerHTML = "";
+
+  pratos
+  .filter(p =>
+    (!nome || p.nome.toLowerCase().includes(nome)) &&
+    (!tipo || p.tipo === tipo)
+  )
+  .forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerText = p.nome;
+    div.onclick = ()=>selecionar(p);
+    lista.appendChild(div);
+  });
+}
+
+async function selecionar(p){
+  pratoAtual = p;
+  const { data: itens } = await sb
+    .from("buffet_itens")
+    .select("*")
+    .eq("buffet_id", p.id);
+
+  const { data: impostos } = await sb
+    .from("impostos")
+    .select("*")
+    .eq("buffet_id", p.id);
+
+  ficha.innerHTML = `
+    <h1>${p.nome}</h1>
+    <p>${p.descricao || ""}</p>
+
+    <div class="section">
+      <h3>Informações Gerais</h3>
+      <div class="grid-2">
+        <div><b>Tipo:</b> ${p.tipo || "-"}</div>
+        <div><b>Preço:</b> R$ ${p.preco_venda || 0}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Ingredientes</h3>
+      <table class="table">
+        <tr><th>Nome</th><th>Qtd</th><th>Custo</th></tr>
+        ${(itens||[]).map(i=>`
+          <tr>
+            <td>${i.nome}</td>
+            <td>${i.quantidade} ${i.unidade_uso}</td>
+            <td>R$ ${i.custo_calculado}</td>
+          </tr>
+        `).join("")}
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>Impostos / Custos</h3>
+      <table class="table">
+        <tr><th>Descrição</th><th>Valor</th></tr>
+        ${(impostos||[]).map(i=>`
+          <tr>
+            <td>${i.descricao}</td>
+            <td>${i.valor}</td>
+          </tr>
+        `).join("")}
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>Modo de Preparo</h3>
+      <p>${p.modo_preparo || "-"}</p>
+    </div>
+  `;
+}
+
+function gerarPDF(){
+  if(!pratoAtual){
+    alert("Selecione um prato primeiro");
+    return;
+  }
+  window.print();
+}
+
+search.oninput = renderLista;
+tipoFilter.onchange = renderLista;
+
+carregar();
+</script>
+</body>
+</html>
