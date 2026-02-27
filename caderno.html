@@ -125,6 +125,11 @@ th,td{
   font-size:14px;
 }
 
+.total-row{
+  background:#f3f4f6;
+  font-weight:900;
+}
+
 @media(max-width:700px){
   .card-header{
     grid-template-columns:1fr;
@@ -259,15 +264,31 @@ function render(lista){
 
       <div class="section-title">Ingredientes</div>
       <table>
-        <tr><th>Nome</th><th>Qtd</th><th>Un.</th><th>Custo</th></tr>
-        ${itens.map(i=>`
-          <tr>
-            <td>${i.nome}</td>
-            <td>${i.quantidade}</td>
-            <td>${i.unidade_uso}</td>
-            <td>R$ ${Number(i.custo_calculado).toFixed(2)}</td>
-          </tr>
-        `).join("")}
+        <tr>
+          <th>Nome</th>
+          <th>Qtd</th>
+          <th>Un.</th>
+          <th>Custo Unit.</th>
+          <th>Custo Total</th>
+        </tr>
+        ${itens.map(i=>{
+          const qtd=Number(i.quantidade||0);
+          const custoUnit=Number(i.custo_unitario||0);
+          const total=qtd*custoUnit;
+          return `
+            <tr>
+              <td>${i.nome}</td>
+              <td>${qtd}</td>
+              <td>${i.unidade_uso}</td>
+              <td>R$ ${custoUnit.toFixed(2)}</td>
+              <td><b>R$ ${total.toFixed(2)}</b></td>
+            </tr>
+          `;
+        }).join("")}
+        <tr class="total-row">
+          <td colspan="4">Total Ingredientes</td>
+          <td>R$ ${cmvBase.toFixed(2)}</td>
+        </tr>
       </table>
 
       <div class="section-title">Impostos / Custos</div>
