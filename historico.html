@@ -19,7 +19,7 @@
   --text:#0f172a;
   --muted:#64748b;
   --border:#e5e7eb;
-  --radius:22px;
+  --radius:20px;
   --shadow:0 20px 50px rgba(0,0,0,.12);
 }
 *{box-sizing:border-box}
@@ -64,6 +64,10 @@ body{
   border:1px solid var(--border);
   box-shadow:var(--shadow);
   padding:20px;
+  transition:.2s;
+}
+.stat:hover{
+  transform:translateY(-4px);
 }
 .stat h3{
   margin:0;
@@ -90,16 +94,36 @@ select,input{
   border-radius:10px;
 }
 button{
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  color:#fff;
   border:none;
   padding:10px 18px;
-  border-radius:10px;
+  border-radius:12px;
   font-weight:700;
   cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:.2s;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;
+}
+.btn-primary:hover{
+  transform:translateY(-2px);
+}
+.btn-view{
+  background:#eef2ff;
+  color:var(--primary);
+}
+.btn-view:hover{
+  background:#dbeafe;
 }
 .btn-restore{
-  background:var(--danger);
+  background:linear-gradient(135deg,#ef4444,#b91c1c);
+  color:#fff;
+}
+.btn-restore:hover{
+  transform:translateY(-2px);
 }
 .table-wrap{
   background:var(--card);
@@ -116,6 +140,9 @@ th,td{
   border-bottom:1px solid var(--border);
   font-size:14px;
 }
+tr:hover{
+  background:#f1f5f9;
+}
 th{
   text-align:left;
   font-size:12px;
@@ -131,6 +158,7 @@ th{
 .insert{background:#dcfce7;color:#166534;}
 .update{background:#fef9c3;color:#854d0e;}
 .delete{background:#fee2e2;color:#991b1b;}
+
 .modal{
   position:fixed;
   inset:0;
@@ -147,7 +175,13 @@ th{
   overflow:auto;
   border-radius:20px;
   padding:25px;
+  animation:fadeIn .2s ease;
 }
+@keyframes fadeIn{
+  from{transform:scale(.95);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+
 .diff-item{
   padding:14px;
   border:1px solid var(--border);
@@ -155,12 +189,9 @@ th{
   margin-bottom:12px;
   background:#f9fafb;
 }
-.diff-key{
-  font-weight:800;
-  margin-bottom:6px;
-}
-.old-value{color:#dc2626;font-weight:700;}
-.new-value{color:#16a34a;font-weight:700;}
+.diff-key{font-weight:800;margin-bottom:6px}
+.old-value{color:#dc2626;font-weight:700}
+.new-value{color:#16a34a;font-weight:700}
 .diff-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -174,13 +205,16 @@ th{
   font-size:13px;
   overflow:auto;
 }
-pre{
-  background:#0f172a;
-  color:#22c55e;
-  padding:16px;
-  border-radius:14px;
-  font-size:12px;
-  overflow:auto;
+.toast{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#111827;
+  color:#fff;
+  padding:14px 18px;
+  border-radius:12px;
+  box-shadow:0 20px 40px rgba(0,0,0,.3);
+  display:none;
 }
 </style>
 </head>
@@ -189,7 +223,7 @@ pre{
 
 <div class="header">
   <h1>🕓 Histórico de Alterações</h1>
-  <p>Últimos 30 dias por padrão • Auditoria completa</p>
+  <p>Auditoria avançada com restauração inteligente</p>
 </div>
 
 <div class="container">
@@ -217,10 +251,7 @@ pre{
     <option value="DELETE">DELETE</option>
   </select>
 
-  <input type="date" id="dataInicio">
-  <input type="date" id="dataFim">
-
-  <button onclick="carregar()">Filtrar</button>
+  <button class="btn-primary" onclick="carregar()">🔎 Filtrar</button>
 </div>
 
 <div class="table-wrap">
@@ -243,39 +274,33 @@ pre{
 
 <div class="modal" id="modal">
   <div class="modal-content">
-    <span class="close" onclick="modal.style.display='none'">X</span>
-    <h3>Detalhes</h3>
+    <h3>Detalhes da Alteração</h3>
     <div id="conteudo"></div>
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 const SUPABASE_URL = "https://dxkszikemntfusfyrzos.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed";
-
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function hojeMenos30(){
-  const d=new Date();
-  d.setDate(d.getDate()-30);
-  return d.toISOString();
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.innerText=msg;
+  t.style.display="block";
+  setTimeout(()=>t.style.display="none",3000);
 }
 
 async function carregar(){
-
-  let query = sb.from("historico_alteracao_fichas")
+  const {data,error}=await sb
+    .from("historico_alteracao_fichas")
     .select("*")
-    .gte("alterado_em", hojeMenos30())
     .order("alterado_em",{ascending:false})
     .limit(500);
 
-  if(dataInicio.value) query=query.gte("alterado_em", dataInicio.value);
-  if(dataFim.value) query=query.lte("alterado_em", dataFim.value+" 23:59:59");
-  if(fTabela.value) query=query.eq("tabela", fTabela.value);
-  if(fOperacao.value) query=query.eq("operacao", fOperacao.value);
-
-  const {data,error}=await query;
-  if(error){ alert(error.message); return; }
+  if(error){ toast(error.message); return; }
 
   tbody.innerHTML="";
   total.innerText=data.length;
@@ -292,11 +317,11 @@ async function carregar(){
       <td>${new Date(item.alterado_em).toLocaleString()}</td>
       <td>${item.tabela}</td>
       <td><span class="badge ${item.operacao.toLowerCase()}">${item.operacao}</span></td>
-      <td>${item.registro_id || "-"}</td>
+      <td>${item.registro_id}</td>
       <td>${item.usuario || "-"}</td>
       <td>
-        <button onclick='ver(${JSON.stringify(item)})'>Ver</button>
-        <button class="btn-restore" onclick="restaurar('${item.id}')">Restaurar</button>
+        <button class="btn-view" onclick='ver(${JSON.stringify(item)})'>👁 Ver</button>
+        <button class="btn-restore" onclick="restaurar('${item.id}')">♻ Restaurar</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -309,10 +334,8 @@ async function carregar(){
 
 function ver(item){
   modal.style.display="flex";
-
+  let html="";
   if(item.operacao==="UPDATE"){
-    let html="<h4>Campos Alterados</h4>";
-
     Object.keys(item.dados_depois).forEach(k=>{
       if(JSON.stringify(item.dados_antes[k])!==JSON.stringify(item.dados_depois[k])){
         html+=`
@@ -321,48 +344,31 @@ function ver(item){
           <div class="diff-grid">
             <div>
               <div class="old-value">ANTES</div>
-              <div class="value-box">${formatar(item.dados_antes[k])}</div>
+              <div class="value-box">${item.dados_antes[k]}</div>
             </div>
             <div>
               <div class="new-value">DEPOIS</div>
-              <div class="value-box">${formatar(item.dados_depois[k])}</div>
+              <div class="value-box">${item.dados_depois[k]}</div>
             </div>
           </div>
-        </div>
-        `;
+        </div>`;
       }
     });
-
-    conteudo.innerHTML=html;
-
-  } else {
-    const dados=item.dados_depois || item.dados_antes;
-    conteudo.innerHTML=`<pre>${JSON.stringify(dados,null,2)}</pre>`;
+  }else{
+    html=`<pre>${JSON.stringify(item.dados_depois || item.dados_antes,null,2)}</pre>`;
   }
-}
-
-function formatar(v){
-  if(v===null || v===undefined) return "null";
-  if(typeof v==="object") return JSON.stringify(v,null,2);
-  return v;
+  conteudo.innerHTML=html;
 }
 
 async function restaurar(id){
+  const senha=prompt("Digite a senha:");
+  if(senha!=="8486"){ toast("Senha incorreta"); return; }
 
-  const senha=prompt("Digite a senha para restaurar:");
-  if(senha!=="8486"){
-    alert("Senha incorreta.");
-    return;
-  }
+  toast("Restaurando...");
+  const {error}=await sb.rpc("restaurar_historico",{p_id:id});
 
-  const { error } = await sb.rpc("restaurar_historico", { p_id: id });
-
-  if(error){
-    alert(error.message);
-  }else{
-    alert("Restaurado com sucesso!");
-    carregar();
-  }
+  if(error){ toast(error.message); }
+  else{ toast("Registro restaurado com sucesso!"); carregar(); }
 }
 
 carregar();
