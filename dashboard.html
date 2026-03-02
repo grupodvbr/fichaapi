@@ -784,11 +784,11 @@ function toggleMoreMenu(){
 }
 function selectFromMore(page){
 
-  // abre página normalmente
   openPage(page, document.querySelector(`.icon[onclick*="${page}"]`));
 
-  // apenas fecha o menu
   document.getElementById("moreMenu").classList.remove("open");
+  document.getElementById("moreOverlay").classList.remove("open");
+  document.querySelector(".more-btn").classList.remove("active");
 
 }
 
