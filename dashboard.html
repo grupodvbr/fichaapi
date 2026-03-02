@@ -318,7 +318,109 @@ iframe{
 
 
 
+/* ================= GLYPHS (ÍCONES) ================= */
 
+.glyph{
+  width:22px;
+  height:22px;
+  position:relative;
+}
+
+.glyph.home::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:#00a6a0;
+  clip-path:polygon(50% 0,100% 40%,100% 100%,0 100%,0 40%);
+  border-radius:4px;
+}
+
+.glyph.doc::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:#00a6a0;
+  border-radius:4px;
+}
+
+.glyph.doc::after{
+  content:"";
+  position:absolute;
+  top:4px;
+  left:4px;
+  right:4px;
+  height:3px;
+  background:#e6f7f7;
+  box-shadow:
+    0 6px 0 #e6f7f7,
+    0 12px 0 #e6f7f7;
+}
+
+.glyph.chart::before{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:5px;
+  height:14px;
+  background:#00a6a0;
+  box-shadow:
+    8px -6px 0 #00a6a0,
+    16px -2px 0 #00a6a0;
+}
+
+.glyph.settings{
+  border:3px solid #00a6a0;
+  border-radius:50%;
+}
+
+.glyph.settings::after{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border:2px solid #00a6a0;
+  border-radius:50%;
+}
+
+.glyph.box::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border:3px solid #00a6a0;
+  border-radius:4px;
+}
+
+.glyph.box::after{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border-top:3px solid #00a6a0;
+}
+
+.glyph.media{
+  position:relative;
+}
+
+.glyph.media::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:6px;
+  border:3px solid #00a6a0;
+}
+
+.glyph.media::after{
+  content:"";
+  position:absolute;
+  left:6px;
+  right:6px;
+  bottom:6px;
+  height:3px;
+  background:#00a6a0;
+  box-shadow:
+    0 -6px 0 #00a6a0,
+    0 -12px 0 #00a6a0;
+}
 
 
 
