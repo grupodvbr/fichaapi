@@ -651,10 +651,17 @@ async function salvar(){
      PAYLOAD FINAL
   ================================= */
 
-  const payload={
-    nome:nome.value,
-    descricao:descricao.value,
-    unidade_medida:unidadeSelecionada,
+let unidadeFinal = unidadeSelecionada;
+
+if(unidadeSelecionada === "ML") unidadeFinal = "L";
+if(unidadeSelecionada === "G") unidadeFinal = "KG";
+
+const payload={
+  nome:nome.value,
+  descricao:descricao.value,
+
+  // 🔥 agora salva a unidade convertida
+  unidade_medida:unidadeFinal,
 
     // 🔥 AGORA SALVA SEMPRE PREÇO BASE
     valor:valorConvertido,
