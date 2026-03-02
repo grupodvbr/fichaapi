@@ -7,6 +7,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
@@ -43,7 +44,7 @@ body{
 .header small{color:var(--muted);font-size:12px}
 
 /* CONTAINER */
-.container{padding:22px;max-width:1500px;margin:auto}
+.container{padding:22px;max-width:1600px;margin:auto}
 
 /* FILTERS */
 .filters{
@@ -82,18 +83,23 @@ body{
 .yellow b{color:var(--yellow)}
 .red b{color:var(--red)}
 
-/* SECTION */
-.section{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-@media(max-width:900px){.section{grid-template-columns:1fr}}
+.section{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:20px;
+}
+@media(max-width:1100px){.section{grid-template-columns:1fr}}
+
 .panel{
   background:var(--card);
   border:1px solid var(--border);
   border-radius:var(--radius);
-  padding:14px;
-  max-height:350px;
+  padding:18px;
+  max-height:380px;
   overflow:auto;
 }
-.panel h3{margin:0 0 10px;font-size:13px;font-weight:900}
+.panel h3{margin:0 0 12px;font-size:14px;font-weight:900}
+
 .item{
   display:flex;
   justify-content:space-between;
@@ -103,10 +109,22 @@ body{
   transition:.2s;
 }
 .item:hover{background:#111827}
+
 .score{font-weight:900}
 .score.green{color:var(--green)}
 .score.yellow{color:var(--yellow)}
 .score.red{color:var(--red)}
+
+.tipo-health{
+  padding:8px;
+  border-radius:10px;
+  margin-bottom:8px;
+  display:flex;
+  justify-content:space-between;
+}
+.tipo-health.green{background:#052e1a}
+.tipo-health.yellow{background:#2e2105}
+.tipo-health.red{background:#2e0508}
 
 /* MODAL */
 .modal{
@@ -191,8 +209,11 @@ body{
   <div class="card green"><small>Ativos</small><b id="kAtivos">—</b></div>
   <div class="card yellow"><small>CMV Médio</small><b id="kCmv">—%</b></div>
   <div class="card green"><small>Lucro Total</small><b id="kLucro">—</b></div>
-  <div class="card red"><small>Fichas em Risco</small><b id="kRisco">—</b></div>
-  <div class="card yellow"><small>% Incompletas</small><b id="kIncompleto">—%</b></div>
+  <div class="card red"><small>CMV > 40%</small><b id="kCmv40">—</b></div>
+  <div class="card red"><small>CMV > 45%</small><b id="kCmv45">—</b></div>
+  <div class="card yellow"><small>Sem Preço</small><b id="kSemPreco">—</b></div>
+  <div class="card yellow"><small>Sem Custo</small><b id="kSemCusto">—</b></div>
+  <div class="card yellow"><small>Sem Foto</small><b id="kSemFoto">—</b></div>
 </div>
 
 <div class="section">
@@ -200,15 +221,20 @@ body{
     <h3>🚨 Ranking por Score</h3>
     <div id="listaRisco"></div>
   </div>
+
   <div class="panel">
-    <h3>🕒 Sem atualização de custo</h3>
-    <div id="listaDias"></div>
+    <h3>🏥 Saúde por Tipo</h3>
+    <div id="saudeTipo"></div>
   </div>
 </div>
 
+<div class="panel" style="margin-top:20px">
+  <h3>📊 CMV Médio por Tipo</h3>
+  <canvas id="graficoTipo"></canvas>
 </div>
 
-<!-- MODAL -->
+</div>
+
 <div id="modal" class="modal" onclick="fecharModal()">
   <div class="modal-box" onclick="event.stopPropagation()">
     <span class="close" onclick="fecharModal()">✕</span>
@@ -287,9 +313,11 @@ function atualizar(lista){
   kAtivos.textContent=lista.filter(i=>i.ativo).length;
   kCmv.textContent=(lista.reduce((s,i)=>s+i.cmv,0)/lista.length||0).toFixed(1);
   kLucro.textContent=moeda(lista.reduce((s,i)=>s+i.lucro,0));
-  kRisco.textContent=lista.filter(i=>i.score<60).length;
-  const incompleto=lista.filter(i=>i.score<80).length;
-  kIncompleto.textContent=((incompleto/lista.length)*100||0).toFixed(0)+"%";
+  kCmv40.textContent=lista.filter(i=>i.cmv>40).length;
+  kCmv45.textContent=lista.filter(i=>i.cmv>45).length;
+  kSemPreco.textContent=lista.filter(i=>i.preco<=0).length;
+  kSemCusto.textContent=lista.filter(i=>i.custo<=0).length;
+  kSemFoto.textContent=lista.filter(i=>!i.foto_url).length;
 
   listaRisco.innerHTML=lista
     .sort((a,b)=>a.score-b.score)
@@ -301,16 +329,50 @@ function atualizar(lista){
       </div>
     `).join("");
 
-  listaDias.innerHTML=lista
-    .filter(i=>i.dias&&i.dias>30)
-    .sort((a,b)=>b.dias-a.dias)
-    .slice(0,10)
-    .map(i=>`
-      <div class="item" onclick="abrirDetalhe('${i.id}')">
-        <span>${i.nome}</span>
-        <span>${i.dias} dias</span>
+  const tipoStats={};
+  lista.forEach(i=>{
+    if(!tipoStats[i.tipo]) tipoStats[i.tipo]={total:0,cmv:0,critico:0,incompleto:0};
+    tipoStats[i.tipo].total++;
+    tipoStats[i.tipo].cmv+=i.cmv;
+    if(i.cmv>40) tipoStats[i.tipo].critico++;
+    if(i.preco<=0||i.custo<=0||!i.foto_url)
+      tipoStats[i.tipo].incompleto++;
+  });
+
+  saudeTipo.innerHTML="";
+  const labels=[], valores=[];
+
+  Object.entries(tipoStats).forEach(([tipo,stat])=>{
+    const cmvMedio=stat.cmv/stat.total;
+    const criticoPerc=(stat.critico/stat.total)*100;
+    const incompletoPerc=(stat.incompleto/stat.total)*100;
+
+    let score=100;
+    if(cmvMedio>35) score-=20;
+    if(criticoPerc>20) score-=30;
+    if(incompletoPerc>20) score-=20;
+
+    let classe="green";
+    if(score<60) classe="red";
+    else if(score<80) classe="yellow";
+
+    saudeTipo.innerHTML+=`
+      <div class="tipo-health ${classe}">
+        <span>${tipo}</span>
+        <span>CMV ${cmvMedio.toFixed(1)}%</span>
+        <span>${score}</span>
       </div>
-    `).join("");
+    `;
+
+    labels.push(tipo);
+    valores.push(cmvMedio.toFixed(1));
+  });
+
+  new Chart(graficoTipo,{
+    type:"bar",
+    data:{labels:labels,datasets:[{data:valores}]},
+    options:{plugins:{legend:{display:false}}}
+  });
 }
 
 function abrirDetalhe(id){
