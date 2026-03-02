@@ -455,36 +455,69 @@ function ver(item){
 
   const formatData = new Date(item.alterado_em).toLocaleString();
 
+  // Função para montar campos bonitos
+  function montarBloco(obj){
+    if(!obj) return "<em style='color:#64748b;font-size:12px'>Sem dados</em>";
+
+    let html = "<div style='display:grid;gap:8px'>";
+    Object.keys(obj).forEach(chave=>{
+      html += `
+        <div style="
+          background:#f8fafc;
+          border:1px solid #e5e7eb;
+          border-radius:8px;
+          padding:8px 10px;
+          font-size:12px;
+          display:flex;
+          justify-content:space-between;
+          gap:10px;
+        ">
+          <span style="color:#64748b;font-weight:600">${chave}</span>
+          <span style="font-weight:600;text-align:right;word-break:break-word">
+            ${obj[chave]}
+          </span>
+        </div>
+      `;
+    });
+    html += "</div>";
+    return html;
+  }
+
   conteudo.innerHTML = `
-    <div class="info-grid">
-      <div class="info-box">
-        <small>Data</small>
-        <strong>${formatData}</strong>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="background:#f1f5f9;padding:10px;border-radius:8px">
+        <div style="font-size:10px;color:#64748b">Data</div>
+        <div style="font-weight:700">${formatData}</div>
       </div>
 
-      <div class="info-box">
-        <small>Tabela</small>
-        <strong>${item.tabela}</strong>
+      <div style="background:#f1f5f9;padding:10px;border-radius:8px">
+        <div style="font-size:10px;color:#64748b">Operação</div>
+        <div style="font-weight:700">${item.operacao}</div>
       </div>
 
-      <div class="info-box">
-        <small>Operação</small>
-        <strong>${item.operacao}</strong>
+      <div style="background:#f1f5f9;padding:10px;border-radius:8px">
+        <div style="font-size:10px;color:#64748b">Tabela</div>
+        <div style="font-weight:700">${item.tabela}</div>
       </div>
 
-      <div class="info-box">
-        <small>ID Registro</small>
-        <strong>${item.registro_id}</strong>
+      <div style="background:#f1f5f9;padding:10px;border-radius:8px">
+        <div style="font-size:10px;color:#64748b">Registro ID</div>
+        <div style="font-weight:700">${item.registro_id}</div>
       </div>
     </div>
 
-    <div>
-      <small style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase;">
-        Dados completos
-      </small>
-      <div class="json-block">
-        ${JSON.stringify(item,null,2)}
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;margin-bottom:8px;color:#0f172a">
+        Dados Antes
       </div>
+      ${montarBloco(item.dados_antes)}
+    </div>
+
+    <div>
+      <div style="font-size:11px;font-weight:700;margin-bottom:8px;color:#0f172a">
+        Dados Depois
+      </div>
+      ${montarBloco(item.dados_depois)}
     </div>
   `;
 }
