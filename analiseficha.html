@@ -62,37 +62,54 @@ body.modal-open{
 }
 
 /* =========================================================
-   FILTROS
-========================================================= */
-/* =========================================================
-   FILTROS (BASE)
+   FILTROS FIXOS PREMIUM
 ========================================================= */
 .filters{
+  position:sticky;
+  top:0;
+  z-index:50;
+
   display:flex;
-  gap:14px;
-  padding:22px;
-  flex-wrap:wrap;
+  gap:16px;
+  align-items:center;
+
+  padding:16px 22px;
+
+  background:rgba(255,255,255,.95);
+  backdrop-filter:blur(10px);
+
+  border-bottom:1px solid var(--border);
+  box-shadow:0 10px 30px rgba(0,0,0,.06);
 }
 
-/* Inputs padrão */
+/* mesma linha sempre */
+.filters input{
+  flex:2;
+  min-width:220px;
+}
+
+.filters select{
+  flex:1;
+  min-width:160px;
+}
+
 .filters input,
 .filters select{
-  padding:14px 18px;
+  height:46px;
+  padding:0 18px;
   border-radius:999px;
   border:1px solid var(--border);
   font-size:14px;
   font-weight:700;
-  width:100%;
   background:#fff;
-  box-shadow:var(--shadow-xs);
-  transition:.2s ease;
+  transition:.2s;
 }
 
 .filters input:focus,
 .filters select:focus{
   outline:none;
   border-color:var(--primary);
-  box-shadow:0 0 0 3px rgba(37,99,235,.18), var(--shadow-xs);
+  box-shadow:0 0 0 3px rgba(37,99,235,.18);
 }
 
 /* =========================================================
@@ -803,7 +820,36 @@ button{
   min-height:18px;        /* 🔥 menos altura fixa */
 }
 
+/* =========================
+   BOTÃO VOLTAR AO TOPO
+========================= */
+#btnTop{
+  position:fixed;
+  bottom:30px;
+  right:30px;
 
+  width:52px;
+  height:52px;
+
+  border-radius:50%;
+  border:none;
+
+  background:var(--primary);
+  color:#fff;
+  font-size:20px;
+  font-weight:900;
+
+  box-shadow:0 12px 30px rgba(37,99,235,.4);
+
+  display:none;
+  cursor:pointer;
+  transition:.2s ease;
+  z-index:60;
+}
+
+#btnTop:hover{
+  transform:translateY(-3px);
+}
    
 </style>
 </head>
@@ -1036,6 +1082,13 @@ async function carregarCMVCache(){
    LISTA
 ===================================================== */
 function aplicarFiltros() {
+
+  // 🔥 sobe automaticamente
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
   const nomeFiltro = (filtroNome.value || "").toUpperCase().trim();
   const tipoFiltro = filtroTipo.value;
 
@@ -2158,9 +2211,33 @@ window.addEventListener("scroll", () => {
     renderProximaPagina();
   }
 });
+
+/* =========================
+   SCROLL BUTTON
+========================= */
+
+const btnTop = document.getElementById("btnTop");
+
+window.addEventListener("scroll", () => {
+
+  // mostra botão depois de 500px
+  if (window.scrollY > 500) {
+    btnTop.style.display = "block";
+  } else {
+    btnTop.style.display = "none";
+  }
+
+});
+
+function scrollToTop(){
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+}
 </script>
 
-
+<button id="btnTop" onclick="scrollToTop()">↑</button>
 
 </body>
 </html>
