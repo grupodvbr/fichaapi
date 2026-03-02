@@ -17,6 +17,10 @@ viewport-fit=cover"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+
 <style>
 :root{
   --primary:#2563eb;
@@ -40,7 +44,6 @@ html,body{
   overflow-x:hidden;
 }
 
-/* HEADER */
 .header{
   padding:16px;
   background:#fff;
@@ -56,14 +59,12 @@ html,body{
   font-weight:800;
 }
 
-/* CONTAINER */
 .container{
   padding:16px;
   max-width:1200px;
   margin:auto;
 }
 
-/* CARDS */
 .cards{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -90,25 +91,11 @@ html,body{
   margin-top:4px;
 }
 
-/* ================= FILTROS NOVO ================= */
-
 .filters{
-  background:#fff;
-  padding:14px;
-  border-radius:var(--radius);
-  margin-bottom:16px;
-  box-shadow:0 5px 15px rgba(0,0,0,.05);
-}
-
-.filter-row{
   display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap:10px;
-  margin-bottom:12px;
-}
-
-.filter-row.second{
-  grid-template-columns: 2fr auto;
+  grid-template-columns:2fr 1fr;
+  gap:12px;
+  margin-bottom:16px;
 }
 
 .filter-group{
@@ -117,40 +104,23 @@ html,body{
 }
 
 .filter-group label{
-  font-size:10px;
+  font-size:11px;
   font-weight:700;
   color:var(--muted);
-  margin-bottom:4px;
+  margin-bottom:6px;
   text-transform:uppercase;
 }
 
 .filter-group input,
 .filter-group select{
-  height:36px;
-  padding:0 10px;
-  border-radius:10px;
+  height:44px;
+  padding:0 14px;
+  border-radius:12px;
   border:1px solid var(--border);
-  font-size:12px;
-  width:100%;
+  font-size:14px;
+  background:#fff;
 }
 
-.filter-button button{
-  height:36px;
-  padding:0 20px;
-  border-radius:10px;
-}
-
-/* Campo de busca cresce */
-.grow{
-  flex:2;
-}
-
-
-.btn-primary{background:var(--primary);color:#fff}
-.btn-danger{background:var(--danger);color:#fff}
-.btn-secondary{background:#e2e8f0}
-
-/* GRÁFICO */
 .chart-box{
   background:#fff;
   padding:10px;
@@ -159,7 +129,6 @@ html,body{
   box-shadow:0 5px 15px rgba(0,0,0,.05);
 }
 
-/* TABELA */
 .table-wrap{
   background:#fff;
   border-radius:var(--radius);
@@ -197,7 +166,6 @@ th{
 .update{background:#fef9c3;color:#854d0e}
 .delete{background:#fee2e2;color:#991b1b}
 
-/* MODAL */
 .modal{
   position:fixed;
   inset:0;
@@ -216,7 +184,6 @@ th{
   padding:16px;
 }
 
-/* TOAST */
 .toast{
   position:fixed;
   bottom:15px;
@@ -230,17 +197,12 @@ th{
   font-size:11px;
 }
 
-/* DESKTOP */
 @media(min-width:900px){
+  .cards{ grid-template-columns:repeat(4,1fr); }
+}
 
-  .cards{
-    grid-template-columns:repeat(4,1fr);
-  }
-
-  .filters{
-    grid-template-columns:repeat(5,1fr);
-  }
-
+@media(max-width:768px){
+  .filters{ grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -260,17 +222,10 @@ th{
   <div class="card"><small>Deletes</small><strong id="del">0</strong></div>
 </div>
 
-</div>
-
-<div class="filter-row">
+<div class="filters">
   <div class="filter-group">
-    <label>Data Inicial</label>
-    <input type="date" id="dataInicio">
-  </div>
-
-  <div class="filter-group">
-    <label>Data Final</label>
-    <input type="date" id="dataFim">
+    <label>Período</label>
+    <input type="text" id="rangeData" placeholder="Selecione o período">
   </div>
 
   <div class="filter-group">
@@ -282,20 +237,6 @@ th{
       <option value="DELETE">DELETE</option>
     </select>
   </div>
-</div>
-
-  <!-- LINHA 2 -->
-  <div class="filter-row">
-    <div class="filter-group grow">
-      <label>Buscar ID</label>
-      <input type="text" id="buscaId" placeholder="Digite o ID...">
-    </div>
-
-    <div class="filter-button">
-      <button class="btn-primary" onclick="carregar()">Aplicar</button>
-    </div>
-  </div>
-
 </div>
 
 <div class="chart-box">
@@ -321,7 +262,7 @@ th{
 
 <div class="modal" id="modal">
 <div class="modal-box">
-<button class="btn-secondary" onclick="fechar()">Fechar</button>
+<button onclick="fechar()">Fechar</button>
 <div id="conteudo"></div>
 </div>
 </div>
@@ -335,14 +276,8 @@ const sb = supabase.createClient(
 );
 
 let chart;
-
-function ultimaSemana(){
-  const hoje=new Date();
-  const inicio=new Date();
-  inicio.setDate(hoje.getDate()-7);
-  dataInicio.value=inicio.toISOString().slice(0,10);
-  dataFim.value=hoje.toISOString().slice(0,10);
-}
+let dataInicioGlobal;
+let dataFimGlobal;
 
 function toast(msg){
   const t=document.getElementById("toast");
@@ -352,21 +287,42 @@ function toast(msg){
 }
 
 function fechar(){
-  modal.style.display="none";
+  document.getElementById("modal").style.display="none";
 }
+
+flatpickr("#rangeData", {
+  mode: "range",
+  dateFormat: "Y-m-d",
+  locale: "pt",
+  defaultDate: [
+    new Date().fp_incr(-7),
+    new Date()
+  ],
+  onClose: function(selectedDates){
+    if(selectedDates.length === 2){
+      dataInicioGlobal = selectedDates[0].toISOString().slice(0,10);
+      dataFimGlobal = selectedDates[1].toISOString().slice(0,10);
+      carregar();
+    }
+  }
+});
+
+dataInicioGlobal = new Date().fp_incr(-7).toISOString().slice(0,10);
+dataFimGlobal = new Date().toISOString().slice(0,10);
 
 async function carregar(){
 
   let query = sb.from("historico_alteracao_fichas").select("*");
 
-  query=query.gte("alterado_em",dataInicio.value+"T00:00:00")
-             .lte("alterado_em",dataFim.value+"T23:59:59");
+  if(dataInicioGlobal && dataFimGlobal){
+    query = query
+      .gte("alterado_em", dataInicioGlobal+"T00:00:00")
+      .lte("alterado_em", dataFimGlobal+"T23:59:59");
+  }
 
-  if(filtroOperacao.value)
-    query=query.eq("operacao",filtroOperacao.value);
-
-  if(buscaId.value)
-    query=query.ilike("registro_id","%"+buscaId.value+"%");
+  if(filtroOperacao.value){
+    query = query.eq("operacao", filtroOperacao.value);
+  }
 
   const {data,error}=await query.order("alterado_em",{ascending:false}).limit(500);
 
@@ -394,8 +350,8 @@ async function carregar(){
       <td><span class="badge ${r.operacao.toLowerCase()}">${r.operacao}</span></td>
       <td>${r.registro_id}</td>
       <td>
-        <button class="btn-secondary" onclick='ver(${JSON.stringify(r)})'>Ver</button>
-        <button class="btn-danger" onclick="restaurar('${r.id}')">Restaurar</button>
+        <button onclick='ver(${JSON.stringify(r)})'>Ver</button>
+        <button onclick="restaurar('${r.id}')">Restaurar</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -422,7 +378,7 @@ function atualizarGrafico(dias){
 }
 
 function ver(item){
-  modal.style.display="flex";
+  document.getElementById("modal").style.display="flex";
   conteudo.innerHTML=`<pre>${JSON.stringify(item,null,2)}</pre>`;
 }
 
@@ -434,12 +390,7 @@ async function restaurar(id){
   carregar();
 }
 
-ultimaSemana();
 carregar();
-
-/* BLOQUEIO ZOOM */
-document.addEventListener('gesturestart', e=>e.preventDefault());
-document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
 </script>
 
 </body>
