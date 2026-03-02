@@ -28,13 +28,13 @@ body{
   color:var(--text);
 }
 
-/* HEADER */
+/* HEADER COMPACTO */
 .header{
   background:#fff;
-  padding:12px 16px;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
+  padding:8px 12px;
+  display:grid;
+  grid-template-columns:1fr 140px auto;
+  gap:8px;
   align-items:center;
   border-bottom:1px solid var(--border);
   position:sticky;
@@ -42,29 +42,51 @@ body{
   z-index:20;
 }
 
-.header input,
-.header select{
-  flex:1;
-  min-width:120px;
-  height:38px;
-  border-radius:10px;
+/* BUSCA */
+.header input{
+  height:34px;
+  border-radius:8px;
   border:1px solid var(--border);
-  padding:0 12px;
-  font-size:13px;
+  padding:0 10px;
+  font-size:12px;
   font-weight:600;
   background:#f9fafb;
 }
 
+/* SELECT */
+.header select{
+  height:34px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  padding:0 8px;
+  font-size:12px;
+  font-weight:600;
+  background:#f9fafb;
+}
+
+/* BOTÃO */
 .header button{
-  height:38px;
-  padding:0 14px;
-  border-radius:10px;
+  height:34px;
+  padding:0 12px;
+  border-radius:8px;
   border:none;
   background:var(--primary);
   color:#fff;
-  font-size:12px;
+  font-size:11px;
   font-weight:700;
   cursor:pointer;
+  white-space:nowrap;
+}
+
+/* MOBILE ULTRA AJUSTADO */
+@media(max-width:600px){
+  .header{
+    grid-template-columns:1fr auto;
+  }
+
+  .header select{
+    display:none; /* economiza espaço */
+  }
 }
 
 /* CONTAINER */
