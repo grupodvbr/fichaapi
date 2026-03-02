@@ -357,7 +357,12 @@ button:hover{
     <label>QUANTIDADE DE REFERÊNCIA</label>
     <input id="quantidade_referencia" type="number" placeholder="Ex: 700">
   </div>
-
+<div id="preview_conversao" 
+     style="margin-top:6px;
+            font-weight:800;
+            color:#14b8a6;
+            letter-spacing:.04em;">
+</div>
   <div class="field">
     <label>RENDIMENTO (%)</label>
     <input id="rendimento" value="100">
@@ -552,6 +557,55 @@ function novo(){
   if(unidade === "KG") return qtd * 1000;
   return qtd;
 }
+
+
+
+
+  function atualizarPreviewConversao(){
+
+  const valorDigitado = Number(valor.value.replace(/\D/g,""))/100;
+  const qtdRef = Number(quantidade_referencia.value || 0);
+  const unidadeSelecionada = unidade.value;
+  const preview = document.getElementById("preview_conversao");
+
+  if(!valorDigitado || !qtdRef){
+    preview.innerHTML = "";
+    return;
+  }
+
+  let valorConvertido = valorDigitado;
+  let textoUnidade = unidadeSelecionada;
+
+  if(unidadeSelecionada === "ML"){
+    const litros = qtdRef / 1000;
+    valorConvertido = valorDigitado / litros;
+    textoUnidade = "LITRO";
+  }
+
+  if(unidadeSelecionada === "G"){
+    const kg = qtdRef / 1000;
+    valorConvertido = valorDigitado / kg;
+    textoUnidade = "KG";
+  }
+
+  if(unidadeSelecionada === "L"){
+    valorConvertido = valorDigitado / qtdRef;
+    textoUnidade = "LITRO";
+  }
+
+  if(unidadeSelecionada === "KG"){
+    valorConvertido = valorDigitado / qtdRef;
+    textoUnidade = "KG";
+  }
+
+  if(unidadeSelecionada === "UN"){
+    valorConvertido = valorDigitado / qtdRef;
+    textoUnidade = "UNIDADE";
+  }
+
+  preview.innerHTML = 
+    `VALOR FINAL: R$ ${valorConvertido.toFixed(2)} POR ${textoUnidade}`;
+}
 async function salvar(){
 
   const valorDigitado = Number(valor.value.replace(/\D/g,""))/100;
@@ -692,6 +746,11 @@ document.addEventListener("click", (e)=>{
     sugestoes.innerHTML = "";
   }
 });
+
+
+valor.addEventListener("input", atualizarPreviewConversao);
+quantidade_referencia.addEventListener("input", atualizarPreviewConversao);
+unidade.addEventListener("change", atualizarPreviewConversao);
 </script>
 
 </body>
