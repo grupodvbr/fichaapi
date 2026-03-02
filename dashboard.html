@@ -624,10 +624,10 @@ iframe{
 
 </aside>
 <div id="moreMenu" class="more-menu">
-  <div onclick="selectFromMore('config.html','Financeiro')">Financeiro</div>
-  <div onclick="selectFromMore('ingredientesexcel.html','Excel')">Excel</div>
-  <div onclick="selectFromMore('midias.html','Mídias')">Mídias</div>
-  <div onclick="selectFromMore('relatorios.html','Relatórios')">Relatórios</div>
+  <div onclick="selectFromMore('config.html')">Financeiro</div>
+  <div onclick="selectFromMore('ingredientesexcel.html')">Excel</div>
+  <div onclick="selectFromMore('midias.html')">Mídias</div>
+  <div onclick="selectFromMore('relatorios.html')">Relatórios</div>
 </div>
   <div class="main">
     <div class="header">
@@ -719,34 +719,14 @@ window.closeLogin = closeLogin;
 function toggleMoreMenu(){
   document.getElementById("moreMenu").classList.toggle("open");
 }
-function selectFromMore(page, label){
+function selectFromMore(page){
 
-  // fecha menu
+  // abre página normalmente
+  openPage(page, document.querySelector(`.icon[onclick*="${page}"]`));
+
+  // apenas fecha o menu
   document.getElementById("moreMenu").classList.remove("open");
 
-  // abre página
-  openPage(page, null);
-
-  // comportamento só no mobile
-  if(window.innerWidth <= 900){
-
-    const sidebar = document.querySelector(".sidebar");
-
-    // esconde todos
-    document.querySelectorAll(".sidebar .icon").forEach(i=>{
-      i.style.display = "none";
-    });
-
-    // cria botão único
-    const temp = document.createElement("div");
-    temp.className = "icon active mobile-selected";
-    temp.innerHTML = `
-      <span class="glyph box"></span>
-      <small>${label}</small>
-    `;
-
-    sidebar.appendChild(temp);
-  }
 }
 
   
