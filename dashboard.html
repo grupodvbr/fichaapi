@@ -341,7 +341,17 @@ iframe{
   color:#ffffff;
 }
   
+.icon{
+  width:64px;
+}
 
+.icon small{
+  font-size:8px;
+}
+
+.sidebar{
+  justify-content:space-evenly;
+}
 }
 
 
@@ -452,7 +462,38 @@ iframe{
 
 
 
+/* ================= MENU MAIS ================= */
 
+.more-menu{
+  position:fixed;
+  bottom:100px;
+  right:20px;
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:18px;
+  padding:12px 0;
+  display:none;
+  flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+  z-index:2000;
+  min-width:160px;
+}
+
+.more-menu div{
+  padding:10px 18px;
+  font-size:13px;
+  cursor:pointer;
+  color:#e5e7eb;
+  transition:.2s;
+}
+
+.more-menu div:hover{
+  background:#0b1220;
+}
+
+.more-menu.open{
+  display:flex;
+}
 
 
   
@@ -514,6 +555,7 @@ iframe{
 <!-- APP -->
 <div id="app" class="app">
 <aside class="sidebar">
+
 <div class="icon active" onclick="openPage('home.html',this)">
   <span class="glyph home"></span>
   <small>Home</small>
@@ -534,27 +576,18 @@ iframe{
   <small>Análise</small>
 </div>
 
-<div class="icon" onclick="openPage('config.html',this)">
-  <span class="glyph settings"></span>
-  <small>Financeiro</small>
-</div>
-
-<div class="icon" onclick="openPage('ingredientesexcel.html',this)">
+<div class="icon" onclick="toggleMoreMenu()">
   <span class="glyph box"></span>
-  <small>Excel</small>
+  <small>Mais</small>
 </div>
 
-<div class="icon" onclick="openPage('midias.html',this)">
-  <span class="glyph media"></span>
-  <small>Mídias</small>
-</div>
-
-<div class="icon" onclick="openPage('relatorios.html',this)">
-  <span class="glyph doc"></span>
-  <small>Relatórios</small>
-</div>
 </aside>
-
+<div id="moreMenu" class="more-menu">
+  <div onclick="openPage('config.html',this)">Financeiro</div>
+  <div onclick="openPage('ingredientesexcel.html',this)">Excel</div>
+  <div onclick="openPage('midias.html',this)">Mídias</div>
+  <div onclick="openPage('relatorios.html',this)">Relatórios</div>
+</div>
   <div class="main">
     <div class="header">
       <span id="pageTitle">CB SYSTEMS® - Dashboard</span>
@@ -629,7 +662,9 @@ window.openLogin = openLogin;
 window.closeLogin = closeLogin;
 
 
-
+function toggleMoreMenu(){
+  document.getElementById("moreMenu").classList.toggle("open");
+}
 
 
   
