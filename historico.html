@@ -2,8 +2,14 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Auditoria • Sistema CMV</title>
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1,
+maximum-scale=1,
+minimum-scale=1,
+user-scalable=no,
+viewport-fit=cover"/>
+  <title>Auditoria • Sistema CMV</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -222,6 +228,92 @@ tr:hover{background:#f8fafc}
   display:none;
   font-weight:600;
 }
+/* ================= MOBILE OTIMIZADO ================= */
+
+@media(max-width:900px){
+
+  .container{
+    padding:25px 15px;
+  }
+
+  h1{
+    font-size:24px;
+  }
+
+  .subtitle{
+    font-size:13px;
+    margin-bottom:20px;
+  }
+
+  /* Cards 2 por linha */
+  .cards{
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+  }
+
+  .card{
+    padding:18px;
+  }
+
+  .card strong{
+    font-size:22px;
+  }
+
+  /* Filtros empilhados */
+  .filters{
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px;
+  }
+
+  input,select,button{
+    width:100%;
+  }
+
+  /* Tabela rolável horizontal */
+  .table-wrap{
+    overflow:auto;
+  }
+
+  table{
+    min-width:700px;
+  }
+
+  th,td{
+    padding:12px;
+    font-size:12px;
+  }
+
+  /* Botões da tabela empilhados */
+  td[style]{
+    flex-direction:column !important;
+    gap:6px !important;
+  }
+
+  /* Modal ajustado */
+  .modal-box{
+    padding:20px;
+    border-radius:18px;
+  }
+
+  .modal-header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+
+  .value{
+    font-size:12px;
+  }
+
+  .toast{
+    right:10px;
+    left:10px;
+    bottom:15px;
+    text-align:center;
+  }
+
+}
 </style>
 </head>
 
@@ -411,6 +503,28 @@ async function restaurarGrupo(timestamp){
 
 carregar();
 </script>
+<script>
+/* Bloqueia pinch zoom */
+document.addEventListener('gesturestart', function (e) {
+  e.preventDefault();
+});
 
+/* Bloqueia duplo toque */
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function (event) {
+  const now = (new Date()).getTime();
+  if (now - lastTouchEnd <= 300) {
+    event.preventDefault();
+  }
+  lastTouchEnd = now;
+}, false);
+
+/* Bloqueia ctrl + scroll */
+document.addEventListener('wheel', function(e){
+  if(e.ctrlKey){
+    e.preventDefault();
+  }
+},{ passive:false });
+</script>
 </body>
 </html>
