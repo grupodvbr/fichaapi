@@ -104,12 +104,15 @@ html,body{
   display:flex;
   gap:10px;
   margin-bottom:10px;
+  align-items:flex-end;
+  flex-wrap:nowrap; /* NÃO QUEBRA LINHA */
 }
 
 .filter-group{
   display:flex;
   flex-direction:column;
   flex:1;
+  min-width:0; /* impede quebra estranha */
 }
 
 .filter-group label{
@@ -133,6 +136,7 @@ html,body{
 .filter-button{
   display:flex;
   align-items:flex-end;
+  flex:0 0 auto;
 }
 
 .filter-button button{
@@ -146,22 +150,6 @@ html,body{
   flex:2;
 }
 
-/* MOBILE */
-@media(max-width:768px){
-
-  .filter-row{
-    flex-direction:column;
-  }
-
-  .filter-button{
-    width:100%;
-  }
-
-  .filter-button button{
-    width:100%;
-  }
-
-}
 
 .btn-primary{background:var(--primary);color:#fff}
 .btn-danger{background:var(--danger);color:#fff}
