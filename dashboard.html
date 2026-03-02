@@ -351,10 +351,11 @@ iframe{
     display:none;
   }
 
-  /* Mostra botão Mais no mobile */
+@media(max-width:900px){
   .more-btn{
-    display:flex;
+    display:flex !important;
   }
+}
 
 }
 
@@ -741,7 +742,10 @@ function openPage(page, el){
   document.querySelectorAll(".mobile-selected").forEach(e=>e.remove());
 
 document.querySelectorAll(".sidebar .icon").forEach(i=>{
-  if(!i.classList.contains("more-btn")){
+  if(
+    !i.classList.contains("more-btn") &&
+    !i.classList.contains("extra")
+  ){
     i.style.display = "";
   }
 });
