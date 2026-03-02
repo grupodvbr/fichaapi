@@ -326,10 +326,10 @@ iframe{
     letter-spacing:.02em;
   }
 
-  .icon .glyph{
-    width:20px;
-    height:20px;
-  }
+ .icon .glyph{
+  width:22px;
+  height:22px;
+}
 
   /* Ativo elegante */
 
@@ -463,7 +463,35 @@ iframe{
     0 -6px 0 #00a6a0,
     0 -12px 0 #00a6a0;
 }
+/* ================= PLUS GLYPH ================= */
 
+.glyph.plus{
+  position:relative;
+}
+
+.glyph.plus::before,
+.glyph.plus::after{
+  content:"";
+  position:absolute;
+  background:#22c55e;
+  border-radius:2px;
+}
+
+.glyph.plus::before{
+  width:18px;
+  height:3px;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+}
+
+.glyph.plus::after{
+  width:3px;
+  height:18px;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+}
 
 
 /* ================= MENU MAIS ================= */
@@ -621,7 +649,7 @@ iframe{
 
 <!-- BOTÃO MAIS (SÓ MOBILE) -->
 <div class="icon more-btn" onclick="toggleMoreMenu()">
-  <span class="glyph box"></span>
+  <span class="glyph plus"></span>
   <small>Mais</small>
 </div>
 
@@ -684,9 +712,11 @@ function openPage(page, el){
   // 🔥 RESTAURA NAVBAR SE ESTIVER EM MODO SELECIONADO
   document.querySelectorAll(".mobile-selected").forEach(e=>e.remove());
 
-  document.querySelectorAll(".sidebar .icon").forEach(i=>{
+document.querySelectorAll(".sidebar .icon").forEach(i=>{
+  if(!i.classList.contains("more-btn")){
     i.style.display = "";
-  });
+  }
+});
 
   document.getElementById("moreMenu").classList.remove("open");
 
