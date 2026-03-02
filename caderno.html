@@ -16,120 +16,138 @@
   --text:#0f172a;
   --muted:#6b7280;
   --border:#e5e7eb;
-  --radius:14px;
+  --radius:12px;
 }
 
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
-body{
+html,body{
   margin:0;
+  padding:0;
   font-family:Inter,sans-serif;
   background:var(--bg);
   color:var(--text);
+  -webkit-font-smoothing:antialiased;
 }
 
-/* HEADER COMPACTO */
+/* ================= HEADER ULTRA COMPACTO ================= */
+
 .header{
   background:#fff;
-  padding:8px 12px;
+  padding:6px 10px;
   display:grid;
-  grid-template-columns:1fr 140px auto;
-  gap:8px;
+  grid-template-columns:1fr 120px auto;
+  gap:6px;
   align-items:center;
   border-bottom:1px solid var(--border);
   position:sticky;
   top:0;
-  z-index:20;
+  z-index:50;
 }
 
 /* BUSCA */
 .header input{
-  height:34px;
-  border-radius:8px;
+  height:30px;
+  border-radius:6px;
   border:1px solid var(--border);
-  padding:0 10px;
-  font-size:12px;
+  padding:0 8px;
+  font-size:11px;
   font-weight:600;
   background:#f9fafb;
+  outline:none;
+}
+
+.header input:focus{
+  border-color:var(--primary);
 }
 
 /* SELECT */
 .header select{
-  height:34px;
-  border-radius:8px;
+  height:30px;
+  border-radius:6px;
   border:1px solid var(--border);
-  padding:0 8px;
-  font-size:12px;
+  padding:0 6px;
+  font-size:11px;
   font-weight:600;
   background:#f9fafb;
+  outline:none;
 }
 
 /* BOTÃO */
 .header button{
-  height:34px;
-  padding:0 12px;
-  border-radius:8px;
+  height:30px;
+  padding:0 10px;
+  border-radius:6px;
   border:none;
   background:var(--primary);
   color:#fff;
-  font-size:11px;
+  font-size:10px;
   font-weight:700;
   cursor:pointer;
   white-space:nowrap;
+  transition:.2s ease;
 }
 
-/* MOBILE ULTRA AJUSTADO */
+.header button:hover{
+  opacity:.85;
+}
+
+/* MOBILE HEADER */
 @media(max-width:600px){
   .header{
     grid-template-columns:1fr auto;
   }
 
   .header select{
-    display:none; /* economiza espaço */
+    display:none;
   }
 }
 
-/* CONTAINER */
+/* ================= CONTAINER ================= */
+
 .container{
   padding:14px;
   max-width:1100px;
   margin:auto;
 }
 
-/* CARD */
+/* ================= CARD ================= */
+
 .card{
   background:var(--card);
   border-radius:var(--radius);
-  padding:18px;
-  margin-bottom:18px;
-  box-shadow:0 8px 30px rgba(0,0,0,.05);
+  padding:16px;
+  margin-bottom:16px;
   border:1px solid var(--border);
+  box-shadow:0 6px 20px rgba(0,0,0,.04);
 }
 
-/* HEADER CARD */
+/* HEADER DO CARD */
 .card-header{
   display:grid;
-  grid-template-columns:140px 1fr;
-  gap:16px;
+  grid-template-columns:120px 1fr;
+  gap:14px;
   align-items:start;
 }
 
 .card img{
   width:100%;
-  height:120px;
+  height:110px;
   object-fit:cover;
-  border-radius:10px;
+  border-radius:8px;
   background:#000;
 }
 
 .card h2{
   margin:0 0 4px;
-  font-size:18px;
+  font-size:16px;
   font-weight:800;
 }
 
 .card-header div > div{
-  font-size:13px;
+  font-size:12px;
   color:var(--muted);
 }
 
@@ -137,67 +155,71 @@ body{
 .badges{
   display:flex;
   flex-wrap:wrap;
-  gap:6px;
-  margin-top:8px;
+  gap:5px;
+  margin-top:6px;
 }
 
 .badge{
   background:#eef2ff;
-  padding:4px 8px;
+  padding:3px 7px;
   border-radius:999px;
-  font-size:11px;
+  font-size:10px;
   font-weight:700;
 }
 
-/* GRID FINANCEIRO */
+/* ================= GRID FINANCEIRO ================= */
+
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-  gap:8px;
-  margin-top:14px;
+  grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+  gap:6px;
+  margin-top:12px;
 }
 
 .box{
   background:#f9fafb;
-  padding:8px 10px;
-  border-radius:8px;
-  font-size:12px;
+  padding:7px 8px;
+  border-radius:7px;
+  font-size:11px;
 }
 
 .box b{
-  font-size:11px;
+  font-size:10px;
   color:var(--muted);
   display:block;
   margin-bottom:2px;
 }
 
-/* SECTIONS */
+/* ================= SECTIONS ================= */
+
 .section-title{
-  margin-top:18px;
-  margin-bottom:8px;
+  margin-top:16px;
+  margin-bottom:6px;
   font-weight:800;
-  font-size:13px;
+  font-size:12px;
 }
 
-/* TABLE */
+/* ================= TABLE ================= */
+
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:12px;
+  font-size:11px;
 }
 
 th{
   background:#f3f4f6;
-  font-size:10px;
+  font-size:9px;
   text-transform:uppercase;
   color:var(--muted);
-  padding:6px;
+  padding:5px;
+  text-align:left;
 }
 
 td{
-  padding:6px;
+  padding:5px;
   border-bottom:1px solid var(--border);
-  font-size:12px;
+  font-size:11px;
 }
 
 .total-row{
@@ -205,19 +227,9 @@ td{
   font-weight:800;
 }
 
-/* MOBILE AJUSTES */
+/* ================= RESPONSIVO ================= */
+
 @media(max-width:700px){
-
-  .header{
-    flex-direction:column;
-    align-items:stretch;
-  }
-
-  .header input,
-  .header select,
-  .header button{
-    width:100%;
-  }
 
   .card{
     padding:14px;
@@ -228,11 +240,11 @@ td{
   }
 
   .card img{
-    height:180px;
+    height:160px;
   }
 
   .card h2{
-    font-size:16px;
+    font-size:15px;
   }
 
   .grid{
@@ -240,22 +252,27 @@ td{
   }
 
   table{
-    font-size:11px;
+    font-size:10px;
   }
 
   th{
-    font-size:9px;
+    font-size:8px;
   }
 
   td{
-    font-size:11px;
+    font-size:10px;
   }
 }
 
-/* PRINT */
+/* ================= PRINT ================= */
+
 @media print{
-  .header{display:none}
-  .card{page-break-after:always}
+  .header{
+    display:none;
+  }
+  .card{
+    page-break-after:always;
+  }
 }
 </style>
 </head>
