@@ -183,7 +183,9 @@ main.container {
       <div>Sistema de Ficha Técnica & CMV</div>
     </div>
     <div class="cta">
-      <button class="btn"><i class="ri-live-line"></i> Demo</button>
+<a class="btn" href="https://wa.me/5577998253249" target="_blank">
+  <i class="ri-whatsapp-line"></i> Solicitar Orçamento
+</a>
       <button class="btn primary"><i class="ri-rocket-2-line"></i> Começar</button>
     </div>
   </div>
@@ -295,6 +297,142 @@ main.container {
 </main>
 
 <script>
+
+
+  const receitas = {
+
+"Arroz Oriental":{
+img:"https://images.unsplash.com/photo-1604908177225-9f78c8f9f6e5?q=80&w=1200&auto=format&fit=crop",
+descricao:"Arroz japonês salteado com legumes frescos e molho shoyu artesanal.",
+ingredientes:[
+["Arroz japonês","200g","R$ 2,20"],
+["Cenoura","50g","R$ 0,40"],
+["Ervilha","40g","R$ 0,35"],
+["Shoyu","30ml","R$ 0,55"],
+["Óleo de gergelim","10ml","R$ 0,30"]
+],
+custo:6.80,
+venda:29.90,
+modo:"Cozinhar o arroz. Saltear os legumes. Incorporar o shoyu e finalizar com óleo de gergelim.",
+nutri:["Calorias 420 kcal","Proteínas 8g","Carboidratos 78g","Gorduras 9g","Fibras 4g","Sódio 620mg"]
+},
+
+"Carpaccio de Salmão":{
+img:"https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop",
+descricao:"Salmão fresco laminado, alcaparras, azeite extravirgem e toque cítrico.",
+ingredientes:[
+["Salmão fresco","150g","R$ 14,50"],
+["Alcaparras","20g","R$ 1,20"],
+["Azeite","20ml","R$ 1,10"],
+["Limão siciliano","1 un","R$ 1,70"]
+],
+custo:18.50,
+venda:69.90,
+modo:"Laminado fino, finalizar com azeite, alcaparras e raspas de limão.",
+nutri:["Calorias 360 kcal","Proteínas 34g","Carboidratos 4g","Gorduras 22g","Fibras 1g","Sódio 480mg"]
+},
+
+"Whisky Sour":{
+img:"https://images.unsplash.com/photo-1551024709-8f23befc6cf7?q=80&w=1200&auto=format&fit=crop",
+descricao:"Coquetel clássico com whisky, limão e açúcar.",
+ingredientes:[
+["Whisky","50ml","R$ 5,80"],
+["Suco de limão","30ml","R$ 0,60"],
+["Açúcar","15g","R$ 0,20"],
+["Gelo","—","R$ 0,60"]
+],
+custo:7.20,
+venda:32.00,
+modo:"Agitar na coqueteleira com gelo e servir coado.",
+nutri:["Calorias 210 kcal","Proteínas 0g","Carboidratos 12g","Gorduras 0g","Fibras 0g","Sódio 5mg"]
+},
+
+"Cosmopolitan":{
+img:"https://images.unsplash.com/photo-1523905330026-b8bd1f5f320e?q=80&w=1200&auto=format&fit=crop",
+descricao:"Vodka premium, cranberry e triple sec.",
+ingredientes:[
+["Vodka","50ml","R$ 4,80"],
+["Cranberry","40ml","R$ 1,10"],
+["Triple Sec","20ml","R$ 0,70"],
+["Limão","1 un","R$ 0,30"]
+],
+custo:6.90,
+venda:34.00,
+modo:"Bater com gelo e servir em taça martini.",
+nutri:["Calorias 190 kcal","Proteínas 0g","Carboidratos 14g","Gorduras 0g","Fibras 0g","Sódio 3mg"]
+},
+
+"Guioza":{
+img:"https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?q=80&w=1200&auto=format&fit=crop",
+descricao:"Guioza artesanal recheado com carne suína temperada.",
+ingredientes:[
+["Massa guioza","10 un","R$ 3,20"],
+["Carne suína","150g","R$ 4,80"],
+["Cebolinha","20g","R$ 0,50"],
+["Gengibre","10g","R$ 0,40"],
+["Shoyu","20ml","R$ 0,90"]
+],
+custo:9.80,
+venda:39.90,
+modo:"Rechear, selar na frigideira e finalizar no vapor.",
+nutri:["Calorias 480 kcal","Proteínas 28g","Carboidratos 50g","Gorduras 18g","Fibras 3g","Sódio 710mg"]
+}
+
+};
+
+document.querySelectorAll('.card').forEach(card=>{
+card.addEventListener('click',()=>{
+const nome = card.querySelector('.t').innerText;
+abrirFicha(nome);
+});
+});
+
+function abrirFicha(nome){
+const r = receitas[nome];
+if(!r) return;
+
+const lucro = r.venda - r.custo;
+const cmv = (r.custo / r.venda) * 100;
+const margem = (lucro / r.venda) * 100;
+
+document.getElementById("modalTitulo").innerText = nome;
+document.getElementById("modalImagem").src = r.img;
+document.getElementById("modalDescricao").innerText = r.descricao;
+document.getElementById("modalModo").innerText = r.modo;
+
+document.getElementById("modalKpis").innerHTML = `
+<div class="stat"><div class="v">R$ ${r.custo.toFixed(2)}</div><div class="l">Custo</div></div>
+<div class="stat"><div class="v">R$ ${r.venda.toFixed(2)}</div><div class="l">Venda</div></div>
+<div class="stat"><div class="v">${cmv.toFixed(1)}%</div><div class="l">CMV</div></div>
+<div class="stat"><div class="v">${margem.toFixed(1)}%</div><div class="l">Margem</div></div>
+`;
+
+document.getElementById("modalTabela").innerHTML = `
+<tr style="border-bottom:1px solid #1f2a44">
+<th align="left">Ingrediente</th>
+<th align="left">Qtd</th>
+<th align="left">Custo</th>
+</tr>
+${r.ingredientes.map(i=>`
+<tr style="border-bottom:1px solid #1f2a44">
+<td>${i[0]}</td>
+<td>${i[1]}</td>
+<td>${i[2]}</td>
+</tr>
+`).join("")}
+`;
+
+document.getElementById("modalNutri").innerHTML =
+r.nutri.map(n=>`
+<div class="stat"><div class="v">${n}</div></div>
+`).join("");
+
+document.getElementById("modalFicha").style.display="flex";
+}
+
+function fecharModal(){
+document.getElementById("modalFicha").style.display="none";
+}
 let index = 0;
 function move(dir){
   const track = document.getElementById('track');
@@ -328,6 +466,75 @@ document.addEventListener("click", () => {
     requestFull();
   }
 }, { once:true });
+
 </script>
+
+<div id="modalFicha" style="
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.85);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:9999;
+backdrop-filter:blur(8px);
+">
+
+<div style="
+width:96vw;
+max-width:1400px;
+max-height:92vh;
+overflow:auto;
+background:linear-gradient(180deg,#0b1a33,#081428);
+border-radius:22px;
+padding:30px;
+border:1px solid #1f2a44;
+box-shadow:0 60px 140px rgba(0,0,0,.8);
+">
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+<h2 id="modalTitulo" style="font-size:28px"></h2>
+<button onclick="fecharModal()" style="
+background:#ef4444;
+border:none;
+color:#fff;
+padding:8px 16px;
+border-radius:10px;
+cursor:pointer;
+font-weight:600;
+">Fechar</button>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1.3fr;gap:30px">
+
+<div>
+<img id="modalImagem" style="
+width:100%;
+height:320px;
+object-fit:cover;
+border-radius:16px;
+border:1px solid #1f2a44;
+">
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:15px" id="modalKpis"></div>
+</div>
+
+<div>
+<p id="modalDescricao" style="color:#94a3b8;margin-bottom:20px"></p>
+
+<h3>Ingredientes</h3>
+<table style="width:100%;margin-top:10px;border-collapse:collapse" id="modalTabela"></table>
+
+<h3 style="margin-top:25px">Modo de Preparo</h3>
+<p id="modalModo" style="color:#cbd5e1"></p>
+
+<h3 style="margin-top:25px">Tabela Nutricional (estimada)</h3>
+<div id="modalNutri" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px"></div>
+
+</div>
+
+</div>
+</div>
+</div>
 </body>
 </html>
