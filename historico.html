@@ -169,19 +169,89 @@ th{
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.6);
+  background:rgba(15,23,42,.55);
+  backdrop-filter:blur(4px);
   display:none;
   align-items:center;
   justify-content:center;
+  padding:20px;
+  z-index:999;
 }
 
 .modal-box{
   background:#fff;
-  width:95%;
-  max-height:85vh;
+  width:100%;
+  max-width:680px;
+  border-radius:18px;
+  box-shadow:0 25px 80px rgba(0,0,0,.25);
+  overflow:hidden;
+  animation:fadeIn .18s ease;
+}
+
+.modal-header{
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-weight:700;
+  font-size:14px;
+}
+
+.modal-body{
+  padding:20px;
+  max-height:65vh;
   overflow:auto;
-  border-radius:16px;
-  padding:16px;
+}
+
+.modal-close{
+  cursor:pointer;
+  font-size:13px;
+  background:#f1f5f9;
+  border:none;
+  padding:6px 12px;
+  border-radius:8px;
+}
+
+.info-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-bottom:16px;
+}
+
+.info-box{
+  background:#f8fafc;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 12px;
+}
+
+.info-box small{
+  display:block;
+  font-size:9px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:4px;
+}
+
+.info-box strong{
+  font-size:12px;
+  word-break:break-word;
+}
+
+.json-block{
+  background:#0f172a;
+  color:#e2e8f0;
+  border-radius:10px;
+  padding:14px;
+  font-size:11px;
+  overflow:auto;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
 }
 
 .toast{
@@ -261,10 +331,13 @@ th{
 </div>
 
 <div class="modal" id="modal">
-<div class="modal-box">
-<button onclick="fechar()">Fechar</button>
-<div id="conteudo"></div>
-</div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <span>Detalhes da Alteração</span>
+      <button class="modal-close" onclick="fechar()">Fechar</button>
+    </div>
+    <div class="modal-body" id="conteudo"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -379,7 +452,41 @@ function atualizarGrafico(dias){
 
 function ver(item){
   document.getElementById("modal").style.display="flex";
-  conteudo.innerHTML=`<pre>${JSON.stringify(item,null,2)}</pre>`;
+
+  const formatData = new Date(item.alterado_em).toLocaleString();
+
+  conteudo.innerHTML = `
+    <div class="info-grid">
+      <div class="info-box">
+        <small>Data</small>
+        <strong>${formatData}</strong>
+      </div>
+
+      <div class="info-box">
+        <small>Tabela</small>
+        <strong>${item.tabela}</strong>
+      </div>
+
+      <div class="info-box">
+        <small>Operação</small>
+        <strong>${item.operacao}</strong>
+      </div>
+
+      <div class="info-box">
+        <small>ID Registro</small>
+        <strong>${item.registro_id}</strong>
+      </div>
+    </div>
+
+    <div>
+      <small style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase;">
+        Dados completos
+      </small>
+      <div class="json-block">
+        ${JSON.stringify(item,null,2)}
+      </div>
+    </div>
+  `;
 }
 
 async function restaurar(id){
