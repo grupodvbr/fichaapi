@@ -90,15 +90,39 @@ html,body{
   margin-top:4px;
 }
 
-/* FILTROS */
+/* ================= FILTROS NOVO ================= */
+
 .filters{
-  display:grid;
-  gap:8px;
-  margin-bottom:15px;
+  background:#fff;
+  padding:14px;
+  border-radius:var(--radius);
+  margin-bottom:16px;
+  box-shadow:0 5px 15px rgba(0,0,0,.05);
 }
 
-.filters input,
-.filters select{
+.filter-row{
+  display:flex;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.filter-group{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+}
+
+.filter-group label{
+  font-size:10px;
+  font-weight:700;
+  color:var(--muted);
+  margin-bottom:4px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+.filter-group input,
+.filter-group select{
   padding:8px 10px;
   border-radius:10px;
   border:1px solid var(--border);
@@ -106,13 +130,37 @@ html,body{
   width:100%;
 }
 
-button{
-  border:none;
-  padding:8px;
+.filter-button{
+  display:flex;
+  align-items:flex-end;
+}
+
+.filter-button button{
+  height:36px;
+  padding:0 18px;
   border-radius:10px;
-  font-weight:700;
-  font-size:12px;
-  cursor:pointer;
+}
+
+/* Campo de busca cresce */
+.grow{
+  flex:2;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+
+  .filter-row{
+    flex-direction:column;
+  }
+
+  .filter-button{
+    width:100%;
+  }
+
+  .filter-button button{
+    width:100%;
+  }
+
 }
 
 .btn-primary{background:var(--primary);color:#fff}
@@ -230,16 +278,42 @@ th{
 </div>
 
 <div class="filters">
-  <input type="date" id="dataInicio">
-  <input type="date" id="dataFim">
-  <select id="filtroOperacao">
-    <option value="">Todas</option>
-    <option value="INSERT">INSERT</option>
-    <option value="UPDATE">UPDATE</option>
-    <option value="DELETE">DELETE</option>
-  </select>
-  <input type="text" id="buscaId" placeholder="Buscar ID">
-  <button class="btn-primary" onclick="carregar()">Filtrar</button>
+
+  <!-- LINHA 1 -->
+  <div class="filter-row">
+    <div class="filter-group">
+      <label>Data Inicial</label>
+      <input type="date" id="dataInicio">
+    </div>
+
+    <div class="filter-group">
+      <label>Data Final</label>
+      <input type="date" id="dataFim">
+    </div>
+
+    <div class="filter-group">
+      <label>Operação</label>
+      <select id="filtroOperacao">
+        <option value="">Todas</option>
+        <option value="INSERT">INSERT</option>
+        <option value="UPDATE">UPDATE</option>
+        <option value="DELETE">DELETE</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- LINHA 2 -->
+  <div class="filter-row">
+    <div class="filter-group grow">
+      <label>Buscar ID</label>
+      <input type="text" id="buscaId" placeholder="Digite o ID...">
+    </div>
+
+    <div class="filter-button">
+      <button class="btn-primary" onclick="carregar()">Aplicar</button>
+    </div>
+  </div>
+
 </div>
 
 <div class="chart-box">
