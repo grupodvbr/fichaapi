@@ -841,14 +841,19 @@ button{
 
   box-shadow:0 12px 30px rgba(37,99,235,.4);
 
-  display:none;
-  cursor:pointer;
-  transition:.2s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  opacity:0;
+  pointer-events:none;
+  transition:.25s ease;
   z-index:60;
 }
 
-#btnTop:hover{
-  transform:translateY(-3px);
+#btnTop.show{
+  opacity:1;
+  pointer-events:auto;
 }
    
 </style>
@@ -2216,15 +2221,15 @@ window.addEventListener("scroll", () => {
    SCROLL BUTTON
 ========================= */
 
-const btnTop = document.getElementById("btnTop");
-
 window.addEventListener("scroll", () => {
 
-  // mostra botão depois de 500px
-  if (window.scrollY > 500) {
-    btnTop.style.display = "block";
+  const btnTop = document.getElementById("btnTop");
+  if (!btnTop) return;
+
+  if (window.scrollY > 400) {
+    btnTop.classList.add("show");
   } else {
-    btnTop.style.display = "none";
+    btnTop.classList.remove("show");
   }
 
 });
