@@ -553,25 +553,60 @@ function novo(){
   return qtd;
 }
 async function salvar(){
-const valorPago = Number(valor.value.replace(/\D/g,""))/100;
-const qtdRef = Number(quantidade_referencia.value || 0);
-const unidadeBase = unidade.value;
 
-let custoBase = null;
+  const valorDigitado = Number(valor.value.replace(/\D/g,""))/100;
+  const qtdRef = Number(quantidade_referencia.value || 0);
+  const unidadeSelecionada = unidade.value;
 
-if(valorPago > 0 && qtdRef > 0){
-  const qtdConvertida = converterParaBase(qtdRef, unidadeBase);
-  custoBase = valorPago / qtdConvertida;
-}
+  if(!valorDigitado || !qtdRef){
+    toast("INFORME VALOR E QUANTIDADE");
+    return;
+  }
 
-const payload={
-  nome:nome.value,
-  descricao:descricao.value,
-  unidade_medida:unidadeBase,
-  valor:valorPago,
-  quantidade_referencia:qtdRef,
-  custo_unitario_base:custoBase,
-  rendimento_percentual:Number(rendimento.value),
+  let valorConvertido = valorDigitado;
+
+  /* ================================
+     CONVERSÃO PARA UNIDADE BASE
+  ================================= */
+
+  if(unidadeSelecionada === "ML"){
+    // converte para litro
+    const litros = qtdRef / 1000;
+    valorConvertido = valorDigitado / litros;
+  }
+
+  if(unidadeSelecionada === "G"){
+    // converte para kg
+    const kg = qtdRef / 1000;
+    valorConvertido = valorDigitado / kg;
+  }
+
+  if(unidadeSelecionada === "L"){
+    valorConvertido = valorDigitado / qtdRef;
+  }
+
+  if(unidadeSelecionada === "KG"){
+    valorConvertido = valorDigitado / qtdRef;
+  }
+
+  if(unidadeSelecionada === "UN"){
+    valorConvertido = valorDigitado / qtdRef;
+  }
+
+  /* ================================
+     PAYLOAD FINAL
+  ================================= */
+
+  const payload={
+    nome:nome.value,
+    descricao:descricao.value,
+    unidade_medida:unidadeSelecionada,
+
+    // 🔥 AGORA SALVA SEMPRE PREÇO BASE
+    valor:valorConvertido,
+
+    quantidade_referencia:qtdRef,
+    rendimento_percentual:Number(rendimento.value),
 
     energia_kcal:+energia_kcal.value||0,
     carboidratos:+carboidratos.value||0,
@@ -586,20 +621,17 @@ const payload={
   };
 
   if(atual){
-    // EDITANDO
     await sb.from("produtos").update(payload).eq("id",atual.id);
     toast("EDITADO COM SUCESSO");
   }else{
-    // NOVO CADASTRO
-    const {data}=await sb.from("produtos").insert(payload).select().single();
+    await sb.from("produtos").insert(payload);
     toast("SALVO COM SUCESSO");
 
-    // 👉 LIMPA FORMULÁRIO APÓS SALVAR NOVO
-    atual = null;
-    titulo.textContent = "NOVO INGREDIENTE";
-    document.querySelectorAll("input").forEach(i => i.value = "");
-    unidade.value = "UN";
-    rendimento.value = 100;
+    atual=null;
+    titulo.textContent="NOVO INGREDIENTE";
+    document.querySelectorAll("input").forEach(i=>i.value="");
+    unidade.value="UN";
+    rendimento.value=100;
   }
 
   carregar(true);
