@@ -13,7 +13,7 @@ viewport-fit=cover"/>
 
 <title>Auditoria • CMV</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -25,58 +25,51 @@ viewport-fit=cover"/>
 :root{
   --primary:#2563eb;
   --danger:#dc2626;
-  --success:#16a34a;
-  --bg:#f4f6fb;
+  --bg:#f5f7fb;
   --card:#ffffff;
   --text:#0f172a;
   --muted:#64748b;
   --border:#e5e7eb;
-  --radius:16px;
 }
 
 *{box-sizing:border-box}
 
-html,body{
+body{
   margin:0;
-  font-family:Inter,system-ui;
+  font-family:Inter;
   background:var(--bg);
   color:var(--text);
-  overflow-x:hidden;
 }
 
+/* HEADER */
 .header{
-  padding:16px;
+  padding:14px 18px;
   background:#fff;
   border-bottom:1px solid var(--border);
-  position:sticky;
-  top:0;
-  z-index:10;
+  font-size:15px;
+  font-weight:700;
 }
 
-.header h1{
-  margin:0;
-  font-size:18px;
-  font-weight:800;
-}
-
+/* CONTAINER */
 .container{
-  padding:16px;
-  max-width:1200px;
+  max-width:1100px;
   margin:auto;
+  padding:16px;
 }
 
+/* CARDS */
 .cards{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-bottom:16px;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-bottom:14px;
 }
 
 .card{
-  background:var(--card);
-  padding:14px;
-  border-radius:var(--radius);
-  box-shadow:0 5px 15px rgba(0,0,0,.05);
+  background:#fff;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--border);
   text-align:center;
 }
 
@@ -86,16 +79,18 @@ html,body{
 }
 
 .card strong{
+  font-size:16px;
   display:block;
-  font-size:18px;
-  margin-top:4px;
+  margin-top:2px;
+  font-weight:700;
 }
 
+/* FILTROS */
 .filters{
   display:grid;
   grid-template-columns:2fr 1fr;
-  gap:12px;
-  margin-bottom:16px;
+  gap:8px;
+  margin-bottom:14px;
 }
 
 .filter-group{
@@ -104,72 +99,91 @@ html,body{
 }
 
 .filter-group label{
-  font-size:11px;
-  font-weight:700;
+  font-size:9px;
   color:var(--muted);
-  margin-bottom:6px;
+  margin-bottom:3px;
+  font-weight:600;
   text-transform:uppercase;
 }
 
 .filter-group input,
 .filter-group select{
-  height:44px;
-  padding:0 14px;
-  border-radius:12px;
+  height:34px;
   border:1px solid var(--border);
-  font-size:14px;
+  border-radius:8px;
+  padding:0 10px;
+  font-size:12px;
   background:#fff;
 }
 
+.filter-group input:focus,
+.filter-group select:focus{
+  outline:none;
+  border-color:var(--primary);
+}
+
+/* CHART */
 .chart-box{
   background:#fff;
+  border-radius:10px;
+  border:1px solid var(--border);
   padding:10px;
-  border-radius:var(--radius);
-  margin-bottom:15px;
-  box-shadow:0 5px 15px rgba(0,0,0,.05);
+  margin-bottom:14px;
 }
 
+/* TABELA */
 .table-wrap{
   background:#fff;
-  border-radius:var(--radius);
+  border-radius:10px;
+  border:1px solid var(--border);
   overflow:auto;
-  box-shadow:0 5px 15px rgba(0,0,0,.05);
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:11px;
-  min-width:600px;
-}
-
-th,td{
-  padding:8px;
-  border-bottom:1px solid var(--border);
+  font-size:12px;
 }
 
 th{
-  font-size:9px;
+  background:#f8fafc;
+  font-size:10px;
   text-transform:uppercase;
   color:var(--muted);
-  background:#f8fafc;
+  padding:8px;
+}
+
+td{
+  padding:8px;
+  border-top:1px solid var(--border);
 }
 
 .badge{
+  font-size:9px;
   padding:3px 6px;
-  border-radius:999px;
-  font-size:8px;
-  font-weight:800;
+  border-radius:6px;
+  font-weight:600;
 }
 
 .insert{background:#dcfce7;color:#166534}
-.update{background:#fef9c3;color:#854d0e}
+.update{background:#fef3c7;color:#92400e}
 .delete{background:#fee2e2;color:#991b1b}
+
+button{
+  font-size:10px;
+  padding:4px 8px;
+  border-radius:6px;
+  border:none;
+  cursor:pointer;
+}
+
+.btn-view{background:#e2e8f0}
+.btn-restore{background:var(--danger);color:#fff}
 
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.6);
+  background:rgba(0,0,0,.5);
   display:none;
   align-items:center;
   justify-content:center;
@@ -178,10 +192,11 @@ th{
 .modal-box{
   background:#fff;
   width:95%;
-  max-height:85vh;
+  max-width:600px;
+  max-height:80vh;
   overflow:auto;
-  border-radius:16px;
   padding:16px;
+  border-radius:10px;
 }
 
 .toast{
@@ -189,45 +204,44 @@ th{
   bottom:15px;
   left:50%;
   transform:translateX(-50%);
-  background:#0f172a;
+  background:#111827;
   color:#fff;
-  padding:8px 14px;
-  border-radius:8px;
+  padding:6px 12px;
+  border-radius:6px;
   display:none;
   font-size:11px;
 }
 
-@media(min-width:900px){
-  .cards{ grid-template-columns:repeat(4,1fr); }
+/* MOBILE */
+@media(max-width:900px){
+  .cards{grid-template-columns:1fr 1fr}
 }
 
-@media(max-width:768px){
-  .filters{ grid-template-columns:1fr; }
+@media(max-width:600px){
+  .filters{grid-template-columns:1fr}
+  .cards{grid-template-columns:1fr}
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  <h1>📊 Auditoria CMV</h1>
-</div>
+<div class="header">Auditoria CMV</div>
 
 <div class="container">
 
 <div class="cards">
   <div class="card"><small>Total</small><strong id="total">0</strong></div>
-  <div class="card"><small>Inserts</small><strong id="ins">0</strong></div>
-  <div class="card"><small>Updates</small><strong id="upd">0</strong></div>
-  <div class="card"><small>Deletes</small><strong id="del">0</strong></div>
+  <div class="card"><small>Insert</small><strong id="ins">0</strong></div>
+  <div class="card"><small>Update</small><strong id="upd">0</strong></div>
+  <div class="card"><small>Delete</small><strong id="del">0</strong></div>
 </div>
 
 <div class="filters">
   <div class="filter-group">
     <label>Período</label>
-    <input type="text" id="rangeData" placeholder="Selecione o período">
+    <input type="text" id="rangeData">
   </div>
-
   <div class="filter-group">
     <label>Operação</label>
     <select id="filtroOperacao">
@@ -240,7 +254,7 @@ th{
 </div>
 
 <div class="chart-box">
-  <canvas id="grafico" height="70"></canvas>
+  <canvas id="grafico" height="60"></canvas>
 </div>
 
 <div class="table-wrap">
@@ -251,7 +265,7 @@ th{
 <th>Tabela</th>
 <th>Op</th>
 <th>ID</th>
-<th>Ações</th>
+<th></th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
@@ -283,7 +297,7 @@ function toast(msg){
   const t=document.getElementById("toast");
   t.innerText=msg;
   t.style.display="block";
-  setTimeout(()=>t.style.display="none",3000);
+  setTimeout(()=>t.style.display="none",2500);
 }
 
 function fechar(){
@@ -291,15 +305,12 @@ function fechar(){
 }
 
 flatpickr("#rangeData", {
-  mode: "range",
-  dateFormat: "Y-m-d",
-  locale: "pt",
-  defaultDate: [
-    new Date().fp_incr(-7),
-    new Date()
-  ],
-  onClose: function(selectedDates){
-    if(selectedDates.length === 2){
+  mode:"range",
+  dateFormat:"Y-m-d",
+  locale:"pt",
+  defaultDate:[new Date().fp_incr(-7), new Date()],
+  onClose:function(selectedDates){
+    if(selectedDates.length===2){
       dataInicioGlobal = selectedDates[0].toISOString().slice(0,10);
       dataFimGlobal = selectedDates[1].toISOString().slice(0,10);
       carregar();
@@ -311,21 +322,18 @@ dataInicioGlobal = new Date().fp_incr(-7).toISOString().slice(0,10);
 dataFimGlobal = new Date().toISOString().slice(0,10);
 
 async function carregar(){
-
   let query = sb.from("historico_alteracao_fichas").select("*");
 
   if(dataInicioGlobal && dataFimGlobal){
-    query = query
-      .gte("alterado_em", dataInicioGlobal+"T00:00:00")
-      .lte("alterado_em", dataFimGlobal+"T23:59:59");
+    query=query.gte("alterado_em",dataInicioGlobal+"T00:00:00")
+               .lte("alterado_em",dataFimGlobal+"T23:59:59");
   }
 
   if(filtroOperacao.value){
-    query = query.eq("operacao", filtroOperacao.value);
+    query=query.eq("operacao",filtroOperacao.value);
   }
 
   const {data,error}=await query.order("alterado_em",{ascending:false}).limit(500);
-
   if(error){toast(error.message);return;}
 
   tbody.innerHTML="";
@@ -350,8 +358,8 @@ async function carregar(){
       <td><span class="badge ${r.operacao.toLowerCase()}">${r.operacao}</span></td>
       <td>${r.registro_id}</td>
       <td>
-        <button onclick='ver(${JSON.stringify(r)})'>Ver</button>
-        <button onclick="restaurar('${r.id}')">Restaurar</button>
+        <button class="btn-view" onclick='ver(${JSON.stringify(r)})'>Ver</button>
+        <button class="btn-restore" onclick="restaurar('${r.id}')">Restaurar</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -372,7 +380,7 @@ function atualizarGrafico(dias){
 
   chart=new Chart(document.getElementById("grafico"),{
     type:'bar',
-    data:{labels,datasets:[{data:valores}]},
+    data:{labels,datasets:[{data:valores, backgroundColor:"#2563eb"}]},
     options:{plugins:{legend:{display:false}}}
   });
 }
