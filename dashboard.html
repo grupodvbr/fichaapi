@@ -493,25 +493,36 @@ iframe{
   transform:translate(-50%,-50%);
 }
 
+/* ANIMAÇÃO DO BOTÃO + */
 
+.more-btn .glyph{
+  transition: transform .3s ease;
+}
+
+.more-btn.active .glyph{
+  transform: rotate(45deg);
+}
 /* ================= MENU MAIS ================= */
 
 .more-menu{
   position:fixed;
   bottom:80px;
   left:50%;
-  transform:translateX(-50%);
+  transform:translate(-50%,30px);
   width:90%;
   max-width:360px;
-  background:#111827;
-  border:1px solid #1f2937;
-  border-radius:20px;
+  background:rgba(17,24,39,.95);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
   padding:10px 0;
-  display:none;
+  display:flex;
   flex-direction:column;
-  box-shadow:0 25px 60px rgba(0,0,0,.5);
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
   z-index:3000;
-  animation:fadeUp .25s ease;
+  opacity:0;
+  pointer-events:none;
+  transition:.3s cubic-bezier(.4,0,.2,1);
 }
 
 .more-menu div{
@@ -529,7 +540,9 @@ iframe{
 }
 
 .more-menu.open{
-  display:flex;
+  opacity:1;
+  transform:translate(-50%,0);
+  pointer-events:auto;
 }
 
 @keyframes fadeUp{
@@ -546,7 +559,23 @@ iframe{
 .more-btn{
   display:none;
 }  
+/* OVERLAY BLUR */
 
+.more-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.55);
+  backdrop-filter:blur(10px);
+  opacity:0;
+  pointer-events:none;
+  transition:.25s ease;
+  z-index:2500;
+}
+
+.more-overlay.open{
+  opacity:1;
+  pointer-events:auto;
+}
   
 </style>
 </head>
@@ -651,6 +680,8 @@ iframe{
 </div>
 
 </aside>
+<div id="moreOverlay" class="more-overlay" onclick="toggleMoreMenu()"></div>
+
 <div id="moreMenu" class="more-menu">
   <div onclick="selectFromMore('config.html')">Financeiro</div>
   <div onclick="selectFromMore('ingredientesexcel.html')">Excel</div>
@@ -747,7 +778,22 @@ window.closeLogin = closeLogin;
 
 
 function toggleMoreMenu(){
-  document.getElementById("moreMenu").classList.toggle("open");
+
+  const menu = document.getElementById("moreMenu");
+  const overlay = document.getElementById("moreOverlay");
+  const btn = document.querySelector(".more-btn");
+
+  const isOpen = menu.classList.contains("open");
+
+  if(isOpen){
+    menu.classList.remove("open");
+    overlay.classList.remove("open");
+    btn.classList.remove("active");
+  }else{
+    menu.classList.add("open");
+    overlay.classList.add("open");
+    btn.classList.add("active");
+  }
 }
 function selectFromMore(page){
 
