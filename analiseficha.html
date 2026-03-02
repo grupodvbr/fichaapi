@@ -96,7 +96,7 @@ body.modal-open{
 ========================================================= */
 .grid{
   display:grid;
-  grid-template-columns:repeat(5, 1fr); /* 🔥 menos colunas */
+  grid-template-columns:repeat(auto-fill, minmax(240px,1fr));
   gap:20px;
   padding:20px;
 }
@@ -664,20 +664,21 @@ button{
     width:100%;
   }
 }
-/* ===== CARDS FINANCEIROS COMPACTOS ===== */
+/* ===== CARDS FINANCEIROS ===== */
 .card-stats{
   display:grid;
   grid-template-columns: repeat(3, 1fr);
   gap:8px;
   margin-top:10px;
+  min-height:76px;
 }
 
 .stat{
   background:#f8fafc;
   border:1px solid var(--border);
   border-radius:10px;
-  padding:6px 8px;     /* 👈 menos padding */
-  font-size:10px;     /* 👈 fonte menor */
+  padding:6px 8px;
+  font-size:10px;
   line-height:1.1;
   box-shadow:var(--shadow-xs);
 }
@@ -687,6 +688,7 @@ button{
   margin-top:4px;
   font-size:13px;
   font-weight:900;
+  min-height:14px;
 }
 
 .stat.green{
@@ -713,19 +715,11 @@ button{
   color:#9a3412;
 }
 
-/* mobile: 2 colunas */
-@media(max-width:520px){
+/* ===== MOBILE AJUSTES ===== */
+@media (max-width:520px){
   .card-stats{
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
-}
-
-.card-stats{
-  min-height:76px;  /* 🔥 cabe melhor no 100% */
-}
-.stat b{
-  min-height:14px;
-  display:block;
 }
 
 .desc-card{
@@ -742,7 +736,6 @@ button{
   min-height:18px;        /* 🔥 menos altura fixa */
 }
 
-body{ zoom: 0.9; }
 
    
 </style>
