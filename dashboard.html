@@ -352,6 +352,17 @@ iframe{
 .sidebar{
   justify-content:space-evenly;
 }
+
+   /* Esconde itens extras no mobile */
+  .extra{
+    display:none;
+  }
+
+  /* Mostra botão Mais no mobile */
+  .more-btn{
+    display:flex;
+  }
+
 }
 
 
@@ -494,7 +505,10 @@ iframe{
 .more-menu.open{
   display:flex;
 }
-
+/* ESCONDE BOTÃO MAIS NO DESKTOP */
+.more-btn{
+  display:none;
+}
 
   
 
@@ -554,6 +568,8 @@ iframe{
 
 <!-- APP -->
 <div id="app" class="app">
+
+  
 <aside class="sidebar">
 
 <div class="icon active" onclick="openPage('home.html',this)">
@@ -576,7 +592,28 @@ iframe{
   <small>Análise</small>
 </div>
 
-<div class="icon" onclick="toggleMoreMenu()">
+<div class="icon" onclick="openPage('config.html',this)">
+  <span class="glyph settings"></span>
+  <small>Financeiro</small>
+</div>
+
+<div class="icon extra" onclick="openPage('ingredientesexcel.html',this)">
+  <span class="glyph box"></span>
+  <small>Excel</small>
+</div>
+
+<div class="icon extra" onclick="openPage('midias.html',this)">
+  <span class="glyph media"></span>
+  <small>Mídias</small>
+</div>
+
+<div class="icon extra" onclick="openPage('relatorios.html',this)">
+  <span class="glyph doc"></span>
+  <small>Relatórios</small>
+</div>
+
+<!-- BOTÃO MAIS (SÓ MOBILE) -->
+<div class="icon more-btn" onclick="toggleMoreMenu()">
   <span class="glyph box"></span>
   <small>Mais</small>
 </div>
