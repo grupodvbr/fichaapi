@@ -300,15 +300,11 @@ iframe{
     padding:0 6px;
     background:#0f172a;
     border-top:1px solid #1e293b;
-    border-radius:0;
-    box-shadow:none;
   }
 
   .main{
     padding-bottom:90px;
   }
-
-  /* Ícone mobile */
 
   .icon{
     width:auto;
@@ -316,25 +312,12 @@ iframe{
     background:transparent;
     padding:4px 2px;
     gap:4px;
-    transition:.2s;
   }
 
   .icon small{
     font-size:10px;
     font-weight:600;
     opacity:.7;
-    letter-spacing:.02em;
-  }
-
- .icon .glyph{
-  width:22px;
-  height:22px;
-}
-
-  /* Ativo elegante */
-
-  .icon.active{
-    transform:none;
   }
 
   .icon.active small{
@@ -342,20 +325,20 @@ iframe{
     color:#22c55e;
   }
 
-  .icon.active .glyph{
-    transform:scale(1.15);
+  .icon .glyph{
+    width:22px;
+    height:22px;
   }
 
-  /* Esconde extras no mobile */
+  /* ESCONDE EXTRAS */
   .extra{
-    display:none;
+    display:none !important;
   }
 
-@media(max-width:900px){
+  /* MOSTRA BOTÃO + */
   .more-btn{
     display:flex !important;
   }
-}
 
 }
 
