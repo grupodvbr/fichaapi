@@ -274,6 +274,11 @@ th{
 @media(max-width:768px){
   .filters{ grid-template-columns:1fr; }
 }
+
+body.modal-open{
+  overflow:hidden;
+  height:100vh;
+}
 </style>
 </head>
 
@@ -361,6 +366,7 @@ function toast(msg){
 
 function fechar(){
   document.getElementById("modal").style.display="none";
+  document.body.classList.remove("modal-open");
 }
 
 flatpickr("#rangeData", {
@@ -451,6 +457,7 @@ function atualizarGrafico(dias){
 }
 
 function ver(item){
+  document.body.classList.add("modal-open");
   document.getElementById("modal").style.display="flex";
 
   const formatData = new Date(item.alterado_em).toLocaleString();
