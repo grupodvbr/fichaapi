@@ -325,16 +325,23 @@ function popularTipos(){
 }
 
 function aplicarFiltros(){
-  const nome=search.value.toUpperCase();
-  const tipo=tipoFilter.value;
 
-  const filtrados=pratos.filter(p=>{
-    const nomeOk=!nome||p.nome.toUpperCase().includes(nome);
-    const tipoOk=!tipo||p.tipo===tipo;
-    return nomeOk&&tipoOk;
+  const nome = search.value.toUpperCase();
+  const tipo = tipoFilter.value;
+
+  const filtrados = pratos.filter(p=>{
+    const nomeOk = !nome || p.nome.toUpperCase().includes(nome);
+    const tipoOk = !tipo || p.tipo === tipo;
+    return nomeOk && tipoOk;
   });
 
   render(filtrados);
+
+  /* 🔥 VOLTAR PARA O TOPO */
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth" 
+  });
 }
 
 function render(lista){
