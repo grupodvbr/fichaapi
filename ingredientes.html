@@ -354,6 +354,11 @@ button:hover{
   </div>
 
   <div class="field">
+    <label>QUANTIDADE DE REFERÊNCIA</label>
+    <input id="quantidade_referencia" type="number" placeholder="Ex: 700">
+  </div>
+
+  <div class="field">
     <label>RENDIMENTO (%)</label>
     <input id="rendimento" value="100">
   </div>
@@ -539,13 +544,34 @@ function novo(){
   rendimento.value=100;
 }
 
+
+
+
+  function converterParaBase(qtd, unidade){
+  if(unidade === "L") return qtd * 1000;
+  if(unidade === "KG") return qtd * 1000;
+  return qtd;
+}
 async function salvar(){
-  const payload={
-    nome:nome.value,
-    descricao:descricao.value,
-    unidade_medida:unidade.value,
-    valor:Number(valor.value.replace(/\D/g,""))/100,
-    rendimento_percentual:Number(rendimento.value),
+const valorPago = Number(valor.value.replace(/\D/g,""))/100;
+const qtdRef = Number(quantidade_referencia.value || 0);
+const unidadeBase = unidade.value;
+
+let custoBase = null;
+
+if(valorPago > 0 && qtdRef > 0){
+  const qtdConvertida = converterParaBase(qtdRef, unidadeBase);
+  custoBase = valorPago / qtdConvertida;
+}
+
+const payload={
+  nome:nome.value,
+  descricao:descricao.value,
+  unidade_medida:unidadeBase,
+  valor:valorPago,
+  quantidade_referencia:qtdRef,
+  custo_unitario_base:custoBase,
+  rendimento_percentual:Number(rendimento.value),
 
     energia_kcal:+energia_kcal.value||0,
     carboidratos:+carboidratos.value||0,
