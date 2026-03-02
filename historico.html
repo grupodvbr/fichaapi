@@ -101,18 +101,19 @@ html,body{
 }
 
 .filter-row{
-  display:flex;
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
   gap:10px;
-  margin-bottom:10px;
-  align-items:flex-end;
-  flex-wrap:nowrap; /* NÃO QUEBRA LINHA */
+  margin-bottom:12px;
+}
+
+.filter-row.second{
+  grid-template-columns: 2fr auto;
 }
 
 .filter-group{
   display:flex;
   flex-direction:column;
-  flex:1;
-  min-width:0; /* impede quebra estranha */
 }
 
 .filter-group label{
@@ -121,27 +122,21 @@ html,body{
   color:var(--muted);
   margin-bottom:4px;
   text-transform:uppercase;
-  letter-spacing:.5px;
 }
 
 .filter-group input,
 .filter-group select{
-  padding:8px 10px;
+  height:36px;
+  padding:0 10px;
   border-radius:10px;
   border:1px solid var(--border);
   font-size:12px;
   width:100%;
 }
 
-.filter-button{
-  display:flex;
-  align-items:flex-end;
-  flex:0 0 auto;
-}
-
 .filter-button button{
   height:36px;
-  padding:0 18px;
+  padding:0 20px;
   border-radius:10px;
 }
 
@@ -268,8 +263,8 @@ th{
 <div class="filters">
 
   <!-- LINHA 1 -->
-  <div class="filter-row">
-    <div class="filter-group">
+<div class="filter-row second">
+  <div class="filter-group">
       <label>Data Inicial</label>
       <input type="date" id="dataInicio">
     </div>
