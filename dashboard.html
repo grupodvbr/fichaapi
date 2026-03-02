@@ -624,10 +624,10 @@ iframe{
 
 </aside>
 <div id="moreMenu" class="more-menu">
-  <div onclick="openPage('config.html',this)">Financeiro</div>
-  <div onclick="openPage('ingredientesexcel.html',this)">Excel</div>
-  <div onclick="openPage('midias.html',this)">Mídias</div>
-  <div onclick="openPage('relatorios.html',this)">Relatórios</div>
+  <div onclick="selectFromMore('config.html','Financeiro')">Financeiro</div>
+  <div onclick="selectFromMore('ingredientesexcel.html','Excel')">Excel</div>
+  <div onclick="selectFromMore('midias.html','Mídias')">Mídias</div>
+  <div onclick="selectFromMore('relatorios.html','Relatórios')">Relatórios</div>
 </div>
   <div class="main">
     <div class="header">
@@ -669,23 +669,36 @@ function showApp(){
 }
 
 function openPage(page, el){
+
   localStorage.setItem("cb_page", page);
   document.getElementById("frame").src = page;
+
+  // limpa estado ativo
   document.querySelectorAll(".icon").forEach(i=>i.classList.remove("active"));
-  el.classList.add("active");
 
-const titles = {
-  "home.html": "CB SYSTEMS® - Dashboard",
-  "fichatecnica.html": "CB SYSTEMS® - Fichas Técnicas",
-  "ingredientes.html": "CB SYSTEMS® - Ingredientes",
-  "analiseficha.html": "CB SYSTEMS® - Análise de Fichas",
-  "config.html": "CB SYSTEMS® - Análise financeira",
-  "ingredientesexcel.html": "CB SYSTEMS® - Excel de Ingredientes", // ✅ corrigido
-  "midias.html": "CB SYSTEMS® - Mídias do Cardápio",
-  "relatorios.html": "CB SYSTEMS® - Relatórios"
-};
+  if(el) el.classList.add("active");
 
-document.getElementById("pageTitle").innerText = titles[page] || "CB SYSTEMS®";
+  // 🔥 RESTAURA NAVBAR SE ESTIVER EM MODO SELECIONADO
+  document.querySelectorAll(".mobile-selected").forEach(e=>e.remove());
+
+  document.querySelectorAll(".sidebar .icon").forEach(i=>{
+    i.style.display = "";
+  });
+
+  document.getElementById("moreMenu").classList.remove("open");
+
+  const titles = {
+    "home.html": "CB SYSTEMS® - Dashboard",
+    "fichatecnica.html": "CB SYSTEMS® - Fichas Técnicas",
+    "ingredientes.html": "CB SYSTEMS® - Ingredientes",
+    "analiseficha.html": "CB SYSTEMS® - Análise de Fichas",
+    "config.html": "CB SYSTEMS® - Análise financeira",
+    "ingredientesexcel.html": "CB SYSTEMS® - Excel de Ingredientes",
+    "midias.html": "CB SYSTEMS® - Mídias do Cardápio",
+    "relatorios.html": "CB SYSTEMS® - Relatórios"
+  };
+
+  document.getElementById("pageTitle").innerText = titles[page] || "CB SYSTEMS®";
 }
 async function check(){
   const { data } = await sb.auth.getSession();
@@ -706,7 +719,35 @@ window.closeLogin = closeLogin;
 function toggleMoreMenu(){
   document.getElementById("moreMenu").classList.toggle("open");
 }
+function selectFromMore(page, label){
 
+  // fecha menu
+  document.getElementById("moreMenu").classList.remove("open");
+
+  // abre página
+  openPage(page, null);
+
+  // comportamento só no mobile
+  if(window.innerWidth <= 900){
+
+    const sidebar = document.querySelector(".sidebar");
+
+    // esconde todos
+    document.querySelectorAll(".sidebar .icon").forEach(i=>{
+      i.style.display = "none";
+    });
+
+    // cria botão único
+    const temp = document.createElement("div");
+    temp.className = "icon active mobile-selected";
+    temp.innerHTML = `
+      <span class="glyph box"></span>
+      <small>${label}</small>
+    `;
+
+    sidebar.appendChild(temp);
+  }
+}
 
   
 </script>
