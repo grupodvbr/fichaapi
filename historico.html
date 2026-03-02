@@ -15,19 +15,21 @@ viewport-fit=cover"/>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
   --primary:#2563eb;
+  --primary-dark:#1e40af;
   --danger:#dc2626;
   --success:#16a34a;
   --warning:#f59e0b;
-  --bg:#f1f5f9;
+  --bg:#f4f6fb;
   --card:#ffffff;
   --text:#0f172a;
   --muted:#64748b;
-  --border:#e2e8f0;
-  --radius:16px;
+  --border:#e5e7eb;
+  --radius:18px;
 }
 
 *{box-sizing:border-box}
@@ -35,54 +37,61 @@ viewport-fit=cover"/>
 html,body{
   margin:0;
   font-family:Inter,system-ui;
-  background:linear-gradient(180deg,#f8fafc,#eef2f7);
+  background:var(--bg);
   color:var(--text);
   overflow-x:hidden;
 }
 
-/* CONTAINER */
-.container{
-  max-width:1400px;
-  margin:auto;
-  padding:25px 20px;
+/* HEADER */
+.header{
+  position:sticky;
+  top:0;
+  background:#fff;
+  padding:18px 24px;
+  border-bottom:1px solid var(--border);
+  z-index:10;
 }
 
-h1{
+.header h1{
   margin:0;
-  font-size:24px;
+  font-size:20px;
   font-weight:900;
 }
 
-.subtitle{
-  font-size:13px;
-  color:var(--muted);
-  margin-bottom:20px;
+.container{
+  max-width:1400px;
+  margin:auto;
+  padding:20px;
 }
 
 /* CARDS */
 .cards{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:12px;
+  gap:16px;
   margin-bottom:20px;
 }
 
 .card{
-  background:#fff;
-  padding:16px;
+  background:linear-gradient(135deg,#fff,#f8fafc);
   border-radius:var(--radius);
-  text-align:center;
-  box-shadow:0 8px 25px rgba(0,0,0,.05);
+  padding:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.06);
+  transition:.2s;
+}
+
+.card:hover{
+  transform:translateY(-4px);
 }
 
 .card small{
-  font-size:11px;
   color:var(--muted);
+  font-size:11px;
 }
 
 .card strong{
   display:block;
-  font-size:20px;
+  font-size:22px;
   margin-top:4px;
 }
 
@@ -91,23 +100,23 @@ h1{
   display:flex;
   flex-wrap:wrap;
   gap:10px;
-  margin-bottom:15px;
+  margin-bottom:20px;
 }
 
 input,select{
-  padding:8px 10px;
-  border-radius:8px;
+  padding:8px 12px;
+  border-radius:10px;
   border:1px solid var(--border);
   font-size:12px;
 }
 
 button{
   border:none;
-  padding:8px 12px;
-  border-radius:8px;
-  font-size:12px;
+  padding:8px 14px;
+  border-radius:10px;
   font-weight:700;
   cursor:pointer;
+  font-size:12px;
 }
 
 .btn-primary{background:var(--primary);color:#fff}
@@ -120,6 +129,7 @@ button{
   border-radius:var(--radius);
   overflow:auto;
   box-shadow:0 8px 25px rgba(0,0,0,.05);
+  margin-top:20px;
 }
 
 table{
@@ -129,7 +139,7 @@ table{
 }
 
 th,td{
-  padding:10px;
+  padding:12px;
   border-bottom:1px solid var(--border);
 }
 
@@ -155,8 +165,7 @@ th{
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(15,23,42,.6);
-  backdrop-filter:blur(5px);
+  background:rgba(0,0,0,.5);
   display:none;
   align-items:center;
   justify-content:center;
@@ -165,13 +174,14 @@ th{
 .modal-box{
   background:#fff;
   width:95%;
-  max-width:800px;
+  max-width:700px;
   max-height:85vh;
   overflow:auto;
   border-radius:16px;
   padding:20px;
 }
 
+/* TOAST */
 .toast{
   position:fixed;
   bottom:15px;
@@ -179,8 +189,8 @@ th{
   transform:translateX(-50%);
   background:#0f172a;
   color:#fff;
-  padding:10px 16px;
-  border-radius:8px;
+  padding:10px 18px;
+  border-radius:10px;
   display:none;
   font-size:12px;
 }
@@ -188,17 +198,18 @@ th{
 /* MOBILE */
 @media(max-width:900px){
   .cards{grid-template-columns:repeat(2,1fr)}
-  td:last-child{display:flex;flex-direction:column;gap:5px}
+  td:last-child{display:flex;flex-direction:column;gap:6px}
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="header">
+  <h1>📊 Auditoria Executiva • Sistema CMV</h1>
+</div>
 
-<h1>Auditoria e Backup</h1>
-<div class="subtitle">Filtro padrão: Últimos 7 dias</div>
+<div class="container">
 
 <div class="cards">
   <div class="card"><small>Total</small><strong id="total">0</strong></div>
@@ -210,7 +221,6 @@ th{
 <div class="filters">
   <input type="date" id="dataInicio">
   <input type="date" id="dataFim">
-  <select id="filtroTabela"><option value="">Todas Tabelas</option></select>
   <select id="filtroOperacao">
     <option value="">Todas Operações</option>
     <option value="INSERT">INSERT</option>
@@ -221,13 +231,15 @@ th{
   <button class="btn-primary" onclick="carregar()">Filtrar</button>
 </div>
 
+<canvas id="grafico" height="80"></canvas>
+
 <div class="table-wrap">
 <table>
 <thead>
 <tr>
 <th>Data</th>
 <th>Tabela</th>
-<th>Op</th>
+<th>Operação</th>
 <th>ID</th>
 <th>Ações</th>
 </tr>
@@ -249,9 +261,19 @@ th{
 
 <script>
 const sb = supabase.createClient(
-  "https://dxkszikemntfusfyrzos.supabase.co",
-  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+"https://dxkszikemntfusfyrzos.supabase.co",
+"sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
+
+let chart;
+
+function ultimaSemana(){
+  const hoje=new Date();
+  const inicio=new Date();
+  inicio.setDate(hoje.getDate()-7);
+  dataInicio.value=inicio.toISOString().slice(0,10);
+  dataFim.value=hoje.toISOString().slice(0,10);
+}
 
 function toast(msg){
   const t=document.getElementById("toast");
@@ -264,26 +286,12 @@ function fechar(){
   modal.style.display="none";
 }
 
-function ultimaSemana(){
-  const hoje=new Date();
-  const inicio=new Date();
-  inicio.setDate(hoje.getDate()-7);
-  dataInicio.value=inicio.toISOString().slice(0,10);
-  dataFim.value=hoje.toISOString().slice(0,10);
-}
-
 async function carregar(){
 
   let query = sb.from("historico_alteracao_fichas").select("*");
 
-  if(dataInicio.value)
-    query=query.gte("alterado_em",dataInicio.value+"T00:00:00");
-
-  if(dataFim.value)
-    query=query.lte("alterado_em",dataFim.value+"T23:59:59");
-
-  if(filtroTabela.value)
-    query=query.eq("tabela",filtroTabela.value);
+  query=query.gte("alterado_em",dataInicio.value+"T00:00:00")
+             .lte("alterado_em",dataFim.value+"T23:59:59");
 
   if(filtroOperacao.value)
     query=query.eq("operacao",filtroOperacao.value);
@@ -299,11 +307,12 @@ async function carregar(){
   total.innerText=data.length;
 
   let i=0,u=0,d=0;
-
-  const tabelas=new Set();
+  const dias={};
 
   data.forEach(r=>{
-    tabelas.add(r.tabela);
+    const dia=r.alterado_em.slice(0,10);
+    if(!dias[dia]) dias[dia]=0;
+    dias[dia]++;
 
     if(r.operacao==="INSERT") i++;
     if(r.operacao==="UPDATE") u++;
@@ -327,9 +336,28 @@ async function carregar(){
   upd.innerText=u;
   del.innerText=d;
 
-  filtroTabela.innerHTML='<option value="">Todas Tabelas</option>';
-  tabelas.forEach(t=>{
-    filtroTabela.innerHTML+=`<option value="${t}">${t}</option>`;
+  atualizarGrafico(dias);
+}
+
+function atualizarGrafico(dias){
+  const labels=Object.keys(dias).sort();
+  const valores=labels.map(l=>dias[l]);
+
+  if(chart) chart.destroy();
+
+  chart=new Chart(document.getElementById("grafico"),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Alterações por Dia',
+        data:valores
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}}
+    }
   });
 }
 
@@ -352,17 +380,9 @@ async function restaurar(id){
 ultimaSemana();
 carregar();
 
-/* BLOQUEIO TOTAL DE ZOOM */
+/* BLOQUEIO ZOOM */
 document.addEventListener('gesturestart', e=>e.preventDefault());
-let lastTouchEnd=0;
-document.addEventListener('touchend',function(e){
-  const now=new Date().getTime();
-  if(now-lastTouchEnd<=300){e.preventDefault();}
-  lastTouchEnd=now;
-},{passive:false});
-document.addEventListener('wheel',e=>{
-  if(e.ctrlKey)e.preventDefault();
-},{passive:false});
+document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
 </script>
 
 </body>
