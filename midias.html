@@ -9,148 +9,122 @@
 
 <style>
 /* =========================================================
-   FULLSCREEN EXECUTIVE LAYOUT (SEM SCROLL)
+   EXECUTIVO COM GRID ROLÁVEL
 ========================================================= */
 :root{
   --primary:#2563eb;
   --success:#16a34a;
   --danger:#dc2626;
 
-  --bg:#f4f7fb;
+  --bg:#f1f5f9;
   --card:#ffffff;
   --text:#0f172a;
   --muted:#64748b;
   --border:#e2e8f0;
 
-  --radius:18px;
+  --radius:16px;
 
-  --shadow-sm:0 8px 20px rgba(0,0,0,.08);
-  --shadow-md:0 20px 50px rgba(0,0,0,.12);
+  --shadow-sm:0 4px 12px rgba(0,0,0,.06);
+  --shadow-md:0 12px 30px rgba(0,0,0,.10);
 }
 
-/* RESET */
 *{
   box-sizing:border-box;
-  -webkit-font-smoothing:antialiased;
 }
 
 html,body{
   height:100vh;
-  overflow:hidden; /* 🔥 REMOVE SCROLL GLOBAL */
+  overflow:hidden;
 }
 
 body{
   margin:0;
   font-family:Inter,sans-serif;
-  background:
-    radial-gradient(1200px 600px at 10% -10%, #eef2ff 0%, transparent 60%),
-    radial-gradient(1000px 500px at 110% 10%, #ecfeff 0%, transparent 60%),
-    var(--bg);
-  color:var(--text);
-
+  background:var(--bg);
   display:flex;
   flex-direction:column;
+  color:var(--text);
 }
 
-/* =========================================================
-   HEADER FIXO ALTURA CONTROLADA
-========================================================= */
+/* HEADER */
 .header{
-  height:70px;
+  height:65px;
   flex-shrink:0;
-
   display:flex;
   align-items:center;
   justify-content:space-between;
-
-  padding:0 32px;
-
+  padding:0 30px;
   background:#fff;
   border-bottom:1px solid var(--border);
   box-shadow:var(--shadow-sm);
 }
 
 .header h1{
+  margin:0;
   font-size:18px;
   font-weight:900;
-  margin:0;
 }
 
-/* =========================================================
-   MAIN AREA OCUPA RESTANTE DA TELA
-========================================================= */
+/* LAYOUT */
 .container{
   flex:1;
   display:grid;
-  grid-template-columns:380px 1fr;
-  gap:24px;
-
-  padding:24px;
-  overflow:hidden; /* 🔥 remove scroll */
+  grid-template-columns:360px 1fr;
+  gap:20px;
+  padding:20px;
+  overflow:hidden;
 }
 
-/* =========================================================
-   PAINEL LATERAL
-========================================================= */
+/* PAINEL ESQUERDO */
 .panel{
   background:var(--card);
   border-radius:var(--radius);
   border:1px solid var(--border);
-  padding:20px;
-
+  padding:18px;
   display:flex;
   flex-direction:column;
-  gap:14px;
-
+  gap:12px;
   box-shadow:var(--shadow-sm);
-  overflow:hidden;
 }
 
 .panel h2{
   font-size:13px;
   font-weight:900;
   margin:0;
-  letter-spacing:.08em;
   color:var(--primary);
 }
 
 /* INPUTS */
 label{
-  font-size:12px;
+  font-size:11px;
   font-weight:700;
   color:var(--muted);
 }
 
 input,select{
-  height:40px;
-  border-radius:12px;
+  height:36px;
+  border-radius:10px;
   border:1px solid var(--border);
-  padding:0 12px;
-  font-size:13px;
+  padding:0 10px;
+  font-size:12px;
   font-weight:600;
-}
-
-input:focus,select:focus{
-  outline:none;
-  border-color:var(--primary);
-  box-shadow:0 0 0 3px rgba(37,99,235,.15);
 }
 
 .row{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:10px;
+  gap:8px;
 }
 
 .days{
   display:flex;
-  gap:8px;
   flex-wrap:wrap;
+  gap:6px;
 }
 
 .day{
-  padding:6px 12px;
-  font-size:11px;
+  padding:5px 10px;
+  font-size:10px;
   border-radius:999px;
   border:1px solid var(--border);
   cursor:pointer;
@@ -159,19 +133,17 @@ input:focus,select:focus{
 
 .day.active{
   border-color:var(--primary);
-  background:#e0e7ff;
+  background:#dbeafe;
   color:var(--primary);
 }
 
-/* PREVIEW */
 .preview{
-  height:120px; /* 🔥 MENOR PARA CABER */
-  border-radius:14px;
+  height:100px;
+  border-radius:12px;
   border:2px dashed var(--border);
   display:grid;
   place-items:center;
-  font-size:12px;
-  color:var(--muted);
+  font-size:11px;
   overflow:hidden;
 }
 
@@ -184,18 +156,17 @@ input:focus,select:focus{
 
 /* BOTÕES */
 button{
-  height:40px;
+  height:34px;
   border:none;
-  border-radius:12px;
+  border-radius:10px;
   font-weight:800;
-  font-size:12px;
+  font-size:11px;
   cursor:pointer;
 }
 
 button.primary{
   background:var(--primary);
   color:#fff;
-  box-shadow:0 8px 18px rgba(37,99,235,.25);
 }
 
 button.danger{
@@ -203,28 +174,63 @@ button.danger{
   color:#991b1b;
 }
 
-/* =========================================================
-   GRID DE MÍDIAS AJUSTADO
-========================================================= */
-.grid{
+/* DIREITA */
+.right-area{
+  display:flex;
+  flex-direction:column;
   height:100%;
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-  gap:18px;
-  overflow:hidden; /* 🔥 SEM SCROLL */
+  overflow:hidden;
 }
 
+.search-bar{
+  height:40px;
+  margin-bottom:12px;
+  flex-shrink:0;
+}
+
+.search-bar input{
+  width:100%;
+  height:100%;
+}
+
+/* GRID COM SCROLL PRÓPRIO */
+.grid{
+  flex:1;
+  overflow-y:auto;
+  padding-right:6px;
+
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:14px;
+}
+
+/* SCROLL BONITO */
+.grid::-webkit-scrollbar{
+  width:8px;
+}
+.grid::-webkit-scrollbar-thumb{
+  background:#cbd5e1;
+  border-radius:10px;
+}
+
+/* CARD PEQUENO */
 .card{
   background:#fff;
-  border-radius:var(--radius);
+  border-radius:14px;
   border:1px solid var(--border);
   display:flex;
   flex-direction:column;
   box-shadow:var(--shadow-sm);
+  transition:.2s;
+}
+
+.card:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--shadow-md);
 }
 
 .media{
-  height:140px; /* 🔥 MENOR */
+  height:110px;
   background:#000;
   display:flex;
   align-items:center;
@@ -239,19 +245,19 @@ button.danger{
 }
 
 .meta{
-  padding:12px;
+  padding:10px;
   display:flex;
   flex-direction:column;
-  gap:6px;
-  font-size:12px;
+  gap:4px;
+  font-size:11px;
 }
 
 .badge{
-  font-size:10px;
+  font-size:9px;
   font-weight:900;
-  padding:4px 8px;
+  padding:3px 6px;
   border-radius:999px;
-  background:#e0e7ff;
+  background:#dbeafe;
   color:var(--primary);
 }
 
@@ -267,45 +273,13 @@ button.danger{
 
 .actions{
   display:flex;
-  gap:6px;
-  padding:10px;
+  gap:4px;
+  padding:8px;
 }
 
-/* =========================================================
-   MODAL FULLSCREEN FIT
-========================================================= */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.6);
-  backdrop-filter:blur(6px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
-
-.modal.open{
-  display:flex;
-}
-
-.modal-box{
-  width:90vw;
-  height:80vh; /* 🔥 MENOR PARA NÃO CORTAR */
-  background:#fff;
-  border-radius:20px;
-  padding:20px;
-  display:grid;
-  grid-template-columns:1fr 360px;
-  gap:20px;
-  overflow:hidden;
-}
-
-.buffet-list{
-  overflow:auto;
-}
-
-.edit{
-  overflow:auto;
+button.edit{
+  background:#e0e7ff;
+  color:#3730a3;
 }
 </style>
 </head>
