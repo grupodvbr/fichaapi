@@ -9,7 +9,7 @@
 
 <style>
 /* =========================================================
-   EXECUTIVO COM GRID ROLÁVEL
+   EXECUTIVO PREMIUM COM SCROLL LOCAL
 ========================================================= */
 :root{
   --primary:#2563eb;
@@ -22,15 +22,13 @@
   --muted:#64748b;
   --border:#e2e8f0;
 
-  --radius:16px;
+  --radius:14px;
 
-  --shadow-sm:0 4px 12px rgba(0,0,0,.06);
-  --shadow-md:0 12px 30px rgba(0,0,0,.10);
+  --shadow-sm:0 4px 10px rgba(0,0,0,.05);
+  --shadow-md:0 12px 24px rgba(0,0,0,.08);
 }
 
-*{
-  box-sizing:border-box;
-}
+*{ box-sizing:border-box }
 
 html,body{
   height:100vh;
@@ -48,12 +46,12 @@ body{
 
 /* HEADER */
 .header{
-  height:65px;
+  height:60px;
   flex-shrink:0;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 30px;
+  padding:0 24px;
   background:#fff;
   border-bottom:1px solid var(--border);
   box-shadow:var(--shadow-sm);
@@ -61,70 +59,70 @@ body{
 
 .header h1{
   margin:0;
-  font-size:18px;
-  font-weight:900;
+  font-size:16px;
+  font-weight:800;
 }
 
 /* LAYOUT */
 .container{
   flex:1;
   display:grid;
-  grid-template-columns:360px 1fr;
-  gap:20px;
-  padding:20px;
+  grid-template-columns:320px 1fr;
+  gap:16px;
+  padding:16px;
   overflow:hidden;
 }
 
-/* PAINEL ESQUERDO */
+/* PAINEL */
 .panel{
   background:var(--card);
   border-radius:var(--radius);
   border:1px solid var(--border);
-  padding:18px;
+  padding:14px;
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:10px;
   box-shadow:var(--shadow-sm);
+  overflow:auto;
 }
 
 .panel h2{
-  font-size:13px;
+  font-size:12px;
   font-weight:900;
   margin:0;
   color:var(--primary);
 }
 
-/* INPUTS */
 label{
-  font-size:11px;
+  font-size:10px;
   font-weight:700;
   color:var(--muted);
 }
 
 input,select{
-  height:36px;
-  border-radius:10px;
+  height:32px;
+  border-radius:8px;
   border:1px solid var(--border);
-  padding:0 10px;
-  font-size:12px;
+  padding:0 8px;
+  font-size:11px;
   font-weight:600;
 }
 
 .row{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:8px;
+  gap:6px;
 }
 
 .days{
   display:flex;
   flex-wrap:wrap;
-  gap:6px;
+  gap:4px;
 }
 
 .day{
-  padding:5px 10px;
-  font-size:10px;
+  padding:4px 8px;
+  font-size:9px;
   border-radius:999px;
   border:1px solid var(--border);
   cursor:pointer;
@@ -138,12 +136,12 @@ input,select{
 }
 
 .preview{
-  height:100px;
-  border-radius:12px;
+  height:80px;
+  border-radius:10px;
   border:2px dashed var(--border);
   display:grid;
   place-items:center;
-  font-size:11px;
+  font-size:10px;
   overflow:hidden;
 }
 
@@ -156,11 +154,11 @@ input,select{
 
 /* BOTÕES */
 button{
-  height:34px;
+  height:30px;
   border:none;
-  border-radius:10px;
-  font-weight:800;
-  font-size:11px;
+  border-radius:8px;
+  font-weight:700;
+  font-size:10px;
   cursor:pointer;
 }
 
@@ -174,6 +172,11 @@ button.danger{
   color:#991b1b;
 }
 
+button.edit{
+  background:#e0e7ff;
+  color:#3730a3;
+}
+
 /* DIREITA */
 .right-area{
   display:flex;
@@ -183,8 +186,8 @@ button.danger{
 }
 
 .search-bar{
-  height:40px;
-  margin-bottom:12px;
+  height:34px;
+  margin-bottom:8px;
   flex-shrink:0;
 }
 
@@ -193,44 +196,43 @@ button.danger{
   height:100%;
 }
 
-/* GRID COM SCROLL PRÓPRIO */
+/* GRID ROLÁVEL */
 .grid{
   flex:1;
   overflow-y:auto;
-  padding-right:6px;
+  padding-right:4px;
 
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:14px;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:10px;
 }
 
-/* SCROLL BONITO */
 .grid::-webkit-scrollbar{
-  width:8px;
+  width:6px;
 }
 .grid::-webkit-scrollbar-thumb{
   background:#cbd5e1;
   border-radius:10px;
 }
 
-/* CARD PEQUENO */
+/* CARD */
 .card{
   background:#fff;
-  border-radius:14px;
+  border-radius:12px;
   border:1px solid var(--border);
   display:flex;
   flex-direction:column;
   box-shadow:var(--shadow-sm);
-  transition:.2s;
+  transition:.15s;
 }
 
 .card:hover{
-  transform:translateY(-3px);
+  transform:translateY(-2px);
   box-shadow:var(--shadow-md);
 }
 
 .media{
-  height:110px;
+  height:90px;
   background:#000;
   display:flex;
   align-items:center;
@@ -245,17 +247,17 @@ button.danger{
 }
 
 .meta{
-  padding:10px;
+  padding:6px;
   display:flex;
   flex-direction:column;
-  gap:4px;
-  font-size:11px;
+  gap:2px;
+  font-size:10px;
 }
 
 .badge{
-  font-size:9px;
+  font-size:8px;
   font-weight:900;
-  padding:3px 6px;
+  padding:2px 5px;
   border-radius:999px;
   background:#dbeafe;
   color:var(--primary);
@@ -273,13 +275,15 @@ button.danger{
 
 .actions{
   display:flex;
-  gap:4px;
-  padding:8px;
+  gap:3px;
+  padding:6px;
 }
 
-button.edit{
-  background:#e0e7ff;
-  color:#3730a3;
+/* RESPONSIVO */
+@media(max-width:900px){
+  .container{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
@@ -328,6 +332,7 @@ button.edit{
 const sb = supabase.createClient("https://dxkszikemntfusfyrzos.supabase.co","sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed");
 const fileInput=document.getElementById("file"), tipoInput=document.getElementById("tipo"), horaInicioInput=document.getElementById("hora_inicio"), horaFimInput=document.getElementById("hora_fim"), preview=document.getElementById("preview"), grid=document.getElementById("grid");
 let diasSel=[];
+let editingPromoId = null;
 document.querySelectorAll(".day").forEach(d=>d.onclick=()=>{d.classList.toggle("active");const v=+d.dataset.v;diasSel.includes(v)?diasSel=diasSel.filter(x=>x!==v):diasSel.push(v);});
 fileInput.onchange=()=>{const f=fileInput.files[0];if(!f)return;preview.innerHTML=f.type.startsWith("video")?`<video src="${URL.createObjectURL(f)}" autoplay muted loop playsinline></video>`:`<img src="${URL.createObjectURL(f)}">`;};
 const diasLabel=d=>({1:"Seg",2:"Ter",3:"Qua",4:"Qui",5:"Sex",6:"Sáb",7:"Dom"}[d]||d);
@@ -341,7 +346,10 @@ async function load(){
     .order("created_at",{ascending:false});
 
   const filtrado = (data || []).filter(p =>
-    (p.tipo || "").toLowerCase().includes(termo)
+    (p.tipo || "").toLowerCase().includes(termo) ||
+    (p.hora_inicio || "").includes(termo) ||
+    (p.hora_fim || "").includes(termo) ||
+    (p.dias_semana || []).join(",").includes(termo)
   );
 
   grid.innerHTML = filtrado.map(p => `
@@ -370,8 +378,49 @@ async function load(){
     </div>
   `).join("");
 }
-   async function addPromo(){const f=fileInput.files[0];if(!f||!diasSel.length)return alert("Arquivo e dias obrigatórios");const ext=f.name.split(".").pop();const path=`promocoes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;await sb.storage.from("promocoes").upload(path,f,{upsert:false});const{data:urlData}=sb.storage.from("promocoes").getPublicUrl(path);await sb.from("promocoes").insert({url:urlData.publicUrl,tipo:tipoInput.value,dias_semana:diasSel,hora_inicio:horaInicioInput.value,hora_fim:horaFimInput.value,ativo:true});fileInput.value="";preview.innerHTML="Pré-visualização";diasSel=[];document.querySelectorAll(".day").forEach(d=>d.classList.remove("active"));load();}
-async function toggle(id,ativo){await sb.from("promocoes").update({ativo:!ativo}).eq("id",id);load();}
+async function addPromo(){
+
+  if(!diasSel.length) return alert("Selecione os dias");
+
+  /* ===== ATUALIZAR ===== */
+  if(editingPromoId){
+    await sb.from("promocoes").update({
+      tipo:tipoInput.value,
+      dias_semana:diasSel,
+      hora_inicio:horaInicioInput.value,
+      hora_fim:horaFimInput.value
+    }).eq("id",editingPromoId);
+
+    editingPromoId = null;
+    resetForm();
+    load();
+    return;
+  }
+
+  /* ===== CRIAR ===== */
+  const f=fileInput.files[0];
+  if(!f) return alert("Selecione um arquivo");
+
+  const ext=f.name.split(".").pop();
+  const path=`promocoes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+  await sb.storage.from("promocoes").upload(path,f,{upsert:false});
+
+  const { data:urlData } = sb.storage.from("promocoes").getPublicUrl(path);
+
+  await sb.from("promocoes").insert({
+    url:urlData.publicUrl,
+    tipo:tipoInput.value,
+    dias_semana:diasSel,
+    hora_inicio:horaInicioInput.value,
+    hora_fim:horaFimInput.value,
+    ativo:true
+  });
+
+  resetForm();
+  load();
+}
+   async function toggle(id,ativo){await sb.from("promocoes").update({ativo:!ativo}).eq("id",id);load();}
 async function delPromo(id,url){if(!confirm("Excluir mídia?"))return;const path=url.split("/storage/v1/object/public/promocoes/")[1];if(path)await sb.storage.from("promocoes").remove([path]);await sb.from("promocoes").delete().eq("id",id);load();}
 load();
 
@@ -385,14 +434,22 @@ async function toggleCardapio(ev,id,atual){ev.stopPropagation();await sb.from("b
 async function salvarItem(){if(!currentEdit)return alert("Selecione um item");let foto_url=currentEdit.foto_url;const f=editFoto.files[0];if(f){const ext=f.name.split(".").pop();const path=`buffet/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;await sb.storage.from("buffet").upload(path,f,{upsert:false});foto_url=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;}await sb.from("buffet").update({nome:editNome.value,descricao:editDesc.value,foto_url}).eq("id",currentEdit.id);editFoto.value="";currentEdit=null;loadBuffet();}
 
 async function editarPromo(id){
-  const { data } = await sb.from("promocoes").select("*").eq("id",id).single();
+  const { data } = await sb
+    .from("promocoes")
+    .select("*")
+    .eq("id",id)
+    .single();
+
   if(!data) return;
+
+  editingPromoId = id;
 
   tipoInput.value = data.tipo;
   horaInicioInput.value = data.hora_inicio;
   horaFimInput.value = data.hora_fim;
 
   diasSel = data.dias_semana || [];
+
   document.querySelectorAll(".day").forEach(d=>{
     d.classList.toggle("active", diasSel.includes(+d.dataset.v));
   });
@@ -402,6 +459,15 @@ async function editarPromo(id){
     : `<img src="${data.url}">`;
 }
 
+
+
+   function resetForm(){
+  fileInput.value = "";
+  preview.innerHTML = "Pré-visualização";
+  diasSel = [];
+  document.querySelectorAll(".day").forEach(d=>d.classList.remove("active"));
+  editingPromoId = null;
+}
 </script>
 
 <div id="buffetModal" class="modal" onclick="if(event.target.id==='buffetModal')closeBuffetModal()">
