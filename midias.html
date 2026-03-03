@@ -30,8 +30,11 @@
 *{box-sizing:border-box}
 
 html,body{
-  height:100vh;
-  overflow:hidden;
+  height:100%;
+}
+
+body.modal-open{
+  overflow:hidden; /* trava apenas quando modal abrir */
 }
 
 body{
@@ -328,8 +331,32 @@ button.danger{
   border-radius:20px;
   display:grid;
   grid-template-columns:1fr 360px;
-  overflow:hidden;
   box-shadow:var(--shadow-md);
+  overflow:hidden;
+}
+
+/* SCROLL LADO ESQUERDO */
+.buffet-wrap{
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.buffet-list{
+  flex:1;
+  overflow-y:auto;
+  padding-right:6px;
+}
+
+/* SCROLL LADO DIREITO */
+.edit-area{
+  border-left:1px solid var(--border);
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  overflow-y:auto;
 }
 
 .buffet-wrap{
@@ -628,11 +655,13 @@ let buffetItems=[];
 let currentEdit=null;
 
 function openBuffetModal(){
+  document.body.classList.add("modal-open");
   document.getElementById("buffetModal").classList.add("open");
   loadBuffet();
 }
 
 function closeBuffetModal(){
+  document.body.classList.remove("modal-open");
   document.getElementById("buffetModal").classList.remove("open");
 }
 
