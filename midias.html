@@ -777,7 +777,79 @@ button.danger{
 }
 
 
+/* ================= CALENDÁRIO ================= */
 
+.calendar-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
+
+.calendar-header h2{
+  font-size:18px;
+  font-weight:900;
+}
+
+.calendar-header button{
+  height:36px;
+  width:36px;
+  border:none;
+  border-radius:10px;
+  background:#fff;
+  box-shadow:var(--shadow-sm);
+  cursor:pointer;
+}
+
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:14px;
+}
+
+.calendar-day{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:16px;
+  min-height:120px;
+  padding:10px;
+  position:relative;
+  cursor:pointer;
+  transition:.2s;
+  display:flex;
+  flex-direction:column;
+}
+
+.calendar-day:hover{
+  box-shadow:var(--shadow-md);
+  transform:translateY(-2px);
+}
+
+.calendar-day-number{
+  font-size:14px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+
+.calendar-indicator{
+  height:6px;
+  border-radius:6px;
+  background:var(--accent);
+  margin-top:auto;
+}
+
+.calendar-day.has-promo{
+  border-color:var(--accent);
+}
+
+
+
+
+
+
+
+
+  
 
 
 
@@ -853,12 +925,17 @@ button.danger{
 </div>
   </div>
 
-  <div class="right-area">
-    <div class="search-bar">
-      <input id="searchPromo" placeholder="Pesquisar..." oninput="loadPromos()">
-    </div>
-    <div class="grid" id="grid"></div>
+<div class="right-area">
+
+  <div class="calendar-header">
+    <button onclick="prevMonth()">◀</button>
+    <h2 id="monthTitle"></h2>
+    <button onclick="nextMonth()">▶</button>
   </div>
+
+  <div class="calendar-grid" id="calendar"></div>
+
+</div>
 
 </div>
 
@@ -1243,8 +1320,7 @@ document.getElementById("resultadoProdutos").innerHTML = "";
 document.getElementById("buscaProduto").value = "";
 }
 
-loadPromos();
-  
+loadCalendarPromos();  
 function cancelEdit(){
 
   editingPromoId = null;
@@ -1371,6 +1447,100 @@ async function carregarSetores(){
       .map(t => `<option value="${t}">${t}</option>`)
       .join("")}
   `;
+}
+
+
+
+/* ================= CALENDÁRIO ================= */
+
+let currentDate = new Date();
+let promosCache = [];
+
+async function loadCalendarPromos(){
+  const { data } = await sb
+    .from("promocoes")
+    .select("*");
+
+  promosCache = data || [];
+  renderCalendar();
+}
+
+function renderCalendar(){
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  const startWeekDay = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+
+  const calendar = document.getElementById("calendar");
+  calendar.innerHTML = "";
+
+  const monthName = firstDay.toLocaleString("pt-BR",{month:"long"});
+  document.getElementById("monthTitle").innerText =
+    monthName.charAt(0).toUpperCase()+monthName.slice(1)+" "+year;
+
+  // dias vazios início
+  for(let i=0;i<startWeekDay;i++){
+    calendar.innerHTML += `<div></div>`;
+  }
+
+  for(let day=1; day<=totalDays; day++){
+
+    const dateObj = new Date(year, month, day);
+    const weekDay = dateObj.getDay() === 0 ? 7 : dateObj.getDay();
+
+    const promosDia = promosCache.filter(p =>
+      p.dias_semana?.includes(weekDay)
+    );
+
+    calendar.innerHTML += `
+      <div class="calendar-day ${promosDia.length?'has-promo':''}"
+           onclick="openDay(${day})">
+
+        <div class="calendar-day-number">${day}</div>
+
+        ${promosDia.length
+          ? `<div class="calendar-indicator"></div>`
+          : ``}
+
+      </div>
+    `;
+  }
+}
+
+function prevMonth(){
+  currentDate.setMonth(currentDate.getMonth()-1);
+  renderCalendar();
+}
+
+function nextMonth(){
+  currentDate.setMonth(currentDate.getMonth()+1);
+  renderCalendar();
+}
+
+function openDay(day){
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const dateObj = new Date(year, month, day);
+  const weekDay = dateObj.getDay() === 0 ? 7 : dateObj.getDay();
+
+  const promosDia = promosCache.filter(p =>
+    p.dias_semana?.includes(weekDay)
+  );
+
+  if(!promosDia.length){
+    alert("Nenhuma promoção neste dia.");
+    return;
+  }
+
+  // abre edição da primeira promo (pode evoluir para lista modal depois)
+  editarPromo(promosDia[0].id);
 }
 </script>
 
