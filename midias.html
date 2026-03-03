@@ -4,12 +4,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Mídias de Promoção • Admin</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 /* =========================================================
-   EXECUTIVO PREMIUM REAL • MERCATTO STYLE
+   EXECUTIVO PREMIUM • MERCATTO STYLE
 ========================================================= */
 
 :root{
@@ -46,7 +48,7 @@ body{
   color:var(--text);
 }
 
-/* ================= HEADER ================= */
+/* HEADER */
 
 .header{
   height:70px;
@@ -64,7 +66,6 @@ body{
   margin:0;
   font-size:18px;
   font-weight:900;
-  letter-spacing:.3px;
 }
 
 .header button{
@@ -85,7 +86,7 @@ body{
   box-shadow:var(--shadow-md);
 }
 
-/* ================= LAYOUT ================= */
+/* LAYOUT */
 
 .container{
   flex:1;
@@ -96,7 +97,7 @@ body{
   overflow:hidden;
 }
 
-/* ================= PAINEL ESQUERDO ================= */
+/* PAINEL */
 
 .panel{
   background:var(--card);
@@ -115,7 +116,6 @@ body{
   font-size:13px;
   font-weight:900;
   color:var(--accent);
-  letter-spacing:.6px;
 }
 
 label{
@@ -163,10 +163,6 @@ input:focus,select:focus{
   transition:.2s;
 }
 
-.day:hover{
-  background:#f1f5f9;
-}
-
 .day.active{
   background:var(--accent);
   color:#fff;
@@ -191,8 +187,6 @@ input:focus,select:focus{
   height:100%;
   object-fit:contain;
 }
-
-/* BOTÕES */
 
 button{
   height:38px;
@@ -224,7 +218,7 @@ button.edit{
   color:#3730a3;
 }
 
-/* ================= DIREITA ================= */
+/* DIREITA */
 
 .right-area{
   display:flex;
@@ -245,8 +239,6 @@ button.edit{
   border-radius:14px;
 }
 
-/* ================= GRID ================= */
-
 .grid{
   flex:1;
   overflow-y:auto;
@@ -260,13 +252,12 @@ button.edit{
 .grid::-webkit-scrollbar{
   width:8px;
 }
-
 .grid::-webkit-scrollbar-thumb{
   background:#d1d5db;
   border-radius:10px;
 }
 
-/* ================= CARD ================= */
+/* CARD */
 
 .card{
   background:#fff;
@@ -334,31 +325,37 @@ button.edit{
   padding:12px;
 }
 
-/* RESPONSIVO */
-
 @media(max-width:1000px){
   .container{
     grid-template-columns:1fr;
   }
 }
+
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>Mídias do cardápio</h1>
-  <button class="primary" onclick="openBuffetModal()">🍽️ Itens do Cardápio</button>
+  <h1>Mídias do Cardápio</h1>
 </div>
 
 <div class="container">
+
+  <!-- PAINEL ESQUERDO -->
   <div class="panel">
+
     <h2>NOVA PROMOÇÃO</h2>
-    <label>Arquivo (imagem ou vídeo)</label>
+
+    <label>Arquivo</label>
     <input id="file" type="file" accept="image/*,video/*">
+
     <div class="row">
       <div>
         <label>Tipo</label>
-        <select id="tipo"><option value="IMG">Imagem</option><option value="VIDEO">Vídeo</option></select>
+        <select id="tipo">
+          <option value="IMG">Imagem</option>
+          <option value="VIDEO">Vídeo</option>
+        </select>
       </div>
       <div>
         <label>Horário</label>
@@ -368,77 +365,107 @@ button.edit{
         </div>
       </div>
     </div>
+
     <label>Dias da semana</label>
-    <div class="days" id="dias">
-      <div class="day" data-v="1">Seg</div><div class="day" data-v="2">Ter</div><div class="day" data-v="3">Qua</div>
-      <div class="day" data-v="4">Qui</div><div class="day" data-v="5">Sex</div><div class="day" data-v="6">Sáb</div><div class="day" data-v="7">Dom</div>
+    <div class="days">
+      <div class="day" data-v="1">Seg</div>
+      <div class="day" data-v="2">Ter</div>
+      <div class="day" data-v="3">Qua</div>
+      <div class="day" data-v="4">Qui</div>
+      <div class="day" data-v="5">Sex</div>
+      <div class="day" data-v="6">Sáb</div>
+      <div class="day" data-v="7">Dom</div>
     </div>
+
     <div class="preview" id="preview">Pré-visualização</div>
-    <button class="primary" onclick="addPromo()">📤 Upload & Salvar</button>
+
+    <button class="primary" onclick="addPromo()">Salvar Promoção</button>
+
   </div>
-<div class="right-area">
-  <div class="search-bar">
-    <input id="searchPromo" placeholder="Pesquisar promoção..." oninput="load()">
+
+  <!-- ÁREA DIREITA -->
+  <div class="right-area">
+    <div class="search-bar">
+      <input id="searchPromo" placeholder="Pesquisar..." oninput="load()">
+    </div>
+    <div class="grid" id="grid"></div>
   </div>
-  <div class="grid" id="grid"></div>
-</div>
+
 </div>
 
 <script>
-const sb = supabase.createClient("https://dxkszikemntfusfyrzos.supabase.co","sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed");
-const fileInput=document.getElementById("file"), tipoInput=document.getElementById("tipo"), horaInicioInput=document.getElementById("hora_inicio"), horaFimInput=document.getElementById("hora_fim"), preview=document.getElementById("preview"), grid=document.getElementById("grid");
+
+const sb = supabase.createClient(
+  "https://dxkszikemntfusfyrzos.supabase.co",
+  "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
+);
+
+const fileInput=document.getElementById("file");
+const tipoInput=document.getElementById("tipo");
+const horaInicioInput=document.getElementById("hora_inicio");
+const horaFimInput=document.getElementById("hora_fim");
+const preview=document.getElementById("preview");
+const grid=document.getElementById("grid");
+
 let diasSel=[];
-let editingPromoId = null;
-document.querySelectorAll(".day").forEach(d=>d.onclick=()=>{d.classList.toggle("active");const v=+d.dataset.v;diasSel.includes(v)?diasSel=diasSel.filter(x=>x!==v):diasSel.push(v);});
-fileInput.onchange=()=>{const f=fileInput.files[0];if(!f)return;preview.innerHTML=f.type.startsWith("video")?`<video src="${URL.createObjectURL(f)}" autoplay muted loop playsinline></video>`:`<img src="${URL.createObjectURL(f)}">`;};
-const diasLabel=d=>({1:"Seg",2:"Ter",3:"Qua",4:"Qui",5:"Sex",6:"Sáb",7:"Dom"}[d]||d);
-   
+let editingPromoId=null;
+
+document.querySelectorAll(".day").forEach(d=>{
+  d.onclick=()=>{
+    d.classList.toggle("active");
+    const v=+d.dataset.v;
+    diasSel.includes(v)?diasSel=diasSel.filter(x=>x!==v):diasSel.push(v);
+  };
+});
+
+fileInput.onchange=()=>{
+  const f=fileInput.files[0];
+  if(!f)return;
+  preview.innerHTML=f.type.startsWith("video")
+  ? `<video src="${URL.createObjectURL(f)}" autoplay muted loop></video>`
+  : `<img src="${URL.createObjectURL(f)}">`;
+};
+
+const diasLabel=d=>({1:"Seg",2:"Ter",3:"Qua",4:"Qui",5:"Sex",6:"Sáb",7:"Dom"}[d]);
+
 async function load(){
-  const termo = (document.getElementById("searchPromo")?.value || "").toLowerCase();
+  const termo=(document.getElementById("searchPromo").value||"").toLowerCase();
 
-  const { data } = await sb
-    .from("promocoes")
-    .select("*")
-    .order("created_at",{ascending:false});
+  const {data}=await sb.from("promocoes")
+  .select("*")
+  .order("created_at",{ascending:false});
 
-  const filtrado = (data || []).filter(p =>
-    (p.tipo || "").toLowerCase().includes(termo) ||
-    (p.hora_inicio || "").includes(termo) ||
-    (p.hora_fim || "").includes(termo) ||
-    (p.dias_semana || []).join(",").includes(termo)
+  const filtrado=(data||[]).filter(p=>
+    (p.tipo||"").toLowerCase().includes(termo)
   );
 
-  grid.innerHTML = filtrado.map(p => `
+  grid.innerHTML=filtrado.map(p=>`
     <div class="card">
       <div class="media">
         ${p.tipo==="VIDEO"
-          ? `<video src="${p.url}" muted autoplay loop playsinline></video>`
+          ? `<video src="${p.url}" muted autoplay loop></video>`
           : `<img src="${p.url}">`}
       </div>
       <div class="meta">
         <span class="badge ${p.ativo?'on':'off'}">
           ${p.tipo} • ${p.ativo?'ON':'OFF'}
         </span>
-        <div>📅 ${(p.dias_semana||[]).map(diasLabel).join(", ")||"—"}</div>
+        <div>📅 ${(p.dias_semana||[]).map(diasLabel).join(", ")}</div>
         <div>⏰ ${p.hora_inicio} → ${p.hora_fim}</div>
       </div>
       <div class="actions">
         <button class="edit" onclick="editarPromo('${p.id}')">Editar</button>
-        <button onclick="toggle('${p.id}',${p.ativo})">
-          ${p.ativo?'Off':'On'}
-        </button>
-        <button class="danger" onclick="delPromo('${p.id}','${p.url}')">
-          X
-        </button>
+        <button onclick="toggle('${p.id}',${p.ativo})">${p.ativo?'Off':'On'}</button>
+        <button class="danger" onclick="delPromo('${p.id}','${p.url}')">X</button>
       </div>
     </div>
   `).join("");
 }
+
 async function addPromo(){
 
   if(!diasSel.length) return alert("Selecione os dias");
 
-  /* ===== ATUALIZAR ===== */
   if(editingPromoId){
     await sb.from("promocoes").update({
       tipo:tipoInput.value,
@@ -447,22 +474,21 @@ async function addPromo(){
       hora_fim:horaFimInput.value
     }).eq("id",editingPromoId);
 
-    editingPromoId = null;
+    editingPromoId=null;
     resetForm();
     load();
     return;
   }
 
-  /* ===== CRIAR ===== */
   const f=fileInput.files[0];
   if(!f) return alert("Selecione um arquivo");
 
   const ext=f.name.split(".").pop();
-  const path=`promocoes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const path=`promocoes/${Date.now()}.${ext}`;
 
-  await sb.storage.from("promocoes").upload(path,f,{upsert:false});
+  await sb.storage.from("promocoes").upload(path,f);
 
-  const { data:urlData } = sb.storage.from("promocoes").getPublicUrl(path);
+  const {data:urlData}=sb.storage.from("promocoes").getPublicUrl(path);
 
   await sb.from("promocoes").insert({
     url:urlData.publicUrl,
@@ -476,81 +502,47 @@ async function addPromo(){
   resetForm();
   load();
 }
-   async function toggle(id,ativo){await sb.from("promocoes").update({ativo:!ativo}).eq("id",id);load();}
-async function delPromo(id,url){if(!confirm("Excluir mídia?"))return;const path=url.split("/storage/v1/object/public/promocoes/")[1];if(path)await sb.storage.from("promocoes").remove([path]);await sb.from("promocoes").delete().eq("id",id);load();}
-load();
 
-let buffetItems=[],currentEdit=null;
-function openBuffetModal(){document.body.classList.add("modal-open");document.getElementById("buffetModal").classList.add("open");loadBuffet();}
-function closeBuffetModal(){document.body.classList.remove("modal-open");document.getElementById("buffetModal").classList.remove("open");}
-async function loadBuffet(){const{data}=await sb.from("buffet").select("id,nome,descricao,foto_url,ativo,cardapio,tipo").eq("ativo",true).order("nome");buffetItems=data||[];renderBuffet();}
-function renderBuffet(){const term=buscaBuffet.value.toLowerCase();const setor=filtroSetor.value;buffetList.innerHTML=buffetItems.filter(i=>(i.nome||"").toLowerCase().includes(term)&&(!setor||i.tipo===setor)).map(i=>`<div class="buffet-item" onclick="selectItem('${i.id}')"><img src="${i.foto_url||''}"><div><b>${i.nome}</b><br><small>${i.descricao||''}</small><br><small style="opacity:.6">${i.tipo||'Sem setor'}</small></div><button class="toggle ${i.cardapio?'on':'off'}" onclick="toggleCardapio(event,'${i.id}',${i.cardapio})">${i.cardapio?'NO CARDÁPIO':'FORA'}</button></div>`).join("");}
-function selectItem(id){currentEdit=buffetItems.find(i=>i.id===id);editNome.value=currentEdit.nome||"";editDesc.value=currentEdit.descricao||"";}
-async function toggleCardapio(ev,id,atual){ev.stopPropagation();await sb.from("buffet").update({cardapio:!atual}).eq("id",id);loadBuffet();}
-async function salvarItem(){if(!currentEdit)return alert("Selecione um item");let foto_url=currentEdit.foto_url;const f=editFoto.files[0];if(f){const ext=f.name.split(".").pop();const path=`buffet/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;await sb.storage.from("buffet").upload(path,f,{upsert:false});foto_url=sb.storage.from("buffet").getPublicUrl(path).data.publicUrl;}await sb.from("buffet").update({nome:editNome.value,descricao:editDesc.value,foto_url}).eq("id",currentEdit.id);editFoto.value="";currentEdit=null;loadBuffet();}
+async function toggle(id,ativo){
+  await sb.from("promocoes").update({ativo:!ativo}).eq("id",id);
+  load();
+}
+
+async function delPromo(id,url){
+  if(!confirm("Excluir mídia?"))return;
+  await sb.from("promocoes").delete().eq("id",id);
+  load();
+}
 
 async function editarPromo(id){
-  const { data } = await sb
-    .from("promocoes")
-    .select("*")
-    .eq("id",id)
-    .single();
+  const {data}=await sb.from("promocoes").select("*").eq("id",id).single();
+  if(!data)return;
 
-  if(!data) return;
-
-  editingPromoId = id;
-
-  tipoInput.value = data.tipo;
-  horaInicioInput.value = data.hora_inicio;
-  horaFimInput.value = data.hora_fim;
-
-  diasSel = data.dias_semana || [];
+  editingPromoId=id;
+  tipoInput.value=data.tipo;
+  horaInicioInput.value=data.hora_inicio;
+  horaFimInput.value=data.hora_fim;
+  diasSel=data.dias_semana||[];
 
   document.querySelectorAll(".day").forEach(d=>{
-    d.classList.toggle("active", diasSel.includes(+d.dataset.v));
+    d.classList.toggle("active",diasSel.includes(+d.dataset.v));
   });
 
-  preview.innerHTML = data.tipo==="VIDEO"
-    ? `<video src="${data.url}" autoplay muted loop></video>`
-    : `<img src="${data.url}">`;
+  preview.innerHTML=data.tipo==="VIDEO"
+  ? `<video src="${data.url}" autoplay muted loop></video>`
+  : `<img src="${data.url}">`;
 }
 
-
-
-   function resetForm(){
-  fileInput.value = "";
-  preview.innerHTML = "Pré-visualização";
-  diasSel = [];
+function resetForm(){
+  fileInput.value="";
+  preview.innerHTML="Pré-visualização";
+  diasSel=[];
   document.querySelectorAll(".day").forEach(d=>d.classList.remove("active"));
-  editingPromoId = null;
 }
-</script>
 
-<div id="buffetModal" class="modal" onclick="if(event.target.id==='buffetModal')closeBuffetModal()">
-  <div class="modal-box">
-    <div class="buffet-wrap">
-      <div class="filters">
-        <input id="buscaBuffet" placeholder="Buscar item..." oninput="renderBuffet()">
-        <select id="filtroSetor" onchange="renderBuffet()">
-          <option value="">Todos</option>
-          <option value="SUSHI">Sushi</option>
-          <option value="PIZZA">Pizza</option>
-          <option value="MASSAS">Massas</option>
-          <option value="BEBIDAS">Bebidas</option>
-        </select>
-      </div>
-      <div id="buffetList" class="buffet-list"></div>
-    </div>
-    <div class="edit">
-      <h3>Editar Item</h3>
-      <input id="editNome" placeholder="Nome">
-      <textarea id="editDesc" placeholder="Descrição"></textarea>
-      <input id="editFoto" type="file" accept="image/*">
-      <button class="primary" onclick="salvarItem()">Salvar alterações</button>
-      <button onclick="closeBuffetModal()">Fechar</button>
-    </div>
-  </div>
-</div>
+load();
+
+</script>
 
 </body>
 </html>
