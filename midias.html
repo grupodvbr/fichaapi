@@ -962,67 +962,77 @@ function removerProdutoVinculado(){
 }
   
 async function loadPromos(){
-  const termo=(searchPromo.value||"").toLowerCase();
-const {data}=await sb.from("promocoes")
-  .select(`
-    *,
-    produtos (
-      nome
+
+  const termo = (document.getElementById("searchPromo").value || "")
+    .toLowerCase();
+
+  const { data } = await sb
+    .from("promocoes")
+    .select(`
+      *,
+      produtos (
+        nome
+      )
+    `)
+    .order("created_at",{ascending:false});
+
+  grid.innerHTML = (data || [])
+    .filter(p =>
+      (p.tipo || "").toLowerCase().includes(termo)
     )
-  `)
-  .order("created_at",{ascending:false});
-  grid.innerHTML=(data||[])
-  .filter(p=>(p.tipo||"").toLowerCase().includes(termo))
-.map(p=>`
-  <div class="card">
-    <div class="media">
-      ${p.tipo==="VIDEO"
-        ? `<video src="${p.url}" muted autoplay loop></video>`
-        : `<img src="${p.url}">`}
-    </div>
+    .map(p=>`
+      <div class="card">
 
-<div class="meta">
-  <span class="badge ${p.ativo?'on':'off'}">
-    ${p.tipo}
-  </span>
+        <div class="media">
+          ${p.tipo==="VIDEO"
+            ? `<video src="${p.url}" muted autoplay loop></video>`
+            : `<img src="${p.url}">`}
+        </div>
 
-  ${p.produtos?.nome 
-    ? `<div style="font-size:10px;
-                   font-weight:700;
-                   color:#6b7280;
-                   white-space:nowrap;
-                   overflow:hidden;
-                   text-overflow:ellipsis;">
-         🍽 ${p.produtos.nome}
-       </div>`
-    : ""
-  }
+        <div class="meta">
+          <span class="badge ${p.ativo?'on':'off'}">
+            ${p.tipo}
+          </span>
 
-  <div>⏰ ${p.hora_inicio} → ${p.hora_fim}</div>
-</div>
+          ${p.produtos?.nome 
+            ? `<div style="
+                font-size:10px;
+                font-weight:700;
+                color:#6b7280;
+                white-space:nowrap;
+                overflow:hidden;
+                text-overflow:ellipsis;">
+                🍽 ${p.produtos.nome}
+              </div>`
+            : ""
+          }
 
-    <div class="card-footer">
+          <div>⏰ ${p.hora_inicio} → ${p.hora_fim}</div>
+        </div>
 
-      <button class="edit-btn"
-        onclick="editarPromo('${p.id}')">
-        ✏️
-      </button>
-      
-      <label class="switch">
-        <input type="checkbox"
-          ${p.ativo?'checked':''}
-          onchange="togglePromo('${p.id}',${p.ativo})">
-        <span class="slider"></span>
-      </label>
+        <div class="card-footer">
 
-      <button class="danger small-x"
-        onclick="delPromo('${p.id}')">
-        X
-      </button>
+          <button class="edit-btn"
+            onclick="editarPromo('${p.id}')">
+            ✏️
+          </button>
+          
+          <label class="switch">
+            <input type="checkbox"
+              ${p.ativo?'checked':''}
+              onchange="togglePromo('${p.id}',${p.ativo})">
+            <span class="slider"></span>
+          </label>
 
-    </div>
-  </div>
-`).join("");
+          <button class="danger small-x"
+            onclick="delPromo('${p.id}')">
+            X
+          </button>
+
+        </div>
+
+      </div>
+    `).join("");
 }
 
 async function addPromo(){
@@ -1228,28 +1238,37 @@ async function loadBuffet(){
 }
 
 function renderBuffet(){
-  const term=(buscaBuffet.value||"").toLowerCase();
-  const setor=filtroSetor.value;
 
-  buffetList.innerHTML=buffetItems
-  .filter(i=>
-    (i.nome||"").toLowerCase().includes(term) &&
-    (!setor||i.tipo===setor)
-  )
-  .map(i=>`
-    <div class="buffet-item" onclick="selectItem('${i.id}')">
-      <img src="${i.foto_url||''}">
-      <div>
-        <b>${i.nome}</b><br>
-        <small>${i.descricao||''}</small><br>
-        <small style="opacity:.6">${i.tipo||''}</small>
+  const term = (document.getElementById("buscaBuffet").value || "")
+    .toLowerCase();
+
+  const setor = document.getElementById("filtroSetor").value;
+
+  const buffetList = document.getElementById("buffetList");
+
+  buffetList.innerHTML = buffetItems
+    .filter(i =>
+      (i.nome || "").toLowerCase().includes(term) &&
+      (!setor || i.tipo === setor)
+    )
+    .map(i=>`
+      <div class="buffet-item" onclick="selectItem('${i.id}')">
+
+        <img src="${i.foto_url || ''}">
+
+        <div>
+          <b>${i.nome}</b><br>
+          <small>${i.descricao || ''}</small><br>
+          <small style="opacity:.6">${i.tipo || ''}</small>
+        </div>
+
+        <button class="toggle ${i.cardapio?'on':'off'}"
+          onclick="toggleCardapio(event,'${i.id}',${i.cardapio})">
+          ${i.cardapio?'NO CARDÁPIO':'FORA'}
+        </button>
+
       </div>
-      <button class="toggle ${i.cardapio?'on':'off'}"
-        onclick="toggleCardapio(event,'${i.id}',${i.cardapio})">
-        ${i.cardapio?'NO CARDÁPIO':'FORA'}
-      </button>
-    </div>
-  `).join("");
+    `).join("");
 }
 
 function selectItem(id){
