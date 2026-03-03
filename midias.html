@@ -105,7 +105,8 @@ body{
   flex-direction:column;
   gap:16px;
   box-shadow:var(--shadow-sm);
-  overflow:auto;
+  overflow-y:auto;
+  overflow-x:hidden;
 }
 
 .panel h2{
@@ -168,7 +169,9 @@ textarea{
 /* ===== PREVIEW PROFISSIONAL AJUSTADO ===== */
 
 .preview{
-  height:420px;                /* 🔥 AUMENTADO */
+  min-height:280px;      /* altura mínima */
+  height:40vh;           /* proporcional à tela */
+  max-height:520px;      /* limite máximo */
   border-radius:14px;
   border:2px dashed var(--border);
   background:#0f172a;
@@ -557,10 +560,12 @@ button.danger{
     padding:5px 10px;
   }
 
-  .preview{
-    height:380px;
-    font-size:11px;
-  }
+.preview{
+  min-height:260px;
+  height:45vh;
+  max-height:480px;
+  font-size:11px;
+}
 
   button.primary{
     height:36px;
