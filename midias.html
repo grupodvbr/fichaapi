@@ -165,22 +165,27 @@ textarea{
   border-color:var(--accent);
 }
 
+/* ===== PREVIEW PROFISSIONAL AJUSTADO ===== */
+
 .preview{
-  height:120px;
+  height:220px;                /* 🔥 AUMENTADO */
   border-radius:14px;
   border:2px dashed var(--border);
-  display:grid;
-  place-items:center;
-  font-size:12px;
-  color:var(--muted);
+  background:#0f172a;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   overflow:hidden;
+  position:relative;
 }
 
+/* container interno */
 .preview img,
 .preview video{
   width:100%;
   height:100%;
-  object-fit:contain;
+  object-fit:contain;     /* não corta */
+  border-radius:10px;
 }
 
 button.primary{
@@ -645,6 +650,15 @@ button.danger{
   padding:0;
   font-size:11px;
 }
+
+.btn-group{
+  display:flex;
+  gap:10px;
+}
+
+.btn-group button{
+  flex:1;              /* 🔥 divide o espaço igualmente */
+}
 </style>
 </head>
 <body>
@@ -686,8 +700,17 @@ button.danger{
     </div>
 
     <div class="preview" id="preview">Pré-visualização</div>
-    <button class="primary" onclick="addPromo()">Salvar Promoção</button>
+<div class="btn-group">
+  <button id="btnSalvar" class="primary" onclick="addPromo()">
+    Salvar Promoção
+  </button>
 
+  <button id="btnCancelar" class="secondary" 
+          onclick="cancelEdit()" 
+          style="display:none;">
+    Cancelar
+  </button>
+</div>
   </div>
 
   <div class="right-area">
@@ -753,14 +776,28 @@ document.querySelectorAll(".day").forEach(d=>{
   };
 });
 
-fileInput.onchange=()=>{
-  const f=fileInput.files[0];
-  if(!f)return;
-  preview.innerHTML=f.type.startsWith("video")
-  ? `<video src="${URL.createObjectURL(f)}" autoplay muted loop></video>`
-  : `<img src="${URL.createObjectURL(f)}">`;
-};
+fileInput.onchange = () => {
+  const f = fileInput.files[0];
+  if (!f) return;
 
+  const url = URL.createObjectURL(f);
+
+  if (f.type.startsWith("video")) {
+    preview.innerHTML = `
+      <video 
+        src="${url}" 
+        autoplay 
+        muted 
+        loop 
+        playsinline
+      ></video>
+    `;
+  } else {
+    preview.innerHTML = `
+      <img src="${url}">
+    `;
+  }
+};
 async function loadPromos(){
   const termo=(searchPromo.value||"").toLowerCase();
   const {data}=await sb.from("promocoes").select("*").order("created_at",{ascending:false});
@@ -906,7 +943,8 @@ async function editarPromo(id){
     .single();
 
   editingPromoId = id;
-
+document.getElementById("btnCancelar").style.display = "inline-block";
+document.getElementById("btnSalvar").innerText = "Atualizar Promoção";
   tipoInput.value = data.tipo;
   horaInicioInput.value = data.hora_inicio;
   horaFimInput.value = data.hora_fim;
@@ -933,13 +971,31 @@ async function editarPromo(id){
 }
 
 function resetForm(){
-  fileInput.value="";
-  preview.innerHTML="Pré-visualização";
-  diasSel=[];
+
+  fileInput.value = "";
+  preview.innerHTML = "Pré-visualização";
+  diasSel = [];
+
+  document.querySelectorAll(".day").forEach(d=>{
+    d.classList.remove("active");
+  });
+
+  tipoInput.value = "IMG";
+  horaInicioInput.value = "00:00";
+  horaFimInput.value = "23:59";
 }
 
 loadPromos();
+  
+function cancelEdit(){
 
+  editingPromoId = null;
+
+  resetForm();
+
+  document.getElementById("btnCancelar").style.display = "none";
+  document.getElementById("btnSalvar").innerText = "Salvar Promoção";
+}
 /* ===================== BUFFET ===================== */
 
 let buffetItems=[];
