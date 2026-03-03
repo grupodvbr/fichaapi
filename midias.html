@@ -659,6 +659,73 @@ button.danger{
 .btn-group button{
   flex:1;              /* 🔥 divide o espaço igualmente */
 }
+
+/* ================= PRODUTO VINCULADO UI FIX ================= */
+
+#buscaProduto{
+  margin-top:6px;
+}
+
+#resultadoProdutos{
+  margin-top:6px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 8px 20px rgba(0,0,0,.06);
+  overflow:auto;
+  max-height:160px;
+}
+
+/* itens da busca */
+#resultadoProdutos div{
+  padding:10px 14px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.15s;
+}
+
+#resultadoProdutos div:hover{
+  background:#f1f5f9;
+}
+
+/* card produto vinculado */
+#produtoSelecionado{
+  margin-top:10px;
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:#f9fafb;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  box-shadow:var(--shadow-sm);
+}
+
+/* título */
+#produtoSelecionado strong{
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.5px;
+}
+
+/* nome do produto */
+#produtoSelecionado span{
+  font-size:15px;
+  font-weight:800;
+  color:var(--primary);
+}
+
+/* botão remover alinhado */
+#produtoSelecionado button{
+  align-self:flex-start;
+  height:32px;
+  padding:0 14px;
+  font-size:12px;
+  border-radius:10px;
+}
+
+
 </style>
 </head>
 <body>
@@ -844,16 +911,16 @@ function selecionarProduto(id,nome){
   produtoVinculado = id;
 
   document.getElementById("produtoSelecionado").style.display = "block";
-  document.getElementById("produtoSelecionado").innerHTML = `
-    <strong>Produto vinculado:</strong><br>
-    ${nome}
-    <br>
-    <button class="secondary"
-            style="margin-top:8px"
-            onclick="removerProdutoVinculado()">
-      Remover
-    </button>
-  `;
+
+  
+document.getElementById("produtoSelecionado").innerHTML = `
+  <strong>PRODUTO VINCULADO</strong>
+  <span>${nome}</span>
+  <button class="secondary"
+          onclick="removerProdutoVinculado()">
+    Remover
+  </button>
+`;
 
   document.getElementById("resultadoProdutos").innerHTML = "";
   document.getElementById("buscaProduto").value = "";
