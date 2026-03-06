@@ -174,7 +174,33 @@ body{
   background:linear-gradient(135deg,var(--primary),#1e40af);
   color:#fff;
 }
+.btn-photo{
+  background:#111827;
+  color:#fff;
+}
 
+.upload{
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.upload input{
+  display:none;
+}
+
+.upload label{
+  background:#111827;
+  color:#fff;
+  border-radius:12px;
+  height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  cursor:pointer;
+}
 .ing{
   border-bottom:1px dashed var(--border);
   padding:8px 0;
@@ -283,8 +309,21 @@ async function abrir(p){
     .eq("buffet_id", p.id);
 
   mBody.innerHTML=`
-    <h2>${p.nome}</h2>
+<h2>${p.nome}</h2>
 
+<div class="upload">
+
+  <label for="fotoInput">
+    📷 ADICIONAR / TROCAR FOTO
+  </label>
+
+  <input type="file"
+    id="fotoInput"
+    accept="image/*"
+    onchange="uploadFoto(event)"
+  >
+
+</div>
     <h3>MODO DE PREPARO</h3>
     <textarea id="receitaInput"
       placeholder="DESCREVA A RECEITA COMPLETA AQUI...">${p.modo_preparo||""}</textarea>
@@ -321,6 +360,45 @@ filtroTipo.onchange = render;
 filtroReceita.onchange = render;
 
 carregar();
+
+async function uploadFoto(e){
+
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const nomeArquivo =
+    pratoAtual.id + "-" + Date.now() + ".jpg";
+
+  const { error } = await sb
+    .storage
+    .from("buffet")
+    .upload(nomeArquivo, file, {
+      cacheControl: "3600",
+      upsert: true
+    });
+
+  if(error){
+    alert("Erro ao enviar imagem");
+    console.error(error);
+    return;
+  }
+
+  const { data } = sb
+    .storage
+    .from("buffet")
+    .getPublicUrl(nomeArquivo);
+
+  const url = data.publicUrl;
+
+  await sb
+    .from("buffet")
+    .update({ foto_url: url })
+    .eq("id", pratoAtual.id);
+
+  mFoto.src = url;
+
+  await carregar();
+}
 </script>
 
 </body>
