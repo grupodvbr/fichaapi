@@ -2,7 +2,10 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>CMV • Fichas Técnicas</title>
+
+<title>Fichas Técnicas</title>
+
+<link rel="icon" href="logo.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -11,16 +14,17 @@
 
 <style>
 :root{
-  --primary:#2563eb;
-  --primary-dark:#1e40af;
-  --success:#16a34a;
-  --danger:#dc2626;
+  --primary:#14c8a8;
+  --primary-dark:#0ea58b;
+
+  --success:#10b981;
+  --danger:#ef4444;
   --warning:#f59e0b;
 
-  --bg:#f8fafc;
+  --bg:#14c8a8;
   --card:#ffffff;
-  --text:#0f172a;
-  --muted:#64748b;
+  --text:#1f2937;
+  --muted:#6b7280;
   --border:#e5e7eb;
 
   --radius-lg:26px;
@@ -51,8 +55,6 @@ body{
 
 body.modal-open{
   overflow:hidden;
-  position:fixed;
-  width:100%;
 }
 
 
@@ -154,7 +156,7 @@ body.modal-open{
   max-width:1440px;
   max-height:92vh;
   border-radius:26px;
-  overflow:hidden;
+  overflow:visible;
   display:flex;
   flex-direction:column;
   box-shadow:var(--shadow-lg);
@@ -181,18 +183,17 @@ body.modal-open{
 .modal-left{
   border-radius:18px;
   overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,.35);
-  background:#000;
-
-  min-height:200px;
-  max-height:260px;
+  box-shadow:0 20px 60px rgba(0,0,0,.15);
+  background:#ffffff;
+  display:flex;
+  flex-direction:column;
 }
 
 .modal-img{
   width:100%;
-  height:100%;
-  object-fit:contain;   /* 👈 mostra inteira (se preferir menos corte) */
-  background:#000;     /* 👈 fundo elegante se sobrar borda */
+  height:320px; /* 👈 AQUI */
+  object-fit:cover;
+  background:#ffffff;
   display:block;
 }
 
@@ -204,7 +205,9 @@ body.modal-open{
   flex-direction:column;
   gap:18px;
   padding:10px 6px 18px;
-  overflow:hidden;
+  overflow:visible;
+  position:relative;
+  z-index:2;
 }
 
 .modal-main h2{
@@ -613,11 +616,13 @@ button{
 
 .line-add{
   display:grid;
-  grid-template-columns: 1.8fr .6fr .6fr auto;
+  grid-template-columns: 2fr .7fr .7fr 180px;
   gap:10px;
   align-items:center;
 }
 
+
+  
 .line-select{
   height:40px;
   border-radius:12px;
@@ -656,10 +661,15 @@ button{
     grid-template-columns:1fr 1fr;
   }
 
-  .btn-line{
-    grid-column: span 2;
-    width:100%;
-  }
+.btn-line{
+  height:40px;
+  min-width:44px;
+  padding:0 14px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
 }
 /* ===== CARDS FINANCEIROS COMPACTOS ===== */
 .card-stats{
@@ -753,7 +763,7 @@ button{
   border-radius:50%;
   border:none;
 
-  background:var(--primary);
+background:#0f172a;
   color:#fff;
   font-size:20px;
   font-weight:900;
@@ -888,75 +898,484 @@ button{
 
 
 
+/* =========================================
+   FILTROS — MENU ESCURO PREMIUM
+========================================= */
 
-
-  /* =========================
-   FILTROS — VISUAL DO "CMV EXECUTIVO TOTAL"
-   (substitui TODO o seu bloco atual de .filters + inputs/selects)
-========================= */
 .filters{
-  background:#fff;
-  padding:6px 10px;
+  background:#14c8a8; /* mesma cor do tema */
+  padding:10px 14px;
   display:flex;
   align-items:center;
-  gap:6px;
-  border-bottom:1px solid var(--border);
+  gap:8px;
+  border-bottom:1px solid #1e293b;
   position:sticky;
   top:0;
   z-index:50;
-
-  /* se tiver muitos selects, quebra sem estourar */
   flex-wrap:wrap;
 }
 
-/* INPUT (BUSCA) */
+/* INPUT BUSCA */
 .filters input{
   flex:1;
-  min-width:220px;
-  height:30px;
-  border-radius:6px;
-  border:1px solid var(--border);
-  padding:0 8px;
-  font-size:11px;
+  min-width:240px;
+  height:34px;
+
+  border-radius:8px;
+  border:1px solid 000000;
+
+  padding:0 10px;
+
+  font-size:12px;
   font-weight:600;
-  background:#f9fafb;
+
+  background:#ffffff;
+  color:#000000;
+
   outline:none;
+}
+
+.filters input::placeholder{
+  color:#94a3b8;
 }
 
 /* SELECTS */
 .filters select{
-  width:140px;
-  height:30px;
-  border-radius:6px;
-  border:1px solid var(--border);
-  padding:0 6px;
-  font-size:11px;
+  width:150px;
+  height:34px;
+
+  border-radius:8px;
+  border:1px solid #000000;
+
+  padding:0 8px;
+
+  font-size:12px;
   font-weight:600;
-  background:#f9fafb;
+
+  background:#ffffff;
+  color:#000000;
+
   outline:none;
 }
 
-/* FOCO (mesmo do executivo) */
-.filters input:focus,
-.filters select:focus{
-  border-color:var(--primary);
-  box-shadow:none;
+/* HOVER */
+.filters select:hover,
+.filters input:hover{
+  border-color:#475569;
 }
 
-/* MOBILE: busca em 1 linha e selects quebrando bonitinho */
+/* FOCO */
+.filters input:focus,
+.filters select:focus{
+  border-color:#3b82f6;
+  box-shadow:0 0 0 2px rgba(59,130,246,.2);
+}
+
+/* MOBILE */
 @media (max-width:600px){
+
   .filters input{
-    min-width:0;
     flex:1 1 100%;
+    min-width:0;
   }
+
   .filters select{
     width:48%;
   }
+
+}
+
+.btn-cadastrar{
+
+height:34px;
+padding:0 16px;
+
+border-radius:8px;
+
+background:#16a34a;
+color:white;
+
+font-size:12px;
+font-weight:800;
+letter-spacing:.04em;
+
+border:none;
+
+cursor:pointer;
+
+box-shadow:0 8px 18px rgba(22,163,74,.35);
+
+transition:.15s ease;
+
+}
+
+.btn-cadastrar:hover{
+
+transform:translateY(-1px);
+
+box-shadow:0 12px 26px rgba(22,163,74,.45);
+
+}.popupCadastro{
+
+position:fixed;
+inset:0;
+
+background:rgba(15,23,42,.75);
+backdrop-filter:blur(6px);
+
+display:none;
+align-items:center;
+justify-content:center;
+
+z-index:200;
+
+}
+
+.popupCadastroBox{
+
+width:95vw;
+max-width:1400px;
+height:92vh;
+
+background:#fff;
+
+border-radius:24px;
+
+box-shadow:0 40px 100px rgba(0,0,0,.45);
+
+overflow:hidden;
+
+display:flex;
+flex-direction:column;
+
+animation:popupIn .18s ease;
+
+}
+
+@keyframes popupIn{
+from{transform:scale(.96);opacity:0}
+to{transform:scale(1);opacity:1}
+}
+
+.popupCadastroHeader{
+
+height:60px;
+
+display:flex;
+align-items:center;
+justify-content:space-between;
+
+padding:0 20px;
+
+font-weight:800;
+font-size:14px;
+
+border-bottom:1px solid #e5e7eb;
+
+background:#f8fafc;
+
+}
+
+.popupCadastroHeader button{
+
+border:none;
+background:#ef4444;
+
+color:white;
+
+width:34px;
+height:34px;
+
+border-radius:8px;
+
+font-size:16px;
+font-weight:900;
+
+cursor:pointer;
+
+}
+
+.popupCadastro iframe{
+
+flex:1;
+border:none;
+
+}
+
+
+.foto-upload{
+  background:#f8fafc;
+  border-top:1px solid var(--border);
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.foto-upload input{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:6px;
+}
+
+
+  
+
+.foto-upload label{
+  font-weight:800;
+  font-size:12px;
+  display:block;
+  margin-bottom:6px;
+}
+
+.foto-upload input{
+  width:100%;
+  font-size:12px;
 }
 
 
 
-  
+#historicoBox{
+  background:#ffffff;
+  color:#0f172a;
+  padding:12px;
+
+  max-height:220px;
+  overflow-y:auto;
+
+  font-size:12px;
+  border-top:1px solid var(--border);
+}
+
+#historicoBox::-webkit-scrollbar{
+width:6px;
+}
+
+#historicoBox::-webkit-scrollbar-thumb{
+  background:#14c8a8;
+border-radius:6px;
+}
+
+.h-item{
+display:flex;
+justify-content:space-between;
+gap:10px;
+padding:10px 0;
+border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.h-field{
+opacity:.85;
+font-size:11px;
+margin-top:2px;
+}
+
+.h-restore{
+background:#14c8a8;
+color:#fff;
+font-weight:800;
+border:none;
+color:#fff;
+font-size:10px;
+padding:5px 8px;
+border-radius:6px;
+cursor:pointer;
+}
+
+/* =========================
+   DASHBOARD FINANCEIRO
+========================= */
+
+.financeiro-dashboard{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  margin-top:14px;
+}
+
+.fin-card{
+  background:#f8fafc;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  font-size:12px;
+  box-shadow:var(--shadow-xs);
+}
+
+.fin-card span{
+  display:block;
+  font-size:11px;
+  color:var(--muted);
+}
+
+.fin-card b{
+  display:block;
+  font-size:18px;
+  font-weight:900;
+  margin-top:4px;
+}
+
+.fin-card small{
+  display:block;
+  font-size:10px;
+  opacity:.7;
+  margin-top:2px;
+}
+
+/* cores */
+
+.fin-card.custo{
+  background:#f1f5f9;
+}
+
+.fin-card.venda{
+  background:#eef2ff;
+  border-color:#c7d2fe;
+  color:#3730a3;
+}
+
+.fin-card.lucro{
+  background:#ecfdf5;
+  border-color:#a7f3d0;
+  color:#065f46;
+}
+
+.fin-card.margem{
+  background:#fff7ed;
+  border-color:#fed7aa;
+  color:#9a3412;
+}
+
+.fin-card.cmv{
+  background:#ecfeff;
+  border-color:#a5f3fc;
+  color:#155e75;
+}
+
+.fin-card.cmv.danger{
+  background:#fee2e2;
+  border-color:#fecaca;
+  color:#991b1b;
+}
+
+/* mobile */
+
+@media(max-width:900px){
+  .financeiro-dashboard{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+
+
+.btn-loading{
+  position:relative;
+  pointer-events:none;
+  opacity:.9;
+}
+
+.btn-loading::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(15,23,42,.75);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.btn-loading::before{
+  content:"";
+  position:absolute;
+  width:16px;
+  height:16px;
+  border:2px solid white;
+  border-top-color:transparent;
+  border-radius:50%;
+  animation:spinBtn .6s linear infinite;
+  z-index:2;
+}
+
+@keyframes spinBtn{
+  to{ transform:rotate(360deg); }
+}
+
+
+
+
+.empresa-header{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:900;
+  font-size:14px;
+  color:#fff;
+  margin-right:6px;
+}
+
+.empresa-header .verificado{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#2563eb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  font-weight:900;
+  color:#fff;
+  box-shadow:0 0 0 2px rgba(37,99,235,.25);
+}
+
+@media(max-width:600px){
+  .empresa-header{
+    width:100%;
+    margin-bottom:4px;
+  }
+}
+
+.grid-3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+}
+.grid-4{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:12px;
+}
+#resultadoIngredientes{
+  z-index:50;
+}
+
+.item-busca{
+  padding:10px;
+  cursor:pointer;
+  font-weight:700;
+  border-bottom:1px solid #eee;
+}
+
+.item-busca:hover{
+  background:#ecfeff;
+} 
+
+
+  .modal-body{
+  position:relative;
+  z-index:1;
+  overflow-y:auto;
+}
+
+.modal{
+  z-index:999;
+}
+
+.modal-box{
+  position:relative;
+  z-index:1000;
+}
 </style>
 </head>
 
@@ -986,42 +1405,46 @@ button{
 
    
 <div class="filters">
-  <input id="filtroNome" type="text" placeholder="Buscar por nome do prato">
 
-  <select id="filtroTipo">
-    <option value="">Todos os tipos</option>
-  </select>
+<div class="empresa-header">
+  MERCATTO DELÍCIA
+  <span class="verificado">✔</span>
+</div>
 
-  <select id="filtroStatus">
-    <option value="">Todos (Ativo + Desativado)</option>
-    <option value="ativo">Somente ATIVOS</option>
-    <option value="inativo">Somente DESATIVADOS</option>
-  </select>
+<input id="filtroNome" type="text" placeholder="Buscar por nome do prato">
+<select id="filtroTipo">
+<option value="">Todos os tipos</option>
+</select>
 
-  <select id="filtroCMV">
-    <option value="">CMV (todas as faixas)</option>
-    <option value="lt30">CMV < 30%</option>
-    <option value="30_35">CMV 30–35%</option>
-    <option value="35_40">CMV 35–40%</option>
-    <option value="gt40">CMV > 40%</option>
-  </select>
+<select id="filtroStatus">
+<option value="">Todos (Ativo + Desativado)</option>
+<option value="ativo">Somente ATIVOS</option>
+<option value="inativo">Somente DESATIVADOS</option>
+</select>
 
-  <select id="filtroMargem">
-    <option value="">Margem (todas as faixas)</option>
-    <option value="lt25">Margem < 25%</option>
-    <option value="25_30">Margem 25–30%</option>
-    <option value="30_40">Margem 30–40%</option>
-    <option value="gt40">Margem > 40%</option>
-  </select>
+<select id="filtroCMV">
+<option value="">CMV (todas as faixas)</option>
+<option value="lt30">CMV < 30%</option>
+<option value="30_35">CMV 30–35%</option>
+<option value="35_40">CMV 35–40%</option>
+<option value="gt40">CMV > 40%</option>
+</select>
 
-  <select id="filtroSort">
-    <option value="recent">Ordenar: Mais recente</option>
-    <option value="cmv_desc">Maior CMV</option>
-    <option value="margem_asc">Menor margem</option>
-    <option value="lucro_desc">Maior lucro</option>
-    <option value="custo_desc">Maior custo</option>
-    <option value="az">A–Z</option>
-  </select>
+
+
+<select id="filtroSort">
+<option value="recent">Ordenar: Mais recente</option>
+<option value="cmv_desc">Maior CMV</option>
+<option value="margem_asc">Menor margem</option>
+<option value="lucro_desc">Maior lucro</option>
+<option value="custo_desc">Maior custo</option>
+<option value="az">A–Z</option>
+</select>
+
+<button class="btn-cadastrar" onclick="abrirCadastro()">
++ CADASTRAR
+</button>
+
 </div>
 
 <div id="cards" class="grid"></div>
@@ -1031,18 +1454,33 @@ button{
   <div class="modal-box" onclick="event.stopPropagation()">
     <span class="close" onclick="fechar()">✕</span>
 
-    <div class="modal-header">
-      <div class="modal-left">
-        <img id="mFoto" class="modal-img">
-      </div>
+<div class="modal-header">
 
-      <div class="modal-main">
-        <div id="mHeader"></div>
+  <!-- COLUNA ESQUERDA -->
+<div class="modal-left">
 
-        <!-- CONTEÚDO VAI PRAQUI -->
-        <div id="mBody" class="modal-body"></div>
-      </div>
-    </div>
+<img id="mFoto" class="modal-img">
+
+<div class="foto-upload">
+<label>FOTO DO PRATO</label>
+<input type="file" id="fotoPrato" accept="image/*">
+</div>
+
+<!-- HISTÓRICO -->
+<div id="historicoBox"></div>
+
+</div>
+
+  <!-- COLUNA DIREITA -->
+  <div class="modal-main">
+
+    <div id="mHeader"></div>
+
+    <div id="mBody" class="modal-body"></div>
+
+  </div>
+
+</div>
   </div>
 </div>
 
@@ -1125,8 +1563,10 @@ sb.auth.onAuthStateChange((_event, session) => {
    UTIL
 ===================================================== */
 const moeda = v =>
-  "R$ " + Number(v || 0).toLocaleString("pt-BR",{minimumFractionDigits:2});
-
+  "R$ " + Number(v || 0).toLocaleString("pt-BR",{
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+  });
 /* =====================================================
    STATE
 ===================================================== */
@@ -1134,6 +1574,7 @@ let pratos = [];
 let ingredientesBase = [];
 let impostosCache = [];
 let pratoAtual = null;
+let ingredienteSelecionado = null;
 let filtroTipoSelecionado = "";
 let pageSize = 20;        // 🔥 quantidade por carga
 let pageIndex = 0;       // 🔥 página atual
@@ -1296,7 +1737,6 @@ function aplicarFiltros() {
 
   const statusFiltro = (window.filtroStatus?.value || "");
   const cmvFaixa = (window.filtroCMV?.value || "");
-  const margemFaixa = (window.filtroMargem?.value || "");
   const sort = (window.filtroSort?.value || "recent");
 
   // 1) filtra e já calcula métricas pra usar em faixa + sort
@@ -1318,9 +1758,7 @@ function aplicarFiltros() {
     const m = calcMetricsForList(p);
 
     const cmvOk = inRangeCMV(m.cmvPerc, cmvFaixa);
-    const margemOk = inRangeMargem(m.margem, margemFaixa);
-
-    if(!cmvOk || !margemOk) continue;
+if(!cmvOk) continue;
 
     base.push({ p, m });
   }
@@ -1441,6 +1879,7 @@ c.addEventListener("click", async () => {
       ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
       <div class="card-body">
         <h3>${p.nome}</h3>
+        ${p.tempo_preparo ? `<div class="badge">⏱ ${p.tempo_preparo} min</div>` : ""}
         <p class="desc-card">${p.descricao || ""}</p>
         <div class="card-stats">
           <div class="stat blue">📦 Tipo<b>${p.tipo || "—"}</b></div>
@@ -1473,7 +1912,6 @@ filtroTipo.addEventListener("change", () => {
 });
 filtroStatus.addEventListener("change", aplicarFiltros);
 filtroCMV.addEventListener("change", aplicarFiltros);
-filtroMargem.addEventListener("change", aplicarFiltros);
 filtroSort.addEventListener("change", aplicarFiltros);
 
 
@@ -1483,6 +1921,7 @@ filtroSort.addEventListener("change", aplicarFiltros);
 ===================================================== */
 async function abrirModal(p){
   pratoAtual = p;
+  carregarHistoricoPrato(p.id);
   modal.style.display = "flex";
 document.body.classList.add("modal-open");
    mFoto.src = p.foto_url || "https://placehold.co/600x400?text=Sem+Foto";  
@@ -1565,41 +2004,32 @@ const cmvPercentual = precoVenda
 
 const lucro = precoVenda ? precoVenda - cmvFinal : 0;
 const margem = precoVenda ? (lucro/precoVenda)*100 : 0;
-mHeader.innerHTML = `
+
+
+  mHeader.innerHTML = `
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-  <h2 id="tituloPrato" style="margin:0">${p.nome}</h2>
+
+  <h2 id="tituloPrato" style="margin:0">
+    ${p.nome}
+  </h2>
 
   <button class="btn-icon btn-edit"
     title="Editar nome do prato"
     onclick="editarNomePrato()">
     ✏️
   </button>
+
+  <span class="badge" style="
+    margin-left:6px;
+    background:#eef2ff;
+    color:#3730a3;
+    font-weight:800;
+  ">
+    ${p.tipo || "SEM TIPO"}
+  </span>
+
 </div>
-  <div class="badges primary">
-    <span class="badge">${p.tipo || "-"}</span>
-
-    <span class="badge" style="background:#dcfce7;color:#166534">
-      💰 Venda ${moeda(precoVenda)}
-    </span>
-
-<span class="badge" style="background:#eef2ff;color:#3730a3">
-  🧾 Custo ${moeda(cmvFinal)}
-</span>
-
-<span class="badge" style="
-  background:${cmvPercentual > 35 ? '#fee2e2' : '#dcfce7'};
-  color:${cmvPercentual > 35 ? '#991b1b' : '#166534'}">
-  📊 CMV ${cmvPercentual.toFixed(1)}%
-</span>
-
-    <span class="badge" style="
-      background:${margem < 30 ? '#fee2e2' : '#dcfce7'};
-      color:${margem < 30 ? '#991b1b' : '#166534'}">
-      📈 Margem ${margem.toFixed(1)}%
-    </span>
-  </div>
 `;
-
 
 mBody.innerHTML = `
 <h3>Descrição do prato (texto do cardápio)</h3>
@@ -1619,29 +2049,47 @@ mBody.innerHTML = `
   "
 >${p.descricao || ""}</textarea>
 
-<div style="margin:14px 0">
-  <label style="font-weight:800;font-size:13px">
-    STATUS DO PRATO
-  </label>
 
-  <select id="statusPrato" style="margin-top:6px">
-    <option value="true">ATIVO</option>
-    <option value="false">DESATIVADO</option>
-  </select>
+
+
+
+
+
+
+<div class="grid-4" style="margin:14px 0">
+
+  <div>
+    <label>STATUS DO PRATO</label>
+<select id="statusPrato">
+  <option value="true">ATIVO</option>
+  <option value="false">INATIVO</option>
+</select>
+
 </div>
 
-  <div style="margin:12px 0">
-    <label style="font-weight:800;font-size:13px">
-      FOTO DO PRATO
-    </label>
-
-    <input
-      type="file"
-      id="fotoPrato"
-      accept="image/*"
-      style="margin-top:6px"
-    >
+  <div>
+    <label>TIPO DO PRATO</label>
+    <select id="tipoPrato"></select>
   </div>
+
+  <div>
+    <label>NO CARDÁPIO</label>
+<select id="cardapioPrato">
+  <option value="true">SIM</option>
+  <option value="false">NÃO</option>
+</select>
+</div>
+
+  <!-- 🔥 AGORA FICA NA MESMA LINHA -->
+  <div>
+    <label>⏱ TEMPO (MIN)</label>
+    <input id="tempoPreparo" type="number" placeholder="Ex: 25">
+  </div>
+
+</div>
+
+<hr>
+<hr>
 
 <div class="resumo">
   <div class="box">Custo base<b>${moeda(cmvBase)}</b></div>
@@ -1650,97 +2098,95 @@ mBody.innerHTML = `
   <div class="box">Margem<b>${margem.toFixed(1)}%</b></div>
 </div>
 
-  <hr>
-  <h3>Tipo do prato</h3>
 
-<select id="tipoPrato">
-  <option value="">SELECIONE</option>
-</select>
 
-<hr>
-<h3>Integração & Preço ideal</h3>
-
-<div class="grid-2">
-  <!-- Código Varejo -->
-  <div class="precificacao compact">
-    <label>
-      🏷️ Código Varejo
-    </label>
-
-    <input
-      id="codigoVarejoInput"
-      type="text"
-      placeholder="Ex: 123456"
-      value="${p.codigo_varejo || ""}"
-    >
-
-    <small>
-      Integração com o Varejo Fácil.
-    </small>
-  </div>
-
-  <!-- Preço ideal -->
-  <div class="precificacao compact">
-    <label>
-      💡 Preço ideal (R$)
-    </label>
-
-    <input
-      id="precoIdealInput"
-      type="number"
-      step="0.01"
-      placeholder="Ex: 29.90"
-      value="${p.preco_ideal || ""}"
-    >
-
-    <small>
-      Valor de referência (salva automático).
-    </small>
-  </div>
-</div>
 
 <h3>Precificação</h3>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-  <input id="markupPerc" type="number" step="0.01" placeholder="Markup (%)">
-  <input id="precoVendaInput" type="number" step="0.01" placeholder="Preço de venda (R$)">
+<div style="
+display:grid;
+grid-template-columns:1fr 1fr auto;
+gap:10px;
+align-items:end;
+margin-top:6px;
+">
+
+  <input 
+    id="markupPerc" 
+    type="number" 
+    step="0.01" 
+    placeholder="Markup (%)"
+  >
+
+  <input 
+    id="precoVendaInput" 
+    type="number" 
+    step="0.01" 
+    placeholder="Preço de venda (R$)"
+  >
+
+<button 
+  id="btnSalvarPreco"
+  class="btn-add"
+  style="
+    height:38px;
+    padding:0 18px;
+    white-space:nowrap;
+  "
+  onclick="salvarPrecoVenda(${cmvFinal})"
+>
+  SALVAR
+</button>
+
 </div>
 
-<p id="previewPreco" style="margin-top:8px;font-size:13px;font-weight:700;color:#166534"></p>
-
-
-  <button class="btn-add" style="margin-top:10px"
-    onclick="salvarPrecoVenda(${cmvFinal})">
-    SALVAR PREÇO DE VENDA
-  </button>
+<p id="previewPreco" 
+style="
+margin-top:8px;
+font-size:13px;
+font-weight:700;
+color:#166534
+"></p>
 
 ${precoVenda ? `
-  <p><b>Preço atual:</b> ${moeda(precoVenda)}</p>
-  <p><b>Lucro:</b> ${moeda(lucro)}</p>
-  <p><b>Margem:</b> ${margem.toFixed(2)}%</p>
+
+<div class="financeiro-dashboard">
+
+  <div class="fin-card custo">
+    <span>Custo do prato</span>
+    <b>${moeda(cmvFinal)}</b>
+    <small>Ingredientes + operacionais</small>
+  </div>
+
+  <div class="fin-card venda">
+    <span>Preço de venda</span>
+    <b>${moeda(precoVenda)}</b>
+    <small>Valor cobrado ao cliente</small>
+  </div>
+
+  <div class="fin-card lucro">
+    <span>Lucro por prato</span>
+    <b>${moeda(lucro)}</b>
+    <small>Venda − custo total</small>
+  </div>
+
+  <div class="fin-card margem">
+    <span>Margem de lucro</span>
+    <b>${margem.toFixed(1)}%</b>
+    <small>Percentual de ganho</small>
+  </div>
+
+  <div class="fin-card cmv ${cmvPercentual>35?'danger':''}">
+    <span>CMV</span>
+    <b>${cmvPercentual.toFixed(1)}%</b>
+    <small>Custo ÷ venda</small>
+  </div>
+
+</div>
+
 ` : ``}
-
-${p.preco_ideal && precoVenda && precoVenda !== p.preco_ideal ? `
-  <p style="
-    margin-top:10px;
-    padding:10px 14px;
-    border-radius:12px;
-    background:#fff7ed;
-    border:1px solid #fed7aa;
-    color:#9a3412;
-    font-weight:800;
-  ">
-    ⚠️ Preço de venda diferente do preço sugerido
-  </p>
-` : ``}
-
-${p.preco_ideal ? `
-  <p><b>Preço ideal:</b> ${moeda(p.preco_ideal)}</p>
-` : ``}
-
-
 
   <hr>
-<h3>Ingredientes (planilha)</h3>
+<h3>Ingredientes</h3>
 
 <table class="table">
   <thead>
@@ -1756,36 +2202,58 @@ ${p.preco_ideal ? `
   <tbody>
 ${listaItens.map(i=>`
 <tr>
-        <td><b>${i.nome}</b></td>
-        <td>${i.quantidade}</td>
-        <td>${i.unidade_uso}</td>
-        <td>${moeda(i.custo_unitario)}</td>
-        <td><b>${moeda(i.custo_calculado)}</b></td>
-        <td class="acoes">
-          <button class="btn-icon btn-edit"
-            onclick="editarIngrediente('${i.id}')">✏️</button>
-          <button class="btn-icon btn-delete"
-            onclick="excluirIngrediente('${i.id}')">🗑️</button>
-        </td>
-      </tr>
-    `).join("")}
+  <td><b>${i.nome}</b></td>
+
+  <td>${Number(i.quantidade || 0).toLocaleString("pt-BR",{
+    minimumFractionDigits:4,
+    maximumFractionDigits:4
+  })}</td>
+
+  <td>${i.unidade_uso}</td>
+  <td>${moeda(i.custo_unitario)}</td>
+  <td><b>${moeda(i.custo_calculado)}</b></td>
+
+  <td class="acoes">
+    <button class="btn-icon btn-edit"
+      onclick="editarIngrediente('${i.id}')">✏️</button>
+    <button class="btn-icon btn-delete"
+      onclick="excluirIngrediente('${i.id}')">🗑️</button>
+  </td>
+</tr>
+`).join("")}
   </tbody>
 </table>
 
  <div class="precificacao compact-line">
-  <h3 style="margin:0 0 10px">Novo ingrediente</h3>
+  <h3 style="margin:0 0 10px">Novo ingrediente e atualização</h3>
 
   <div class="line-add">
-    <select id="ingProduto" class="line-select">
-      <option value="">Selecione o ingrediente</option>
-      ${ingredientesBase.map(i=>`
-        <option value="${i.id}"
-          data-custo="${i.valor}"
-          data-unidade="${i.unidade_medida}">
-          ${i.nome}
-        </option>
-      `).join("")}
-    </select>
+   <div style="position:relative">
+
+<input
+  id="ingBusca"
+  type="text"
+  placeholder="Buscar ingrediente..."
+  class="line-select"
+  autocomplete="off"
+>
+
+<div id="resultadoIngredientes" style="
+  position:absolute;
+  top:42px;
+  left:0;
+  right:0;
+  max-height:220px;
+  overflow-y:auto;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:10px;
+  box-shadow:0 10px 25px rgba(0,0,0,.15);
+  display:none;
+  z-index:20;
+"></div>
+
+</div>
 
     <input id="ingQtd" type="number" step="0.001" placeholder="Qtd" class="line-qtd">
 
@@ -1972,6 +2440,7 @@ aplicarFiltros();
   }, 0);
 setTimeout(() => {
   const statusSelect = document.getElementById("statusPrato");
+  
   if (!statusSelect) return;
 
   statusSelect.value = p.ativo === false ? "false" : "true";
@@ -1988,6 +2457,29 @@ setTimeout(() => {
 aplicarFiltros();
   };
 }, 0);
+
+
+  setTimeout(() => {
+  const cardapioSelect = document.getElementById("cardapioPrato");
+  if (!cardapioSelect) return;
+
+  // define valor atual
+  cardapioSelect.value = p.cardapio === false ? "false" : "true";
+
+  cardapioSelect.onchange = async () => {
+
+    const cardapio = cardapioSelect.value === "true";
+
+    await sb
+      .from("buffet")
+      .update({ cardapio })
+      .eq("id", pratoAtual.id);
+
+    await carregarPratos();
+    aplicarFiltros();
+  };
+
+},0);
 setTimeout(() => {
   const mp = document.getElementById("modoPreparo");
   if (!mp) return;
@@ -2010,11 +2502,58 @@ setTimeout(() => {
 
 setTimeout(() => {
   const desc = document.getElementById("descricaoPrato");
+
+  setTimeout(() => {
+  const tempo = document.getElementById("tempoPreparo");
+  if (!tempo) return;
+
+  const valorInicial = Number(pratoAtual.tempo_preparo || 0);
+
+  tempo.value = valorInicial || "";
+
+  tempo.onblur = async () => {
+    const novo = Number(tempo.value || 0);
+
+    if (novo === valorInicial) return;
+
+    await sb
+      .from("buffet")
+      .update({ tempo_preparo: novo })
+      .eq("id", pratoAtual.id);
+
+    await carregarPratos();
+    aplicarFiltros();
+  };
+}, 0);
   if (!desc) return;
 
   const valorInicial = (p.descricao || "").trim();
 
   desc.onblur = async () => {
+setTimeout(() => {
+  const tempo = document.getElementById("tempoPreparo");
+  if (!tempo) return;
+
+  const valorInicial = Number(p.tempo_preparo || 0);
+
+  tempo.value = valorInicial || "";
+
+  tempo.onblur = async () => {
+    const novo = Number(tempo.value || 0);
+
+    if (novo === valorInicial) return;
+
+    await sb
+      .from("buffet")
+      .update({ tempo_preparo: novo })
+      .eq("id", pratoAtual.id);
+
+    await carregarPratos();
+    aplicarFiltros();
+  };
+}, 0);
+
+    
     const textoAtual = desc.value.trim();
     if (textoAtual === valorInicial) return;
 
@@ -2152,6 +2691,63 @@ setTimeout(() => {
   if (draftPreco.preco  !== null) precoInput.value = draftPreco.preco;
 
 }, 50);
+
+
+
+setTimeout(() => {
+
+  const buscaInput = document.getElementById("ingBusca");
+  const resultadoBox = document.getElementById("resultadoIngredientes");
+
+  if (!buscaInput || !resultadoBox) return;
+
+  buscaInput.addEventListener("input", () => {
+
+    const termo = buscaInput.value.toLowerCase();
+
+    if (!termo) {
+      resultadoBox.style.display = "none";
+      return;
+    }
+
+    const filtrados = ingredientesBase
+      .filter(i => (i.nome || "").toLowerCase().includes(termo))
+      .slice(0, 20);
+
+    resultadoBox.innerHTML = filtrados.map(i => `
+      <div class="item-busca" data-id="${i.id}">
+        ${i.nome}
+      </div>
+    `).join("");
+
+    resultadoBox.style.display = "block";
+
+resultadoBox.querySelectorAll(".item-busca").forEach(el => {
+  el.onclick = () => {
+
+        const id = el.dataset.id;
+        const selecionado = ingredientesBase.find(i => i.id == id);
+
+        ingredienteSelecionado = selecionado;
+
+        buscaInput.value = selecionado.nome;
+        document.getElementById("ingUnidade").value =
+          selecionado.unidade_medida || "";
+
+        resultadoBox.style.display = "none";
+      };
+    });
+
+  });
+
+}, 200);
+
+
+
+
+
+
+  
 } // ✅ FECHA abrirModal(p)
 
 
@@ -2159,54 +2755,110 @@ setTimeout(() => {
    AÇÕES
 ===================================================== */
 async function salvarPrecoVenda(cmvFinal){
+
+  const btn = document.getElementById("btnSalvarPreco");
+
   const preco = Number(precoVendaInput.value || 0);
   if (preco <= cmvFinal) {
     alert("Preço inválido");
     return;
   }
 
-  await sb.from("buffet")
-    .update({ preco_venda: preco })
-    .eq("id", pratoAtual.id);
+  btn.classList.add("btn-loading");
 
-  await carregarPratos();
-  abrirModal(pratos.find(p => p.id === pratoAtual.id));
+  try{
+
+    await sb.from("buffet")
+      .update({ preco_venda: preco })
+      .eq("id", pratoAtual.id);
+
+    await carregarPratos();
+
+    const pratoNovo = pratos.find(p => p.id === pratoAtual.id);
+
+    abrirModal(pratoNovo);
+
+  }catch(err){
+
+    console.error(err);
+    alert("Erro ao salvar");
+
+  }finally{
+
+    btn.classList.remove("btn-loading");
+
+  }
+
 }
-
 async function salvarIngrediente(){
-  const prodId = ingProduto.value;
-  const qtd = Number(ingQtd.value||0);
-  if(!prodId || qtd<=0) return;
 
-  const prod = ingredientesBase.find(p => p.id === prodId);
-  const custoUnit = Number(prod.valor);
+  const prod = ingredienteSelecionado;
+  if(!prod){
+    alert("Selecione um ingrediente na lista.");
+    return;
+  }
 
-  await sb.from("buffet_itens").insert({
-    buffet_id: pratoAtual.id,
-    produto_id: prod.id,
-    nome: prod.nome,
-    quantidade: qtd,
-    unidade_uso: prod.unidade_medida,
-    custo_unitario: custoUnit,
-    custo_calculado: custoUnit * qtd
-  });
+  const qtdInput = document.getElementById("ingQtd");
+  const qtd = Number(qtdInput.value || 0);
 
-await carregarCMVCache();
-await carregarPratos();   // 🔁 atualiza lista
-aplicarFiltros();         // ✅ re-render com paginação
+  if(qtd <= 0){
+    alert("Quantidade inválida.");
+    qtdInput.focus();
+    return;
+  }
 
-   
-salvarDraftPreco();   // 👈 AQUI salva o que foi digitado
+  const custoUnit = Number(prod.valor || 0);
 
-const { data: pratoNovo } = await sb
-  .from("buffet")
-  .select("*")
-  .eq("id", pratoAtual.id)
-  .single();
+  try{
 
-abrirModal(pratoNovo);
+    await sb
+      .from("buffet_itens")
+      .insert({
+        buffet_id: pratoAtual.id,
+        produto_id: prod.id,
+        nome: prod.nome,
+        quantidade: qtd,
+        unidade_uso: prod.unidade_medida,
+        custo_unitario: custoUnit,
+        custo_calculado: custoUnit * qtd
+      });
+
+    // 🔄 atualiza caches
+    await carregarCMVCache();
+    await carregarPratos();
+    aplicarFiltros();
+
+    salvarDraftPreco();
+
+    // 🔄 recarrega prato atualizado
+    const { data: pratoNovo } = await sb
+      .from("buffet")
+      .select("*")
+      .eq("id", pratoAtual.id)
+      .single();
+
+    // 🔄 limpa campos
+    ingredienteSelecionado = null;
+
+    const busca = document.getElementById("ingBusca");
+    const qtdField = document.getElementById("ingQtd");
+    const unidade = document.getElementById("ingUnidade");
+    const lista = document.getElementById("resultadoIngredientes");
+
+    if(busca) busca.value = "";
+    if(qtdField) qtdField.value = "";
+    if(unidade) unidade.value = "";
+    if(lista) lista.style.display = "none";
+
+    // 🔄 reabre modal atualizado
+    abrirModal(pratoNovo);
+
+  }catch(err){
+    console.error(err);
+    alert("Erro ao salvar ingrediente.");
+  }
+
 }
-
 async function excluirIngrediente(itemId){
   if(!confirm("Excluir este ingrediente?")) return;
 
@@ -2301,6 +2953,7 @@ function salvarDraftPreco() {
   draftPreco.preco  = pv ? pv.value : null;
 }
 async function editarIngrediente(itemId){
+
   const { data, error } = await sb
     .from("buffet_itens")
     .select("*")
@@ -2312,67 +2965,93 @@ async function editarIngrediente(itemId){
     return;
   }
 
-  ingProduto.value = data.produto_id;
-  ingQtd.value = data.quantidade;
-  ingUnidade.value = data.unidade_uso;
+  // encontra produto na base
+  const prod = ingredientesBase.find(p => p.id === data.produto_id);
+
+  if(!prod){
+    alert("Produto não encontrado");
+    return;
+  }
+
+  ingredienteSelecionado = prod;
+
+  // preenche busca
+  const busca = document.getElementById("ingBusca");
+  const qtd = document.getElementById("ingQtd");
+  const unidade = document.getElementById("ingUnidade");
+
+  busca.value = prod.nome;
+  qtd.value = data.quantidade;
+  unidade.value = data.unidade_uso;
+
+  document.querySelector(".line-add").scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  qtd.focus();
+  qtd.select();
 
   const btn = document.getElementById("btnSalvarIngrediente");
 
-  // 🔥 melhora visual do botão
-  btn.innerText = "ATUALIZAR INGREDIENTE";
+  btn.innerText = "✔";
   btn.classList.remove("btn-add");
   btn.classList.add("btn-edit");
 
-  btn.onclick = async () => {
-    const qtd = Number(ingQtd.value || 0);
-    if(qtd <= 0) return alert("Quantidade inválida");
+btn.onclick = async () => {
 
-    const prod = ingredientesBase.find(p => p.id === ingProduto.value);
-    const custoUnit = Number(prod.valor);
+  const quantidade = Number(qtd.value || 0);
+  if(quantidade <= 0) return alert("Quantidade inválida");
 
-    const { error: errUpdate } = await sb
+  const custoUnit = Number(prod.custo_unitario || prod.valor || 0);
+
+  btn.classList.add("btn-loading");   // 🔥 overlay no botão
+
+  try{
+
+    await sb
       .from("buffet_itens")
       .update({
-        quantidade: qtd,
+        quantidade: quantidade,
         custo_unitario: custoUnit,
-        custo_calculado: custoUnit * qtd
+        custo_calculado: custoUnit * quantidade
       })
       .eq("id", itemId);
 
-    if(errUpdate){
-      alert("Erro ao atualizar ingrediente");
-      return;
-    }
+    await carregarCMVCache();
+    await carregarPratos();
+    aplicarFiltros();
 
-// 🔁 atualiza cache + lista
-await carregarCMVCache();
-await carregarPratos();
-aplicarFiltros();   // ✅
-
-    // 🔄 recarrega prato atualizado
     const { data: pratoNovo } = await sb
       .from("buffet")
       .select("*")
       .eq("id", pratoAtual.id)
       .single();
 
-    // 🔥 reseta botão pro estado normal
-    btn.innerText = "ADICIONAR INGREDIENTE";
+    btn.innerText = "＋";
     btn.classList.remove("btn-edit");
     btn.classList.add("btn-add");
     btn.onclick = salvarIngrediente;
 
-    ingProduto.value = "";
-    ingQtd.value = "";
-    ingUnidade.value = "";
+    busca.value = "";
+    qtd.value = "";
+    unidade.value = "";
 
-    // 🔁 força re-render do modal
-    fechar();
-    setTimeout(() => abrirModal(pratoNovo), 50);
+    abrirModal(pratoNovo);
 
-    alert("✅ Ingrediente atualizado com sucesso");
-  };
-}
+  }catch(err){
+
+    console.error(err);
+    alert("Erro ao atualizar ingrediente");
+  }finally{
+
+    btn.classList.remove("btn-loading");
+
+  }
+
+};   // fecha btn.onclick
+}    // fecha editarIngrediente
+
 async function carregarTipos(){
   const { data, error } = await sb
     .from("buffet")
@@ -2490,9 +3169,160 @@ function scrollToTop(){
     behavior:"smooth"
   });
 }
+
+
+
+function abrirCadastro(){
+
+document.getElementById("popupCadastro").style.display="flex"
+
+document.body.classList.add("modal-open")
+
+}
+
+function fecharCadastro(){
+
+document.getElementById("popupCadastro").style.display="none"
+
+document.body.classList.remove("modal-open")
+
+}
+
+async function carregarHistoricoPrato(buffetId){
+
+const { data, error } = await sb
+.from("historico_alteracao_fichas")
+.select("*")
+.eq("tabela","buffet")
+.eq("registro_id",buffetId)
+.order("alterado_em",{ascending:false})
+.limit(10)
+
+if(error){
+console.error(error)
+return
+}
+
+renderHistorico(data)
+
+}function renderHistorico(lista){
+
+const box = document.getElementById("historicoBox")
+
+if(!lista || lista.length===0){
+box.innerHTML="<p style='opacity:.5'>Sem histórico</p>"
+return
+}
+
+box.innerHTML = lista.map(r=>{
+
+const data = new Date(r.alterado_em).toLocaleString()
+
+return `
+<div class="h-item">
+
+<div>
+
+<strong>${data}</strong><br>
+
+${Object.keys(r.dados_depois||{})
+.map(k=>{
+
+const antes = r.dados_antes?.[k]
+const depois = r.dados_depois?.[k]
+
+if(antes===depois) return ""
+
+return `
+<div class="h-field">
+${k}: ${antes} → ${depois}
+</div>
+`
+
+}).join("")}
+
+</div>
+
+<div>
+
+<button class="h-restore"
+onclick="restaurar('${r.id}')">
+Restaurar
+</button>
+
+</div>
+
+</div>
+`
+
+}).join("")
+
+}
+  
+async function restaurar(id){
+
+const senha = prompt("Senha:");
+
+if(senha !== "8486"){
+  alert("Senha incorreta");
+  return;
+}
+
+const { error } = await sb.rpc("restaurar_historico",{ p_id:id });
+
+if(error){
+  console.error(error);
+  alert("Erro ao restaurar");
+  return;
+}
+
+alert("Registro restaurado");
+
+// 🔄 recarrega dados atualizados
+await carregarCMVCache();
+await carregarPratos();
+aplicarFiltros();
+
+// 🔄 recarrega o prato aberto no modal
+const { data: pratoNovo } = await sb
+  .from("buffet")
+  .select("*")
+  .eq("id", pratoAtual.id)
+  .single();
+
+// 🔄 reabre modal atualizado
+abrirModal(pratoNovo);
+
+}
+
+
+
+
+
+
+
+
 </script>
 
 <button id="btnTop" onclick="scrollToTop()">↑</button>
 
+
+
+<div id="popupCadastro" class="popupCadastro">
+
+<div class="popupCadastroBox">
+
+<div class="popupCadastroHeader">
+
+<span>Cadastrar nova ficha técnica</span>
+
+<button onclick="fecharCadastro()">✕</button>
+
+</div>
+
+<iframe src="administracao/cadastrodeficha.html"></iframe>
+</div>
+
+</div>
 </body>
 </html>
