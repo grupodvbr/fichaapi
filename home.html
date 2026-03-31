@@ -14,6 +14,7 @@
   --bg:#f8fafc;
   --card:#ffffff;
   --border:#e5e7eb;
+
   --text:#0f172a;
   --muted:#6b7280;
 
@@ -42,17 +43,18 @@ body{
 .header{
   padding:18px 24px;
   border-bottom:1px solid var(--border);
-  background:#ffffffcc;
+  background:#ffffff;
   position:sticky;
   top:0;
   z-index:20;
-  backdrop-filter:blur(10px);
 }
+
 .header h1{
   margin:0;
   font-size:18px;
   font-weight:900;
 }
+
 .header small{
   color:var(--muted);
   font-size:12px;
@@ -72,6 +74,7 @@ body{
   gap:10px;
   margin-bottom:22px;
 }
+
 .filters input,
 .filters select{
   background:#ffffff;
@@ -81,13 +84,12 @@ body{
   padding:10px;
   font-size:12px;
   font-weight:600;
-  transition:.2s;
 }
+
 .filters input:focus,
 .filters select:focus{
   outline:none;
   border-color:var(--blue);
-  box-shadow:0 0 0 2px rgba(37,99,235,.15);
 }
 
 /* KPIS */
@@ -103,12 +105,6 @@ body{
   border:1px solid var(--border);
   border-radius:var(--radius);
   padding:16px;
-  box-shadow:0 6px 14px rgba(0,0,0,0.05);
-  transition:.2s;
-}
-.card:hover{
-  transform:translateY(-2px);
-  box-shadow:0 10px 22px rgba(0,0,0,0.08);
 }
 
 .card small{
@@ -116,7 +112,6 @@ body{
   color:var(--muted);
   font-weight:800;
   text-transform:uppercase;
-  letter-spacing:.5px;
 }
 
 .card b{
@@ -131,7 +126,7 @@ body{
 .yellow b{color:var(--yellow)}
 .red b{color:var(--red)}
 
-/* GRID SECTION */
+/* GRID */
 .section{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -152,23 +147,23 @@ body{
   padding:18px;
   max-height:380px;
   overflow:auto;
-  box-shadow:0 6px 14px rgba(0,0,0,0.05);
 }
+
 .panel h3{
   margin:0 0 12px;
   font-size:14px;
   font-weight:900;
 }
 
-/* ITEM LIST */
+/* LISTA */
 .item{
   display:flex;
   justify-content:space-between;
-  padding:10px 12px;
-  border-radius:10px;
+  padding:10px;
+  border-radius:8px;
   cursor:pointer;
-  transition:.2s;
 }
+
 .item:hover{
   background:#f1f5f9;
 }
@@ -177,25 +172,28 @@ body{
 .score{
   font-weight:900;
 }
+
 .score.green{color:var(--green)}
 .score.yellow{color:var(--yellow)}
 .score.red{color:var(--red)}
 
-/* TIPO HEALTH */
+/* SAÚDE */
 .tipo-health{
   padding:10px;
-  border-radius:12px;
+  border-radius:10px;
   margin-bottom:8px;
   display:flex;
   justify-content:space-between;
-  font-weight:600;
 }
+
 .tipo-health.green{
   background:#dcfce7;
 }
+
 .tipo-health.yellow{
   background:#fef3c7;
 }
+
 .tipo-health.red{
   background:#fee2e2;
 }
@@ -204,7 +202,7 @@ body{
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.5);
+  background:rgba(0,0,0,.4);
   display:none;
   align-items:center;
   justify-content:center;
@@ -221,7 +219,6 @@ body{
   padding:22px;
   border:1px solid var(--border);
   position:relative;
-  box-shadow:0 20px 40px rgba(0,0,0,0.2);
 }
 
 .close{
@@ -258,19 +255,22 @@ body{
   background:#fee2e2;
   color:var(--red);
 }
+
 .badge.yellow{
   background:#fef3c7;
   color:var(--yellow);
 }
+
 .badge.green{
   background:#dcfce7;
   color:var(--green);
 }
 
-/* SCROLL CUSTOM */
+/* SCROLL */
 .panel::-webkit-scrollbar{
   width:6px;
 }
+
 .panel::-webkit-scrollbar-thumb{
   background:#d1d5db;
   border-radius:10px;
