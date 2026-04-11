@@ -2,254 +2,287 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Receitas • Fichas Técnicas</title>
+<title>CMV Executivo Total</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 :root{
-  --primary:#2563eb;
-  --success:#16a34a;
-  --danger:#dc2626;
-  --bg:#f8fafc;
+  --primary:#111827;
+  --bg:#f3f5f9;
   --card:#ffffff;
   --text:#0f172a;
-  --muted:#64748b;
+  --muted:#6b7280;
   --border:#e5e7eb;
-  --shadow:0 14px 34px rgba(0,0,0,.12);
+  --radius:12px;
 }
 
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
-body{
+html,body{
   margin:0;
+  padding:0;
   font-family:Inter,sans-serif;
   background:var(--bg);
   color:var(--text);
+  -webkit-font-smoothing:antialiased;
 }
 
-/* ================= FILTROS ================= */
-.filters{
+/* ================= HEADER EM LINHA ================= */
+
+.header{
+  background:#fff;
+  padding:6px 10px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  border-bottom:1px solid var(--border);
   position:sticky;
   top:0;
-  z-index:10;
-  background:#fff;
-  padding:14px;
-  display:grid;
-  gap:10px;
-  box-shadow:0 4px 14px rgba(0,0,0,.08);
+  z-index:50;
 }
 
-.filters input,
-.filters select{
-  height:46px;
-  border-radius:999px;
+/* BUSCA */
+.header input{
+  flex:1;
+  min-width:0;
+  height:30px;
+  border-radius:6px;
   border:1px solid var(--border);
-  padding:0 16px;
-  font-size:14px;
-  font-weight:700;
+  padding:0 8px;
+  font-size:11px;
+  font-weight:600;
+  background:#f9fafb;
+  outline:none;
 }
 
-/* ================= GRID ================= */
-.grid{
-  padding:16px;
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:16px;
+.header input:focus{
+  border-color:var(--primary);
+}
+
+/* SELECT */
+.header select{
+  width:120px;
+  height:30px;
+  border-radius:6px;
+  border:1px solid var(--border);
+  padding:0 6px;
+  font-size:11px;
+  font-weight:600;
+  background:#f9fafb;
+  outline:none;
+}
+
+/* BOTÃO */
+.header button{
+  height:30px;
+  padding:0 10px;
+  border-radius:6px;
+  border:none;
+  background:var(--primary);
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:.2s ease;
+}
+
+.header button:hover{
+  opacity:.85;
+}
+
+/* ================= CONTAINER ================= */
+
+.container{
+  padding:14px;
+  max-width:1100px;
+  margin:auto;
 }
 
 /* ================= CARD ================= */
+
 .card{
   background:var(--card);
-  border-radius:22px;
-  box-shadow:var(--shadow);
-  overflow:hidden;
-  cursor:pointer;
-  transition:.15s ease;
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:16px;
+  border:1px solid var(--border);
+  box-shadow:0 6px 20px rgba(0,0,0,.04);
 }
 
-.card:hover{transform:translateY(-4px)}
+/* HEADER DO CARD */
+.card-header{
+  display:grid;
+  grid-template-columns:120px 1fr;
+  gap:14px;
+  align-items:start;
+}
 
 .card img{
   width:100%;
-  height:150px;
+  height:110px;
   object-fit:cover;
+  border-radius:8px;
+  background:#000;
 }
 
-.card-body{
-  padding:14px;
-}
-
-.card-body h3{
-  margin:0;
-  font-size:15px;
+.card h2{
+  margin:0 0 4px;
+  font-size:16px;
   font-weight:800;
 }
 
+.card-header div > div{
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* BADGES */
 .badges{
   display:flex;
-  gap:6px;
-  margin-top:8px;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:6px;
 }
 
 .badge{
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:11px;
-  font-weight:800;
   background:#eef2ff;
-  color:#3730a3;
-}
-
-.badge.ok{background:#dcfce7;color:#166534}
-.badge.warn{background:#fee2e2;color:#991b1b}
-
-/* ================= MODAL ================= */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(15,23,42,.65);
-  display:none;
-  align-items:flex-end;
-  z-index:20;
-}
-
-.modal-box{
-  background:#fff;
-  width:100%;
-  max-height:94vh;
-  border-radius:22px 22px 0 0;
-  overflow:auto;
-}
-
-.modal img{
-  width:100%;
-  height:200px;
-  object-fit:cover;
-}
-
-.modal-body{
-  padding:18px;
-}
-
-.modal-body h2{
-  margin:0 0 8px;
-  font-size:22px;
-}
-
-.modal-body h3{
-  margin:18px 0 6px;
-}
-
-.modal-body textarea{
-  width:100%;
-  min-height:160px;
-  border-radius:14px;
-  border:1px solid var(--border);
-  padding:14px;
-  font-size:14px;
+  padding:3px 7px;
+  border-radius:999px;
+  font-size:10px;
   font-weight:700;
-  resize:vertical;
-  text-transform:uppercase;
 }
 
-.modal-body textarea::placeholder{
-  text-transform:uppercase;
+/* ================= GRID FINANCEIRO ================= */
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+  gap:6px;
+  margin-top:12px;
 }
 
-.btn{
+.box{
+  background:#f9fafb;
+  padding:7px 8px;
+  border-radius:7px;
+  font-size:11px;
+}
+
+.box b{
+  font-size:10px;
+  color:var(--muted);
+  display:block;
+  margin-bottom:2px;
+}
+
+/* ================= SECTIONS ================= */
+
+.section-title{
+  margin-top:16px;
+  margin-bottom:6px;
+  font-weight:800;
+  font-size:12px;
+}
+
+/* ================= TABLE ================= */
+
+table{
   width:100%;
-  height:46px;
-  border:none;
-  border-radius:14px;
-  font-weight:900;
-  letter-spacing:.04em;
-  margin-top:12px;
-  cursor:pointer;
+  border-collapse:collapse;
+  font-size:11px;
 }
 
-.btn-save{
-  background:linear-gradient(135deg,var(--primary),#1e40af);
-  color:#fff;
-}
-.btn-photo{
-  background:#111827;
-  color:#fff;
-}
-
-.upload{
-  margin-top:12px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+th{
+  background:#f3f4f6;
+  font-size:9px;
+  text-transform:uppercase;
+  color:var(--muted);
+  padding:5px;
+  text-align:left;
 }
 
-.upload input{
-  display:none;
+td{
+  padding:5px;
+  border-bottom:1px solid var(--border);
+  font-size:11px;
 }
 
-.upload label{
-  background:#111827;
-  color:#fff;
-  border-radius:12px;
-  height:46px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:900;
-  cursor:pointer;
-}
-.ing{
-  border-bottom:1px dashed var(--border);
-  padding:8px 0;
-  font-size:14px;
+.total-row{
+  background:#f1f5f9;
+  font-weight:800;
 }
 
-.close{
-  position:absolute;
-  top:10px;
-  right:14px;
-  font-size:22px;
-  color:#fff;
-  font-weight:900;
-  cursor:pointer;
+/* ================= MOBILE AJUSTES ================= */
+
+@media(max-width:600px){
+
+  .header select{
+    width:90px;
+  }
+
+  .header button{
+    padding:0 8px;
+  }
+
+  .card{
+    padding:14px;
+  }
+
+  .card-header{
+    grid-template-columns:1fr;
+  }
+
+  .card img{
+    height:160px;
+  }
+
+  .grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  table{
+    font-size:10px;
+  }
+
+  th{
+    font-size:8px;
+  }
+
+  td{
+    font-size:10px;
+  }
+}
+
+/* ================= PRINT ================= */
+
+@media print{
+  .header{
+    display:none;
+  }
+  .card{
+    page-break-after:always;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<!-- ================= FILTROS ================= -->
-<div class="filters">
-  <input id="filtroNome" placeholder="🔍 BUSCAR PRATO">
-  <select id="filtroTipo">
-    <option value="">🍽 TODOS OS TIPOS</option>
-    <option>SUSHI</option>
-    <option>DRINK</option>
-    <option>ENTRADA</option>
-    <option>PRATO PRINCIPAL</option>
-    <option>SOBREMESA</option>
-    <option>ACOMPANHAMENTO</option>
+<div class="header">
+  <input id="search" placeholder="Buscar prato">
+  <select id="tipoFilter">
+    <option value="">Todos os tipos</option>
   </select>
-  <select id="filtroReceita">
-    <option value="">📋 TODAS</option>
-    <option value="COM">COM RECEITA</option>
-    <option value="SEM">SEM RECEITA</option>
-  </select>
+  <button onclick="window.print()">Exportar PDF</button>
 </div>
 
-<div id="cards" class="grid"></div>
-
-<!-- ================= MODAL ================= -->
-<div id="modal" class="modal" onclick="fechar()">
-  <div class="modal-box" onclick="event.stopPropagation()">
-    <span class="close" onclick="fechar()">✕</span>
-    <img id="mFoto">
-    <div id="mBody" class="modal-body"></div>
-  </div>
-</div>
+<div class="container" id="conteudo"></div>
 
 <script>
 const sb = supabase.createClient(
@@ -258,147 +291,164 @@ const sb = supabase.createClient(
 );
 
 let pratos = [];
-let pratoAtual = null;
+let itensMap = {};
+let impostosMap = {};
 
-async function carregar(){
-  const { data } = await sb.from("buffet").select("*").order("nome");
-  pratos = data || [];
-  render();
+async function carregarDados(){
+
+  const { data: buffet } = await sb.from("buffet").select("*");
+  const { data: itens } = await sb.from("buffet_itens").select("*");
+  const { data: impostos } = await sb.from("impostos").select("*");
+
+  pratos = buffet || [];
+
+  itensMap = {};
+  (itens||[]).forEach(i=>{
+    if(!itensMap[i.buffet_id]) itensMap[i.buffet_id]=[];
+    itensMap[i.buffet_id].push(i);
+  });
+
+  impostosMap = {};
+  (impostos||[]).forEach(i=>{
+    if(!impostosMap[i.buffet_id]) impostosMap[i.buffet_id]=[];
+    impostosMap[i.buffet_id].push(i);
+  });
+
+  popularTipos();
+  aplicarFiltros();
 }
 
-function render(){
-  cards.innerHTML = "";
-
-  const nome = filtroNome.value.toUpperCase();
-  const tipo = filtroTipo.value;
-  const receita = filtroReceita.value;
-
-  for(const p of pratos){
-    if(nome && !p.nome.toUpperCase().includes(nome)) continue;
-    if(tipo && p.tipo !== tipo) continue;
-    if(receita==="COM" && !p.modo_preparo) continue;
-    if(receita==="SEM" && p.modo_preparo) continue;
-
-    const c = document.createElement("div");
-    c.className="card";
-    c.onclick=()=>abrir(p);
-
-    c.innerHTML=`
-      ${p.foto_url ? `<img src="${p.foto_url}">` : ``}
-      <div class="card-body">
-        <h3>${p.nome}</h3>
-        <div class="badges">
-          <span class="badge">${p.tipo||"-"}</span>
-          ${p.modo_preparo
-            ? `<span class="badge ok">COM RECEITA</span>`
-            : `<span class="badge warn">SEM RECEITA</span>`}
-        </div>
-      </div>`;
-    cards.appendChild(c);
-  }
+function popularTipos(){
+  const tipos=[...new Set(pratos.map(p=>p.tipo).filter(Boolean))];
+  tipoFilter.innerHTML="<option value=''>Todos</option>"+
+    tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
 }
 
-async function abrir(p){
-  pratoAtual = p;
-  modal.style.display="flex";
-  mFoto.src = p.foto_url || "";
+function aplicarFiltros(){
 
-  const { data: itens } = await sb
-    .from("buffet_itens")
-    .select("*")
-    .eq("buffet_id", p.id);
+  const nome = search.value.toUpperCase();
+  const tipo = tipoFilter.value;
 
-  mBody.innerHTML=`
-<h2>${p.nome}</h2>
+  const filtrados = pratos.filter(p=>{
+    const nomeOk = !nome || p.nome.toUpperCase().includes(nome);
+    const tipoOk = !tipo || p.tipo === tipo;
+    return nomeOk && tipoOk;
+  });
 
-<div class="upload">
+  render(filtrados);
 
-  <label for="fotoInput">
-    📷 ADICIONAR / TROCAR FOTO
-  </label>
-
-  <input type="file"
-    id="fotoInput"
-    accept="image/*"
-    onchange="uploadFoto(event)"
-  >
-
-</div>
-    <h3>MODO DE PREPARO</h3>
-    <textarea id="receitaInput"
-      placeholder="DESCREVA A RECEITA COMPLETA AQUI...">${p.modo_preparo||""}</textarea>
-
-    <button class="btn btn-save" onclick="salvarReceita()">
-      SALVAR RECEITA
-    </button>
-
-    <h3>INGREDIENTES</h3>
-    ${itens.map(i=>`
-      <div class="ing">
-        ${i.nome} — ${i.quantidade} ${i.unidade_uso}
-      </div>
-    `).join("")}
-  `;
+  /* 🔥 VOLTAR PARA O TOPO */
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth" 
+  });
 }
 
-async function salvarReceita(){
-  const texto = receitaInput.value.trim().toUpperCase();
-  await sb.from("buffet")
-    .update({ modo_preparo: texto })
-    .eq("id", pratoAtual.id);
+function render(lista){
+  conteudo.innerHTML="";
 
-  await carregar();
-  fechar();
-}
+  lista.forEach(p=>{
 
-function fechar(){
-  modal.style.display="none";
-}
+    const itens=itensMap[p.id]||[];
+    const impostos=impostosMap[p.id]||[];
 
-filtroNome.oninput = render;
-filtroTipo.onchange = render;
-filtroReceita.onchange = render;
+    const cmvBase=itens.reduce((s,i)=>s+Number(i.custo_calculado||0),0);
 
-carregar();
-
-async function uploadFoto(e){
-
-  const file = e.target.files[0];
-  if(!file) return;
-
-  const nomeArquivo =
-    pratoAtual.id + "-" + Date.now() + ".jpg";
-
-  const { error } = await sb
-    .storage
-    .from("buffet")
-    .upload(nomeArquivo, file, {
-      cacheControl: "3600",
-      upsert: true
+    let totalImp=0;
+    impostos.forEach(i=>{
+      if(i.modalidade==="FIXO") totalImp+=Number(i.valor);
+      if(i.modalidade==="PERCENTUAL")
+        totalImp+=(cmvBase*Number(i.valor))/100;
     });
 
-  if(error){
-    alert("Erro ao enviar imagem");
-    console.error(error);
-    return;
-  }
+    const custoFinal=cmvBase+totalImp;
+    const preco=Number(p.preco_venda||0);
+    const lucro=preco-custoFinal;
+    const margem=preco?(lucro/preco)*100:0;
+    const cmvPerc=preco?(cmvBase/preco)*100:0;
 
-  const { data } = sb
-    .storage
-    .from("buffet")
-    .getPublicUrl(nomeArquivo);
+    const div=document.createElement("div");
+    div.className="card";
 
-  const url = data.publicUrl;
+    div.innerHTML=`
+      <div class="card-header">
+        <img src="${p.foto_url||'https://placehold.co/600x400?text=Sem+Foto'}">
+        <div>
+          <h2>${p.nome}</h2>
+          <div>${p.descricao||""}</div>
 
-  await sb
-    .from("buffet")
-    .update({ foto_url: url })
-    .eq("id", pratoAtual.id);
+          <div class="badges">
+            <div class="badge">Tipo: ${p.tipo||"-"}</div>
+            <div class="badge">Status: ${p.ativo?"Ativo":"Inativo"}</div>
+            <div class="badge">Código: ${p.codigo_varejo||"-"}</div>
+          </div>
+        </div>
+      </div>
 
-  mFoto.src = url;
+      <div class="grid">
+        <div class="box"><b>Preço Venda</b><br>R$ ${preco.toFixed(2)}</div>
+        <div class="box"><b>Preço Ideal</b><br>R$ ${Number(p.preco_ideal||0).toFixed(2)}</div>
+        <div class="box"><b>Custo Base</b><br>R$ ${cmvBase.toFixed(2)}</div>
+        <div class="box"><b>Custo Final</b><br>R$ ${custoFinal.toFixed(2)}</div>
+        <div class="box"><b>CMV</b><br>${cmvPerc.toFixed(1)}%</div>
+        <div class="box"><b>Lucro</b><br>R$ ${lucro.toFixed(2)}</div>
+        <div class="box"><b>Margem</b><br>${margem.toFixed(1)}%</div>
+      </div>
 
-  await carregar();
+      <div class="section-title">Ingredientes</div>
+      <table>
+        <tr>
+          <th>Nome</th>
+          <th>Qtd</th>
+          <th>Un.</th>
+          <th>Custo Unit.</th>
+          <th>Custo Total</th>
+        </tr>
+        ${itens.map(i=>{
+          const qtd=Number(i.quantidade||0);
+          const custoUnit=Number(i.custo_unitario||0);
+          const total=qtd*custoUnit;
+          return `
+            <tr>
+              <td>${i.nome}</td>
+<td>${qtd.toFixed(4)}</td>
+<td>${i.unidade_uso}</td>
+              <td>R$ ${custoUnit.toFixed(2)}</td>
+              <td><b>R$ ${total.toFixed(2)}</b></td>
+            </tr>
+          `;
+        }).join("")}
+        <tr class="total-row">
+          <td colspan="4">Total Ingredientes</td>
+          <td>R$ ${cmvBase.toFixed(2)}</td>
+        </tr>
+      </table>
+
+      <div class="section-title">Impostos / Custos</div>
+      <table>
+        <tr><th>Descrição</th><th>Tipo</th><th>Modalidade</th><th>Valor</th></tr>
+        ${impostos.map(i=>`
+          <tr>
+            <td>${i.descricao}</td>
+            <td>${i.tipo}</td>
+            <td>${i.modalidade}</td>
+            <td>${i.modalidade==="PERCENTUAL"?i.valor+"%":"R$ "+Number(i.valor).toFixed(2)}</td>
+          </tr>
+        `).join("")}
+      </table>
+
+      <div class="section-title">Modo de Preparo</div>
+      <div>${p.modo_preparo||"-"}</div>
+    `;
+
+    conteudo.appendChild(div);
+  });
 }
+
+search.oninput=aplicarFiltros;
+tipoFilter.onchange=aplicarFiltros;
+
+carregarDados();
 </script>
 
 </body>
