@@ -2,149 +2,272 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Relatório Executivo • CMV</title>
+<title>CMV Executivo Total</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
 :root{
-  --primary:#2563eb;
-  --primary-dark:#1e40af;
-  --bg:#f4f6fb;
+  --primary:#111827;
+  --bg:#f3f5f9;
   --card:#ffffff;
   --text:#0f172a;
-  --muted:#64748b;
+  --muted:#6b7280;
   --border:#e5e7eb;
-  --radius:22px;
-  --shadow:0 20px 50px rgba(0,0,0,.12);
+  --radius:12px;
 }
 
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
 html,body{
-  height:100%;
   margin:0;
-  overflow:hidden;
+  padding:0;
   font-family:Inter,sans-serif;
   background:var(--bg);
   color:var(--text);
+  -webkit-font-smoothing:antialiased;
 }
 
-/* HEADER FIXO */
+/* ================= HEADER EM LINHA ================= */
+
 .header{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  height:128px;
-  z-index:999;
-  backdrop-filter:blur(10px);
-  background:rgba(244,246,251,.97);
-  border-bottom:1px solid var(--border);
-}
-
-.header-inner{
-  max-width:1400px;
-  margin:auto;
-  padding:14px 18px 12px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.header h1{
-  margin:0;
-  font-size:24px;
-  font-weight:900;
-}
-
-.header p{
-  margin:0;
-  color:var(--muted);
-  font-size:12px;
-  font-weight:600;
-}
-
-/* FILTROS */
-.filters{
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr auto;
-  gap:10px;
-}
-
-.filters input,
-.filters select{
-  height:42px;
-  border-radius:999px;
-  border:1px solid var(--border);
-  padding:0 16px;
-  font-weight:800;
-  font-size:13px;
   background:#fff;
+  padding:6px 10px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:50;
 }
 
-.btn-export{
-  height:42px;
-  padding:0 22px;
-  border-radius:999px;
-  border:none;
-  cursor:pointer;
-  font-weight:900;
-  font-size:12px;
-  letter-spacing:.08em;
-  color:#fff;
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  box-shadow:0 10px 24px rgba(37,99,235,.45);
-}
-
-/* CONTEÚDO */
-.main{
-  position:fixed;
-  top:128px;
-  left:0;
-  right:0;
-  bottom:0;
-  overflow:auto;
-  padding:18px;
-}
-
-.table-wrap{
-  background:var(--card);
-  border-radius:22px;
+/* BUSCA */
+.header input{
+  flex:1;
+  min-width:0;
+  height:30px;
+  border-radius:6px;
   border:1px solid var(--border);
-  box-shadow:var(--shadow);
-  overflow:auto;
+  padding:0 8px;
+  font-size:11px;
+  font-weight:600;
+  background:#f9fafb;
+  outline:none;
 }
+
+.header input:focus{
+  border-color:var(--primary);
+}
+
+/* SELECT */
+.header select{
+  width:120px;
+  height:30px;
+  border-radius:6px;
+  border:1px solid var(--border);
+  padding:0 6px;
+  font-size:11px;
+  font-weight:600;
+  background:#f9fafb;
+  outline:none;
+}
+
+/* BOTÃO */
+.header button{
+  height:30px;
+  padding:0 10px;
+  border-radius:6px;
+  border:none;
+  background:var(--primary);
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:.2s ease;
+}
+
+.header button:hover{
+  opacity:.85;
+}
+
+/* ================= CONTAINER ================= */
+
+.container{
+  padding:14px;
+  max-width:1100px;
+  margin:auto;
+}
+
+/* ================= CARD ================= */
+
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:16px;
+  border:1px solid var(--border);
+  box-shadow:0 6px 20px rgba(0,0,0,.04);
+}
+
+/* HEADER DO CARD */
+.card-header{
+  display:grid;
+  grid-template-columns:120px 1fr;
+  gap:14px;
+  align-items:start;
+}
+
+.card img{
+  width:100%;
+  height:110px;
+  object-fit:cover;
+  border-radius:8px;
+  background:#000;
+}
+
+.card h2{
+  margin:0 0 4px;
+  font-size:16px;
+  font-weight:800;
+}
+
+.card-header div > div{
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* BADGES */
+.badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:6px;
+}
+
+.badge{
+  background:#eef2ff;
+  padding:3px 7px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:700;
+}
+
+/* ================= GRID FINANCEIRO ================= */
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+  gap:6px;
+  margin-top:12px;
+}
+
+.box{
+  background:#f9fafb;
+  padding:7px 8px;
+  border-radius:7px;
+  font-size:11px;
+}
+
+.box b{
+  font-size:10px;
+  color:var(--muted);
+  display:block;
+  margin-bottom:2px;
+}
+
+/* ================= SECTIONS ================= */
+
+.section-title{
+  margin-top:16px;
+  margin-bottom:6px;
+  font-weight:800;
+  font-size:12px;
+}
+
+/* ================= TABLE ================= */
 
 table{
   width:100%;
   border-collapse:collapse;
-  min-width:1100px;
-}
-
-th, td{
-  padding:12px 10px;
-  border-bottom:1px solid var(--border);
-  font-size:12px;
-  text-align:left;
+  font-size:11px;
 }
 
 th{
-  background:#f1f5f9;
-  font-weight:900;
+  background:#f3f4f6;
+  font-size:9px;
+  text-transform:uppercase;
+  color:var(--muted);
+  padding:5px;
+  text-align:left;
 }
 
-tbody tr:hover{ background:#f8fafc }
+td{
+  padding:5px;
+  border-bottom:1px solid var(--border);
+  font-size:11px;
+}
 
-@media(max-width:900px){
-  .filters{ grid-template-columns:1fr 1fr }
-  .btn-export{ grid-column:1/-1 }
+.total-row{
+  background:#f1f5f9;
+  font-weight:800;
+}
+
+/* ================= MOBILE AJUSTES ================= */
+
+@media(max-width:600px){
+
+  .header select{
+    width:90px;
+  }
+
+  .header button{
+    padding:0 8px;
+  }
+
+  .card{
+    padding:14px;
+  }
+
+  .card-header{
+    grid-template-columns:1fr;
+  }
+
+  .card img{
+    height:160px;
+  }
+
+  .grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  table{
+    font-size:10px;
+  }
+
+  th{
+    font-size:8px;
+  }
+
+  td{
+    font-size:10px;
+  }
+}
+
+/* ================= PRINT ================= */
+
+@media print{
+  .header{
+    display:none;
+  }
+  .card{
+    page-break-after:always;
+  }
 }
 </style>
 </head>
@@ -152,46 +275,14 @@ tbody tr:hover{ background:#f8fafc }
 <body>
 
 <div class="header">
-  <div class="header-inner">
-    <h1>📊 Relatório Executivo de CMV</h1>
-    <p>Resumo financeiro, ficha técnica e simulação de preços</p>
-
-    <div class="filters">
-      <input id="filtroNome" placeholder="Buscar por prato...">
-      <select id="filtroTipo">
-        <option value="">Todos os tipos</option>
-      </select>
-      <select id="filtroStatus">
-        <option value="">Todos</option>
-        <option value="ATIVO">Ativos</option>
-        <option value="INATIVO">Inativos</option>
-      </select>
-      <button class="btn-export" onclick="exportarRelatorio()">📥 EXPORTAR EXCEL</button>
-    </div>
-  </div>
+  <input id="search" placeholder="Buscar prato">
+  <select id="tipoFilter">
+    <option value="">Todos os tipos</option>
+  </select>
+  <button onclick="window.print()">Exportar PDF</button>
 </div>
 
-<div class="main">
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Prato</th>
-          <th>Tipo</th>
-          <th>Status</th>
-          <th>Custo Base</th>
-          <th>Impostos</th>
-          <th>Custo Final</th>
-          <th>Venda</th>
-          <th>Lucro</th>
-          <th>CMV %</th>
-          <th>Margem %</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
-</div>
+<div class="container" id="conteudo"></div>
 
 <script>
 const sb = supabase.createClient(
@@ -199,186 +290,165 @@ const sb = supabase.createClient(
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 );
 
-let pratos=[], itens=[], impostos=[];
-async function fetchAll(table, select){
-  const pageSize = 1000;
-  let from = 0;
-  let to = pageSize - 1;
-  let all = [];
+let pratos = [];
+let itensMap = {};
+let impostosMap = {};
 
-  while (true) {
-    const { data, error } = await sb
-      .from(table)
-      .select(select)
-      .range(from, to);
+async function carregarDados(){
 
-    if (error) {
-      console.error("Erro ao buscar", table, error);
-      break;
-    }
+  const { data: buffet } = await sb.from("buffet").select("*");
+  const { data: itens } = await sb.from("buffet_itens").select("*");
+  const { data: impostos } = await sb.from("impostos").select("*");
 
-    if (!data || data.length === 0) break;
+  pratos = buffet || [];
 
-    all = all.concat(data);
+  itensMap = {};
+  (itens||[]).forEach(i=>{
+    if(!itensMap[i.buffet_id]) itensMap[i.buffet_id]=[];
+    itensMap[i.buffet_id].push(i);
+  });
 
-    if (data.length < pageSize) break; // acabou
+  impostosMap = {};
+  (impostos||[]).forEach(i=>{
+    if(!impostosMap[i.buffet_id]) impostosMap[i.buffet_id]=[];
+    impostosMap[i.buffet_id].push(i);
+  });
 
-    from += pageSize;
-    to += pageSize;
-  }
-
-  return all;
-}
-async function carregarBase(){
-  pratos  = (await sb.from("buffet").select("id,nome,tipo,ativo,preco_venda")).data || [];
-
-  itens = await fetchAll("buffet_itens", "buffet_id,custo_calculado");
-  impostos = await fetchAll("impostos", "buffet_id,modalidade,valor");
-
-  carregarTipos();
-  renderPreview();
+  popularTipos();
+  aplicarFiltros();
 }
 
-function carregarTipos(){
+function popularTipos(){
   const tipos=[...new Set(pratos.map(p=>p.tipo).filter(Boolean))];
-  filtroTipo.innerHTML=`<option value="">Todos os tipos</option>`+
+  tipoFilter.innerHTML="<option value=''>Todos</option>"+
     tipos.map(t=>`<option value="${t}">${t}</option>`).join("");
 }
 
-function getMapaCustos(){
-  const mapa = {};
+function aplicarFiltros(){
 
-  // custo base direto do que foi salvo na ficha técnica
-  itens.forEach(i => {
-    const id = i.buffet_id;
-    if (!id) return;
+  const nome = search.value.toUpperCase();
+  const tipo = tipoFilter.value;
 
-    mapa[id] ??= { base: 0, impostos: 0 };
-    mapa[id].base += Number(i.custo_calculado || 0);
+  const filtrados = pratos.filter(p=>{
+    const nomeOk = !nome || p.nome.toUpperCase().includes(nome);
+    const tipoOk = !tipo || p.tipo === tipo;
+    return nomeOk && tipoOk;
   });
 
-  // impostos continuam iguais
-  impostos.forEach(i => {
-    const id = i.buffet_id;
-    if (!id) return;
+  render(filtrados);
 
-    mapa[id] ??= { base: 0, impostos: 0 };
-
-    if (i.modalidade === "FIXO") {
-      mapa[id].impostos += Number(i.valor || 0);
-    }
-
-    if (i.modalidade === "PERCENTUAL") {
-      const b = mapa[id]?.base || 0;
-      mapa[id].impostos += (b * Number(i.valor || 0)) / 100;
-    }
-  });
-
-  return mapa;
-}
-
-function getFiltrados(){
-  const nome=filtroNome.value?.toUpperCase()||"";
-  const tipo=filtroTipo.value||"";
-  const status=filtroStatus.value||"";
-  return pratos.filter(p=>{
-    const st=p.ativo?"ATIVO":"INATIVO";
-    if(nome && !p.nome.toUpperCase().includes(nome)) return false;
-    if(tipo && p.tipo!==tipo) return false;
-    if(status && st!==status) return false;
-    return true;
+  /* 🔥 VOLTAR PARA O TOPO */
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth" 
   });
 }
 
-function renderPreview(){
-  const mapa=getMapaCustos();
-  tbody.innerHTML="";
-  getFiltrados().forEach(p=>{
-const dados = mapa[p.id] || { base: 0, impostos: 0 };
+function render(lista){
+  conteudo.innerHTML="";
 
-// 🔁 fallback se não tiver ingredientes
-const custoBase = dados.base > 0
-  ? dados.base
-  : Number(p.custo_total || p.custo_unitario || 0);
+  lista.forEach(p=>{
 
-const custoImpostos = dados.base > 0
-  ? dados.impostos
-  : 0;
+    const itens=itensMap[p.id]||[];
+    const impostos=impostosMap[p.id]||[];
 
-const custoFinal =
-  dados.base > 0
-    ? (dados.base + dados.impostos)
-    : Number(p.custo_total || p.custo_unitario || 0);
+    const cmvBase=itens.reduce((s,i)=>s+Number(i.custo_calculado||0),0);
 
-const venda = Number(p.preco_venda || 0);
-const lucro = venda ? venda - custoFinal : 0;
+    let totalImp=0;
+    impostos.forEach(i=>{
+      if(i.modalidade==="FIXO") totalImp+=Number(i.valor);
+      if(i.modalidade==="PERCENTUAL")
+        totalImp+=(cmvBase*Number(i.valor))/100;
+    });
 
-// ✅ CMV % igual ao painel CMV (só ingredientes)
-const cmv = venda ? (custoBase / venda) * 100 : 0;
+    const custoFinal=cmvBase+totalImp;
+    const preco=Number(p.preco_venda||0);
+    const lucro=preco-custoFinal;
+    const margem=preco?(lucro/preco)*100:0;
+    const cmvPerc=preco?(cmvBase/preco)*100:0;
 
-// ✅ Margem % igual ao painel CMV
-const margem = venda ? (lucro / venda) * 100 : 0;
-    tbody.innerHTML+=`
-      <tr>
-        <td>${p.nome}</td>
-        <td>${p.tipo||"-"}</td>
-        <td>${p.ativo?"ATIVO":"INATIVO"}</td>
-<td>R$ ${custoBase.toFixed(2)}</td>
-<td>R$ ${custoImpostos.toFixed(2)}</td>
-<td><b>R$ ${custoFinal.toFixed(2)}</b></td>
-<td>R$ ${venda.toFixed(2)}</td>
-<td>R$ ${lucro.toFixed(2)}</td>
-<td>${cmv.toFixed(1)}%</td>
-<td>${margem.toFixed(1)}%</td>
-      </tr>`;
+    const div=document.createElement("div");
+    div.className="card";
+
+    div.innerHTML=`
+      <div class="card-header">
+        <img src="${p.foto_url||'https://placehold.co/600x400?text=Sem+Foto'}">
+        <div>
+          <h2>${p.nome}</h2>
+          <div>${p.descricao||""}</div>
+
+          <div class="badges">
+            <div class="badge">Tipo: ${p.tipo||"-"}</div>
+            <div class="badge">Status: ${p.ativo?"Ativo":"Inativo"}</div>
+            <div class="badge">Código: ${p.codigo_varejo||"-"}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="box"><b>Preço Venda</b><br>R$ ${preco.toFixed(2)}</div>
+        <div class="box"><b>Preço Ideal</b><br>R$ ${Number(p.preco_ideal||0).toFixed(2)}</div>
+        <div class="box"><b>Custo Base</b><br>R$ ${cmvBase.toFixed(2)}</div>
+        <div class="box"><b>Custo Final</b><br>R$ ${custoFinal.toFixed(2)}</div>
+        <div class="box"><b>CMV</b><br>${cmvPerc.toFixed(1)}%</div>
+        <div class="box"><b>Lucro</b><br>R$ ${lucro.toFixed(2)}</div>
+        <div class="box"><b>Margem</b><br>${margem.toFixed(1)}%</div>
+      </div>
+
+      <div class="section-title">Ingredientes</div>
+      <table>
+        <tr>
+          <th>Nome</th>
+          <th>Qtd</th>
+          <th>Un.</th>
+          <th>Custo Unit.</th>
+          <th>Custo Total</th>
+        </tr>
+        ${itens.map(i=>{
+          const qtd=Number(i.quantidade||0);
+          const custoUnit=Number(i.custo_unitario||0);
+          const total=qtd*custoUnit;
+          return `
+            <tr>
+              <td>${i.nome}</td>
+<td>${qtd.toFixed(4)}</td>
+<td>${i.unidade_uso}</td>
+              <td>R$ ${custoUnit.toFixed(2)}</td>
+              <td><b>R$ ${total.toFixed(2)}</b></td>
+            </tr>
+          `;
+        }).join("")}
+        <tr class="total-row">
+          <td colspan="4">Total Ingredientes</td>
+          <td>R$ ${cmvBase.toFixed(2)}</td>
+        </tr>
+      </table>
+
+      <div class="section-title">Impostos / Custos</div>
+      <table>
+        <tr><th>Descrição</th><th>Tipo</th><th>Modalidade</th><th>Valor</th></tr>
+        ${impostos.map(i=>`
+          <tr>
+            <td>${i.descricao}</td>
+            <td>${i.tipo}</td>
+            <td>${i.modalidade}</td>
+            <td>${i.modalidade==="PERCENTUAL"?i.valor+"%":"R$ "+Number(i.valor).toFixed(2)}</td>
+          </tr>
+        `).join("")}
+      </table>
+
+      <div class="section-title">Modo de Preparo</div>
+      <div>${p.modo_preparo||"-"}</div>
+    `;
+
+    conteudo.appendChild(div);
   });
 }
 
-async function exportarRelatorio(){
-  const mapa=getMapaCustos();
-  const filtrados=getFiltrados();
-  const hoje=new Date().toISOString().slice(0,10);
+search.oninput=aplicarFiltros;
+tipoFilter.onchange=aplicarFiltros;
 
-  const resumo=filtrados.map(p=>{
-const dados = mapa[p.id] || { base: 0, impostos: 0 };
-
-const custoBase = dados.base > 0
-  ? dados.base
-  : Number(p.custo_total || p.custo_unitario || 0);
-
-const custoImpostos = dados.base > 0 ? dados.impostos : 0;
-
-const custoFinal =
-  dados.base > 0
-    ? (dados.base + dados.impostos)
-    : Number(p.custo_total || p.custo_unitario || 0);
-
-const venda = Number(p.preco_venda || 0);
-const lucro = venda ? venda - custoFinal : 0;
-const cmv = venda ? (custoBase / venda) * 100 : 0;
-const margem = venda ? (lucro / venda) * 100 : 0;
-    return {
-      Prato:p.nome, Tipo:p.tipo, Status:p.ativo?"ATIVO":"INATIVO",
-"Custo Base": custoBase.toFixed(2),
-Impostos: custoImpostos.toFixed(2),
-"Custo Final": custoFinal.toFixed(2),
-Venda: venda.toFixed(2),
-Lucro: lucro.toFixed(2),
-"CMV %": cmv.toFixed(2),
-"Margem %": margem.toFixed(2)
-    };
-  });
-
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(resumo),"Resumo Filtrado");
-  XLSX.writeFile(wb,`relatorio_CMV_filtrado_${hoje}.xlsx`);
-}
-
-filtroNome.oninput=renderPreview;
-filtroTipo.onchange=renderPreview;
-filtroStatus.onchange=renderPreview;
-
-carregarBase();
+carregarDados();
 </script>
 
 </body>
