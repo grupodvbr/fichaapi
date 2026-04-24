@@ -1,229 +1,240 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
 <meta charset="UTF-8">
+<title>Receitas • Fichas Técnicas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-<title>Fichas Técnicas • Mercatto</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+:root{
+  --primary:#2563eb;
+  --success:#16a34a;
+  --danger:#dc2626;
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:#e5e7eb;
+  --shadow:0 14px 34px rgba(0,0,0,.12);
+}
 
-/* ===== RESET ===== */
-*{
+*{box-sizing:border-box}
+
+body{
   margin:0;
-  padding:0;
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
+  font-family:Inter,sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
 
-html,body{
-  height:100%;
-  font-family:'Inter',sans-serif;
-  background:#f1f5f9;
-  overflow:hidden;
-}
-
-/* ===== STRUCT ===== */
-.app{
-  display:flex;
-  flex-direction:column;
-  height:100%;
-}
-
-/* ===== HEADER ===== */
+/* ================= FILTROS ================= */
 .filters{
-  padding:12px;
-  display:flex;
-  flex-direction:column;
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:#fff;
+  padding:14px;
+  display:grid;
   gap:10px;
-  background:rgba(255,255,255,.9);
-  backdrop-filter:blur(10px);
-  border-bottom:1px solid #e2e8f0;
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
 }
 
 .filters input,
 .filters select{
-  height:48px;
-  border-radius:14px;
-  border:1px solid #e2e8f0;
-  padding:0 14px;
+  height:46px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  padding:0 16px;
+  font-size:14px;
   font-weight:700;
 }
 
-/* ===== GRID ===== */
+/* ================= GRID ================= */
 .grid{
-  flex:1;
-  overflow:auto;
-  padding:14px;
+  padding:16px;
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
-  gap:12px;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;
 }
 
-/* ===== CARD ===== */
+/* ================= CARD ================= */
 .card{
-  background:#fff;
-  border-radius:18px;
+  background:var(--card);
+  border-radius:22px;
+  box-shadow:var(--shadow);
   overflow:hidden;
-  box-shadow:0 8px 18px rgba(0,0,0,.08);
-  transition:.2s;
+  cursor:pointer;
+  transition:.15s ease;
 }
 
-.card:active{
-  transform:scale(.96);
-}
+.card:hover{transform:translateY(-4px)}
 
 .card img{
   width:100%;
-  height:120px;
+  height:150px;
   object-fit:cover;
 }
 
 .card-body{
-  padding:10px;
+  padding:14px;
 }
 
 .card-body h3{
-  font-size:13px;
-  font-weight:900;
+  margin:0;
+  font-size:15px;
+  font-weight:800;
 }
 
 .badges{
   display:flex;
   gap:6px;
-  margin-top:6px;
+  margin-top:8px;
 }
 
 .badge{
-  font-size:10px;
-  padding:4px 8px;
+  padding:6px 10px;
   border-radius:999px;
-  font-weight:900;
+  font-size:11px;
+  font-weight:800;
+  background:#eef2ff;
+  color:#3730a3;
 }
 
-.ok{background:#dcfce7;color:#166534}
-.warn{background:#fee2e2;color:#991b1b}
+.badge.ok{background:#dcfce7;color:#166534}
+.badge.warn{background:#fee2e2;color:#991b1b}
 
-/* ===== MODAL ===== */
+/* ================= MODAL ================= */
 .modal{
   position:fixed;
   inset:0;
-  background:#000;
+  background:rgba(15,23,42,.65);
   display:none;
-  z-index:100;
+  align-items:flex-end;
+  z-index:20;
 }
 
 .modal-box{
-  height:100%;
   background:#fff;
+  width:100%;
+  max-height:94vh;
+  border-radius:22px 22px 0 0;
   overflow:auto;
 }
 
 .modal img{
   width:100%;
-  height:220px;
+  height:200px;
   object-fit:cover;
 }
 
 .modal-body{
-  padding:16px;
+  padding:18px;
 }
 
 .modal-body h2{
-  font-size:20px;
-  margin-bottom:10px;
+  margin:0 0 8px;
+  font-size:22px;
 }
 
-/* ===== TEXTAREA ===== */
-textarea{
+.modal-body h3{
+  margin:18px 0 6px;
+}
+
+.modal-body textarea{
   width:100%;
-  min-height:140px;
-  border-radius:12px;
-  border:1px solid #e2e8f0;
-  padding:12px;
+  min-height:160px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  padding:14px;
+  font-size:14px;
   font-weight:700;
+  resize:vertical;
+  text-transform:uppercase;
 }
 
-/* ===== BUTTON ===== */
+.modal-body textarea::placeholder{
+  text-transform:uppercase;
+}
+
 .btn{
   width:100%;
-  height:48px;
+  height:46px;
   border:none;
-  border-radius:12px;
+  border-radius:14px;
   font-weight:900;
-  margin-top:10px;
+  letter-spacing:.04em;
+  margin-top:12px;
+  cursor:pointer;
 }
 
 .btn-save{
-  background:linear-gradient(135deg,#2563eb,#1e40af);
+  background:linear-gradient(135deg,var(--primary),#1e40af);
+  color:#fff;
+}
+.btn-photo{
+  background:#111827;
   color:#fff;
 }
 
-/* ===== UPLOAD ===== */
+.upload{
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.upload input{
+  display:none;
+}
+
 .upload label{
-  height:48px;
-  background:#111;
+  background:#111827;
   color:#fff;
+  border-radius:12px;
+  height:46px;
   display:flex;
   align-items:center;
   justify-content:center;
-  border-radius:12px;
   font-weight:900;
-  margin-bottom:10px;
+  cursor:pointer;
 }
-
 .ing{
-  border-bottom:1px dashed #e2e8f0;
-  padding:6px 0;
-  font-size:13px;
+  border-bottom:1px dashed var(--border);
+  padding:8px 0;
+  font-size:14px;
 }
 
 .close{
   position:absolute;
   top:10px;
   right:14px;
-  color:#fff;
   font-size:22px;
+  color:#fff;
   font-weight:900;
+  cursor:pointer;
 }
-
-/* ===== LOADING ===== */
-.loading{
-  position:fixed;
-  inset:0;
-  background:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:900;
-  z-index:200;
-}
-
 </style>
 </head>
 
 <body>
 
-<div class="app">
-
+<!-- ================= FILTROS ================= -->
 <div class="filters">
   <input id="filtroNome" placeholder="🔍 BUSCAR PRATO">
   <select id="filtroTipo">
-    <option value="">TODOS</option>
+    <option value="">🍽 TODOS OS TIPOS</option>
     <option>SUSHI</option>
     <option>DRINK</option>
     <option>ENTRADA</option>
     <option>PRATO PRINCIPAL</option>
     <option>SOBREMESA</option>
+    <option>ACOMPANHAMENTO</option>
   </select>
   <select id="filtroReceita">
-    <option value="">TODAS</option>
+    <option value="">📋 TODAS</option>
     <option value="COM">COM RECEITA</option>
     <option value="SEM">SEM RECEITA</option>
   </select>
@@ -231,22 +242,16 @@ textarea{
 
 <div id="cards" class="grid"></div>
 
-</div>
-
-<!-- MODAL -->
-<div id="modal" class="modal">
-  <div class="modal-box">
+<!-- ================= MODAL ================= -->
+<div id="modal" class="modal" onclick="fechar()">
+  <div class="modal-box" onclick="event.stopPropagation()">
     <span class="close" onclick="fechar()">✕</span>
     <img id="mFoto">
     <div id="mBody" class="modal-body"></div>
   </div>
 </div>
 
-<!-- LOADING -->
-<div id="loading" class="loading">CARREGANDO...</div>
-
 <script>
-
 const sb = supabase.createClient(
   "https://dxkszikemntfusfyrzos.supabase.co",
   "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
@@ -255,45 +260,24 @@ const sb = supabase.createClient(
 let pratos = [];
 let pratoAtual = null;
 
-/* ===== LOAD ===== */
 async function carregar(){
-
-  loading.style.display="flex";
-
-  try{
-    const { data, error } = await sb
-      .from("buffet")
-      .select("*")
-      .order("nome");
-
-    if(error) throw error;
-
-    pratos = data || [];
-    render();
-
-  }catch(e){
-    alert("Erro ao carregar dados");
-    console.error(e);
-  }
-
-  loading.style.display="none";
+  const { data } = await sb.from("buffet").select("*").order("nome");
+  pratos = data || [];
+  render();
 }
 
-/* ===== RENDER ===== */
 function render(){
-
-  cards.innerHTML="";
+  cards.innerHTML = "";
 
   const nome = filtroNome.value.toUpperCase();
   const tipo = filtroTipo.value;
   const receita = filtroReceita.value;
 
-  pratos.forEach(p=>{
-
-    if(nome && !p.nome.toUpperCase().includes(nome)) return;
-    if(tipo && p.tipo !== tipo) return;
-    if(receita==="COM" && !p.modo_preparo) return;
-    if(receita==="SEM" && p.modo_preparo) return;
+  for(const p of pratos){
+    if(nome && !p.nome.toUpperCase().includes(nome)) continue;
+    if(tipo && p.tipo !== tipo) continue;
+    if(receita==="COM" && !p.modo_preparo) continue;
+    if(receita==="SEM" && p.modo_preparo) continue;
 
     const c = document.createElement("div");
     c.className="card";
@@ -309,19 +293,14 @@ function render(){
             ? `<span class="badge ok">COM RECEITA</span>`
             : `<span class="badge warn">SEM RECEITA</span>`}
         </div>
-      </div>
-    `;
-
+      </div>`;
     cards.appendChild(c);
-
-  });
+  }
 }
 
-/* ===== OPEN ===== */
 async function abrir(p){
-
   pratoAtual = p;
-  modal.style.display="block";
+  modal.style.display="flex";
   mFoto.src = p.foto_url || "";
 
   const { data: itens } = await sb
@@ -330,43 +309,41 @@ async function abrir(p){
     .eq("buffet_id", p.id);
 
   mBody.innerHTML=`
-    <h2>${p.nome}</h2>
+<h2>${p.nome}</h2>
 
-    <div class="upload">
-      <label for="fotoInput">📷 TROCAR FOTO</label>
-      <input type="file" id="fotoInput" accept="image/*" onchange="uploadFoto(event)">
-    </div>
+<div class="upload">
 
+  <label for="fotoInput">
+    📷 ADICIONAR / TROCAR FOTO
+  </label>
+
+  <input type="file"
+    id="fotoInput"
+    accept="image/*"
+    onchange="uploadFoto(event)"
+  >
+
+</div>
     <h3>MODO DE PREPARO</h3>
-
-    <textarea id="receitaInput">${p.modo_preparo||""}</textarea>
+    <textarea id="receitaInput"
+      placeholder="DESCREVA A RECEITA COMPLETA AQUI...">${p.modo_preparo||""}</textarea>
 
     <button class="btn btn-save" onclick="salvarReceita()">
       SALVAR RECEITA
     </button>
 
     <h3>INGREDIENTES</h3>
-
-    ${(itens || []).map(i=>`
+    ${itens.map(i=>`
       <div class="ing">
-        ${i.nome} • ${i.quantidade} ${i.unidade_uso}
+        ${i.nome} — ${i.quantidade} ${i.unidade_uso}
       </div>
     `).join("")}
   `;
 }
 
-/* ===== SAVE ===== */
 async function salvarReceita(){
-
   const texto = receitaInput.value.trim().toUpperCase();
-
-  if(!texto){
-    alert("Digite a receita");
-    return;
-  }
-
-  await sb
-    .from("buffet")
+  await sb.from("buffet")
     .update({ modo_preparo: texto })
     .eq("id", pratoAtual.id);
 
@@ -374,7 +351,16 @@ async function salvarReceita(){
   fechar();
 }
 
-/* ===== FOTO ===== */
+function fechar(){
+  modal.style.display="none";
+}
+
+filtroNome.oninput = render;
+filtroTipo.onchange = render;
+filtroReceita.onchange = render;
+
+carregar();
+
 async function uploadFoto(e){
 
   const file = e.target.files[0];
@@ -383,9 +369,13 @@ async function uploadFoto(e){
   const nomeArquivo =
     pratoAtual.id + "-" + Date.now() + ".jpg";
 
-  const { error } = await sb.storage
+  const { error } = await sb
+    .storage
     .from("buffet")
-    .upload(nomeArquivo, file, { upsert:true });
+    .upload(nomeArquivo, file, {
+      cacheControl: "3600",
+      upsert: true
+    });
 
   if(error){
     alert("Erro ao enviar imagem");
@@ -393,7 +383,8 @@ async function uploadFoto(e){
     return;
   }
 
-  const { data } = sb.storage
+  const { data } = sb
+    .storage
     .from("buffet")
     .getPublicUrl(nomeArquivo);
 
@@ -405,21 +396,9 @@ async function uploadFoto(e){
     .eq("id", pratoAtual.id);
 
   mFoto.src = url;
+
+  await carregar();
 }
-
-/* ===== CLOSE ===== */
-function fechar(){
-  modal.style.display="none";
-}
-
-/* ===== EVENTS ===== */
-filtroNome.oninput = render;
-filtroTipo.onchange = render;
-filtroReceita.onchange = render;
-
-/* ===== INIT ===== */
-carregar();
-
 </script>
 
 </body>
